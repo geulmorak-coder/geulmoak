@@ -227,7 +227,7 @@ onAuthStateChanged(auth, user => {
 });
 
 function loadPending() {
-  const q = query(collection(db,'books'), where('status','==','pending'), orderBy('createdAt','desc'));
+  const q = query(collection(db,'books'), where('status','==','pending'));
   onSnapshot(q, snap => {
     const cnt = snap.docs.length;
     document.getElementById('sumPending').textContent = cnt;
@@ -239,7 +239,12 @@ function loadPending() {
       list.innerHTML = `<div class="empty"><div class="empty-icon">🎉</div><div class="empty-text">모두 처리했어요!</div><div class="empty-sub">대기 중인 제출이 없습니다.</div></div>`;
       return;
     }
-    list.innerHTML = snap.docs.map(d => {
+    const sortedDocs = snap.docs.sort((a,b)=>{
+      const ta=a.data().createdAt?.toDate?.()??new Date(0);
+      const tb=b.data().createdAt?.toDate?.()??new Date(0);
+      return tb-ta;
+    });
+    list.innerHTML = sortedDocs.map(d => {
       const b = d.data();
       const lv = getLv(b.userPoints||0);
       return `<div class="pending-card" id="pc-${d.id}">
