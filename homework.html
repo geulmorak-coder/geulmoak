@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>글모락 - 숙제 관리</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=Black+Han+Sans&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#f4f3ff; --surface:#fff; --surface2:#f9f8ff;
+    --purple:#7c5cbf; --purple2:#a07ee0; --purple-light:#ede9fb;
+    --gold:#e6a820; --gold-light:#fef9ec;
+    --green:#16a34a; --green-light:#dcfce7;
+    --red:#dc2626; --red-light:#fee2e2;
+    --blue:#2563eb; --blue-light:#eff6ff;
+    --text:#1a1a2e; --muted:#6b7280; --border:#e5e3f5;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--text); font-family:'Noto Sans KR',sans-serif; min-height:100vh; }
+
+  /* 로그인 */
+  .login-wrap { min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:24px; }
+  .login-logo { font-family:'Black Han Sans',sans-serif; font-size:28px; color:var(--purple); margin-bottom:4px; }
+  .login-sub { font-size:13px; color:var(--muted); margin-bottom:32px; }
+  .login-box { background:white; border-radius:20px; padding:28px 24px; width:100%; max-width:380px; border:1px solid var(--border); }
+  .login-box h2 { font-size:18px; font-weight:900; margin-bottom:20px; }
+  .field { margin-bottom:14px; }
+  .field label { font-size:12px; font-weight:700; color:var(--muted); display:block; margin-bottom:6px; }
+  .field input { width:100%; padding:12px 14px; border:1px solid var(--border); border-radius:10px; font-family:'Noto Sans KR',sans-serif; font-size:14px; outline:none; }
+  .field input:focus { border-color:var(--purple); }
+  .btn-login { width:100%; padding:13px; background:var(--purple); color:white; border:none; border-radius:12px; font-family:'Noto Sans KR',sans-serif; font-size:15px; font-weight:700; cursor:pointer; }
+  .login-err { color:var(--red); font-size:12px; margin-top:8px; text-align:center; min-height:18px; }
+
+  /* 앱 */
+  .app-wrap { display:none; }
+  header { background:white; border-bottom:1px solid var(--border); padding:14px 20px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:50; }
+  .logo { font-family:'Black Han Sans',sans-serif; font-size:18px; color:var(--purple); }
+  .header-right { display:flex; align-items:center; gap:10px; }
+  .teacher-badge { background:var(--purple-light); color:var(--purple); font-size:12px; font-weight:700; padding:4px 10px; border-radius:20px; }
+  .btn-logout { background:none; border:1px solid var(--border); border-radius:8px; padding:6px 12px; font-size:12px; color:var(--muted); cursor:pointer; font-family:'Noto Sans KR',sans-serif; }
+
+  .wrap { max-width:900px; margin:0 auto; padding:20px 16px 60px; }
+
+  /* 상단 컨트롤 */
+  .top-controls { background:white; border-radius:16px; border:1px solid var(--border); padding:16px; margin-bottom:20px; display:flex; flex-wrap:wrap; gap:12px; align-items:flex-end; }
+  .ctrl-group { display:flex; flex-direction:column; gap:5px; }
+  .ctrl-label { font-size:11px; font-weight:700; color:var(--muted); }
+  .ctrl-select { padding:9px 12px; border:1px solid var(--border); border-radius:10px; font-family:'Noto Sans KR',sans-serif; font-size:13px; font-weight:700; background:white; color:var(--text); cursor:pointer; outline:none; min-width:140px; }
+  .ctrl-input { padding:9px 12px; border:1px solid var(--border); border-radius:10px; font-family:'Noto Sans KR',sans-serif; font-size:13px; background:white; color:var(--text); outline:none; }
+  .ctrl-input:focus, .ctrl-select:focus { border-color:var(--purple); }
+  .btn-load { padding:9px 20px; background:var(--purple); color:white; border:none; border-radius:10px; font-family:'Noto Sans KR',sans-serif; font-size:13px; font-weight:700; cursor:pointer; white-space:nowrap; }
+  .btn-save-all { padding:9px 20px; background:var(--green); color:white; border:none; border-radius:10px; font-family:'Noto Sans KR',sans-serif; font-size:13px; font-weight:700; cursor:pointer; white-space:nowrap; }
+
+  /* 반 관리 */
+  .class-manager { background:white; border-radius:16px; border:1px solid var(--border); padding:16px; margin-bottom:20px; }
+  .section-title { font-size:15px; font-weight:900; margin-bottom:12px; display:flex; align-items:center; gap:8px; }
+  .class-list { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px; }
+  .class-chip { display:flex; align-items:center; gap:6px; padding:6px 12px; background:var(--purple-light); color:var(--purple); border-radius:20px; font-size:13px; font-weight:700; }
+  .chip-del { background:none; border:none; cursor:pointer; color:var(--purple); font-size:14px; line-height:1; }
+  .add-class-row { display:flex; gap:8px; }
+  .add-class-input { flex:1; padding:9px 12px; border:1px solid var(--border); border-radius:10px; font-family:'Noto Sans KR',sans-serif; font-size:13px; outline:none; }
+  .add-class-input:focus { border-color:var(--purple); }
+  .btn-add-class { padding:9px 16px; background:var(--purple-light); color:var(--purple); border:none; border-radius:10px; font-family:'Noto Sans KR',sans-serif; font-size:13px; font-weight:700; cursor:pointer; white-space:nowrap; }
+
+  /* 숙제 테이블 */
+  .hw-table-wrap { background:white; border-radius:16px; border:1px solid var(--border); overflow:hidden; margin-bottom:20px; }
+  .hw-table-header { padding:14px 16px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; }
+  .hw-table-title { font-size:15px; font-weight:900; }
+  .hw-week-badge { font-size:12px; color:var(--purple); background:var(--purple-light); padding:4px 10px; border-radius:20px; font-weight:700; }
+  table { width:100%; border-collapse:collapse; }
+  th { background:var(--surface2); padding:10px 8px; font-size:12px; font-weight:700; color:var(--muted); border-bottom:1px solid var(--border); text-align:center; white-space:nowrap; }
+  th:first-child { text-align:left; padding-left:16px; }
+  td { padding:10px 8px; border-bottom:1px solid var(--border); font-size:13px; text-align:center; vertical-align:middle; }
+  td:first-child { text-align:left; padding-left:16px; }
+  tr:last-child td { border-bottom:none; }
+  tr:hover td { background:var(--surface2); }
+
+  .stu-cell { display:flex; align-items:center; gap:8px; }
+  .stu-emoji { width:32px; height:32px; background:var(--purple-light); border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0; }
+  .stu-name-cell { font-weight:700; font-size:13px; }
+  .stu-pts-cell { font-size:11px; color:var(--muted); }
+
+  /* 체크 버튼 */
+  .hw-check { width:36px; height:28px; border-radius:8px; border:1px solid var(--border); background:white; font-size:14px; cursor:pointer; transition:all 0.15s; display:flex; align-items:center; justify-content:center; margin:0 auto; }
+  .hw-check.done { background:var(--green-light); border-color:var(--green); }
+  .hw-check.undone { background:var(--red-light); border-color:#fca5a5; }
+  .hw-check.none { color:var(--muted); }
+
+  /* 메모 */
+  .memo-input { width:100%; padding:5px 8px; border:1px solid var(--border); border-radius:6px; font-family:'Noto Sans KR',sans-serif; font-size:12px; outline:none; resize:none; background:white; }
+  .memo-input:focus { border-color:var(--purple); }
+
+  /* 이력 탭 */
+  .tabs { display:flex; gap:6px; margin-bottom:16px; background:white; border-radius:12px; padding:5px; border:1px solid var(--border); }
+  .tab-btn { flex:1; padding:9px 6px; background:none; border:none; border-radius:8px; cursor:pointer; font-family:'Noto Sans KR',sans-serif; font-size:13px; font-weight:700; color:var(--muted); transition:all 0.15s; }
+  .tab-btn.active { background:var(--purple); color:white; }
+
+  .history-list { display:flex; flex-direction:column; gap:10px; }
+  .history-card { background:white; border-radius:14px; border:1px solid var(--border); padding:14px 16px; }
+  .history-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+  .history-week { font-size:14px; font-weight:900; }
+  .history-class { font-size:12px; color:var(--purple); background:var(--purple-light); padding:3px 8px; border-radius:10px; font-weight:700; }
+  .history-stats { display:flex; gap:8px; flex-wrap:wrap; }
+  .stat-chip { font-size:11px; padding:3px 8px; border-radius:8px; font-weight:700; }
+  .stat-done { background:var(--green-light); color:var(--green); }
+  .stat-undone { background:var(--red-light); color:var(--red); }
+
+  /* 완료율 바 */
+  .rate-bar { height:6px; background:var(--border); border-radius:3px; margin-top:8px; }
+  .rate-fill { height:6px; border-radius:3px; background:linear-gradient(90deg,var(--purple),var(--purple2)); transition:width 0.4s; }
+
+  /* 토스트 */
+  .toast { position:fixed; top:20px; left:50%; transform:translateX(-50%) translateY(-80px); background:var(--purple); color:white; font-weight:700; font-size:14px; padding:12px 24px; border-radius:30px; z-index:300; transition:transform 0.4s; white-space:nowrap; }
+  .toast.show { transform:translateX(-50%) translateY(0); }
+
+  .loading { text-align:center; padding:40px; color:var(--muted); font-size:14px; }
+  .empty-state { text-align:center; padding:40px; color:var(--muted); }
+  .empty-icon { font-size:40px; margin-bottom:12px; }
+
+  @media(max-width:600px) {
+    th, td { padding:8px 4px; font-size:11px; }
+    th:first-child, td:first-child { padding-left:10px; }
+    .hw-check { width:28px; height:24px; font-size:12px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- 로그인 -->
+<div class="login-wrap" id="loginWrap">
+  <div class="login-logo">📚 글모락</div>
+  <div class="login-sub">숙제 관리 시스템</div>
+  <div class="login-box">
+    <h2>👑 교장 로그인</h2>
+    <div class="field"><label>이메일</label><input type="email" id="loginEmail" placeholder="이메일 입력"></div>
+    <div class="field"><label>비밀번호</label><input type="password" id="loginPw" placeholder="비밀번호 입력"></div>
+    <button class="btn-login" id="btnLogin">로그인</button>
+    <div class="login-err" id="loginErr"></div>
+  </div>
+</div>
+
+<!-- 앱 -->
+<div class="app-wrap" id="appWrap">
+  <header>
+    <div class="logo">📚 글모락 숙제 관리</div>
+    <div class="header-right">
+      <span class="teacher-badge">👑 글모락의 교장</span>
+      <button class="btn-logout" id="btnLogout">로그아웃</button>
+    </div>
+  </header>
+
+  <div class="wrap">
+
+    <!-- 탭 -->
+    <div class="tabs">
+      <button class="tab-btn active" id="tabCurrent" onclick="switchTab('current',this)">📋 이번 주 숙제</button>
+      <button class="tab-btn" id="tabHistory" onclick="switchTab('history',this)">📅 이력 조회</button>
+      <button class="tab-btn" id="tabClasses" onclick="switchTab('classes',this)">🏫 반 관리</button>
+    </div>
+
+    <!-- 이번 주 숙제 탭 -->
+    <div id="sec-current">
+      <!-- 컨트롤 -->
+      <div class="top-controls">
+        <div class="ctrl-group">
+          <div class="ctrl-label">반 선택</div>
+          <select class="ctrl-select" id="selClass">
+            <option value="">-- 반을 선택하세요 --</option>
+          </select>
+        </div>
+        <div class="ctrl-group">
+          <div class="ctrl-label">주차</div>
+          <input type="week" class="ctrl-input" id="selWeek">
+        </div>
+        <button class="btn-load" id="btnLoad">📋 불러오기</button>
+        <button class="btn-save-all" id="btnSaveAll" style="display:none">💾 전체 저장</button>
+      </div>
+
+      <!-- 숙제 테이블 -->
+      <div id="hwTableWrap">
+        <div class="empty-state">
+          <div class="empty-icon">📋</div>
+          <div>반과 주차를 선택하고 불러오기를 눌러주세요!</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 이력 조회 탭 -->
+    <div id="sec-history" style="display:none">
+      <div class="top-controls">
+        <div class="ctrl-group">
+          <div class="ctrl-label">반 선택</div>
+          <select class="ctrl-select" id="selClassHistory">
+            <option value="">전체 반</option>
+          </select>
+        </div>
+        <div class="ctrl-group">
+          <div class="ctrl-label">학생 이름</div>
+          <input type="text" class="ctrl-input" id="historyName" placeholder="이름 검색">
+        </div>
+        <button class="btn-load" onclick="loadHistory()">🔍 조회</button>
+      </div>
+      <div id="historyList" class="history-list">
+        <div class="empty-state"><div class="empty-icon">📅</div><div>조건을 선택하고 조회해주세요!</div></div>
+      </div>
+    </div>
+
+    <!-- 반 관리 탭 -->
+    <div id="sec-classes" style="display:none">
+      <div class="class-manager">
+        <div class="section-title">🏫 반 목록</div>
+        <div class="class-list" id="classList"></div>
+        <div class="add-class-row">
+          <input type="text" class="add-class-input" id="newClassName" placeholder="새 반 이름 (예: 라이트 15:00)">
+          <button class="btn-add-class" id="btnAddClass">+ 반 추가</button>
+        </div>
+      </div>
+      <div class="hw-table-wrap">
+        <div class="hw-table-header">
+          <div class="hw-table-title">📝 숙제 항목 설정</div>
+          <div style="font-size:12px;color:var(--muted)">모든 반에 공통 적용</div>
+        </div>
+        <div style="padding:16px;">
+          <div id="hwItemList" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;"></div>
+          <div style="display:flex;gap:8px;">
+            <input type="text" class="add-class-input" id="newHwItem" placeholder="새 숙제 항목 (예: 일기쓰기)">
+            <button class="btn-add-class" id="btnAddHwItem">+ 항목 추가</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, doc, setDoc, getDoc, collection, getDocs, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const app = initializeApp({
+  apiKey: "AIzaSyB_f-U4h2PMzDv2zHhH0AEtffr3XfGYxsQ",
+  authDomain: "chaek-mabeopsa.firebaseapp.com",
+  projectId: "chaek-mabeopsa",
+  storageBucket: "chaek-mabeopsa.firebasestorage.app",
+  messagingSenderId: "957424809777",
+  appId: "1:957424809777:web:7a67c94015066703d32210"
+});
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+// ===== 기본 숙제 항목 =====
+const DEFAULT_HW_ITEMS = ['책', '녹음', '독서평설', '서체교정', '한자공부', 'EBS문법'];
+let hwItems = [...DEFAULT_HW_ITEMS];
+let classes = [];
+let currentData = {};
+let studentSelfChecks = {}; // 학생 자체 체크 현황 // { studentId: { 책: true/false, 녹음: true/false, ... , memo: '' } }
+let currentStudents = [];
+let currentClass = '';
+let currentWeek = '';
+
+const EMOJIS = ['🌱','📖','✨','🔮','🧙','⚡','🌟','👑'];
+function getLv(pts) {
+  const LEVELS = [0,500,1500,3000,5000,8000,12000,18000];
+  let l=0; for(const t of LEVELS){if(pts>=t)l++;} return Math.min(Math.max(l,1),8);
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2500);
+}
+
+function getWeekStr(weekVal) {
+  if(!weekVal) return '';
+  const [y, w] = weekVal.split('-W');
+  return `${y}년 ${w}주차`;
+}
+
+function getCurrentWeek() {
+  const now = new Date();
+  const jan1 = new Date(now.getFullYear(), 0, 1);
+  const week = Math.ceil(((now - jan1) / 86400000 + jan1.getDay() + 1) / 7);
+  return `${now.getFullYear()}-W${String(week).padStart(2,'0')}`;
+}
+
+// ===== 탭 전환 =====
+window.switchTab = (name, btn) => {
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  ['current','history','classes'].forEach(t => {
+    document.getElementById('sec-'+t).style.display = t===name ? 'block' : 'none';
+  });
+  if(name==='classes') renderClassManager();
+  if(name==='history') loadHistory();
+};
+
+// ===== 로그인 =====
+document.getElementById('btnLogin').addEventListener('click', async () => {
+  const email = document.getElementById('loginEmail').value.trim();
+  const pw = document.getElementById('loginPw').value;
+  const err = document.getElementById('loginErr');
+  err.textContent = '';
+  try {
+    await signInWithEmailAndPassword(auth, email, pw);
+  } catch(e) {
+    err.textContent = '이메일 또는 비밀번호를 확인해주세요.';
+  }
+});
+
+document.getElementById('btnLogout').addEventListener('click', () => signOut(auth));
+
+onAuthStateChanged(auth, async user => {
+  if(user) {
+    document.getElementById('loginWrap').style.display = 'none';
+    document.getElementById('appWrap').style.display = 'block';
+    await loadSettings();
+    populateClassSelects();
+    document.getElementById('selWeek').value = getCurrentWeek();
+  } else {
+    document.getElementById('loginWrap').style.display = 'flex';
+    document.getElementById('appWrap').style.display = 'none';
+  }
+});
+
+// ===== 설정 로드 (반 목록 + 숙제 항목) =====
+async function loadSettings() {
+  try {
+    const snap = await getDoc(doc(db,'settings','homework'));
+    if(snap.exists()) {
+      const d = snap.data();
+      classes = d.classes || [];
+      hwItems = d.hwItems || DEFAULT_HW_ITEMS;
+    } else {
+      classes = [];
+      hwItems = [...DEFAULT_HW_ITEMS];
+    }
+  } catch(e) { classes = []; hwItems = [...DEFAULT_HW_ITEMS]; }
+}
+
+async function saveSettings() {
+  await setDoc(doc(db,'settings','homework'), { classes, hwItems, updatedAt: new Date() });
+}
+
+function populateClassSelects() {
+  ['selClass','selClassHistory'].forEach(id => {
+    const sel = document.getElementById(id);
+    const first = sel.options[0];
+    sel.innerHTML = '';
+    sel.appendChild(first);
+    classes.forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c; opt.textContent = c;
+      sel.appendChild(opt);
+    });
+  });
+}
+
+// ===== 불러오기 =====
+document.getElementById('btnLoad').addEventListener('click', loadHomework);
+
+async function loadHomework() {
+  const cls = document.getElementById('selClass').value;
+  const week = document.getElementById('selWeek').value;
+  if(!cls) { showToast('반을 선택해주세요!'); return; }
+  if(!week) { showToast('주차를 선택해주세요!'); return; }
+
+  currentClass = cls;
+  currentWeek = week;
+  currentData = {};
+
+  const wrap = document.getElementById('hwTableWrap');
+  wrap.innerHTML = '<div class="loading">불러오는 중...</div>';
+
+  // Firebase에서 학생 목록 (해당 반)
+  try {
+    // users 컬렉션에서 반 일치하는 학생 가져오기
+    const usersSnap = await getDocs(collection(db,'users'));
+    currentStudents = usersSnap.docs
+      .map(d => ({id:d.id, ...d.data()}))
+      .filter(u => u.className === cls || u.class === cls)
+      .sort((a,b) => (a.name||'').localeCompare(b.name||''));
+
+    // 반 필드 없으면 전체 학생 (반 미배정)
+    if(currentStudents.length === 0) {
+      currentStudents = usersSnap.docs
+        .map(d => ({id:d.id, ...d.data()}))
+        .filter(u => !u.role || u.role !== 'teacher')
+        .sort((a,b) => (a.name||'').localeCompare(b.name||''));
+    }
+
+    // 기존 저장된 선생님 데이터 로드
+    const hwDocId = `${cls}_${week}`.replace(/[^a-zA-Z0-9가-힣_-]/g,'_');
+    const hwSnap = await getDoc(doc(db,'homework', hwDocId));
+    if(hwSnap.exists()) {
+      currentData = hwSnap.data().records || {};
+    }
+
+    // 학생 자체 체크 현황도 같이 로드
+    studentSelfChecks = {};
+    const weekStart = week; // week 형식 맞춰서 사용
+    // 학생별 studentHw 문서 로드
+    for(const stu of currentStudents) {
+      try {
+        const selfSnap = await getDoc(doc(db,'studentHw', `student_${stu.id}_${weekStart}`));
+        if(selfSnap.exists()) {
+          studentSelfChecks[stu.id] = selfSnap.data().checks || {};
+        }
+      } catch(e) {}
+    }
+
+    renderTable();
+    document.getElementById('btnSaveAll').style.display = 'block';
+  } catch(e) {
+    wrap.innerHTML = `<div class="empty-state"><div class="empty-icon">😢</div><div>불러오기 실패: ${e.message}</div></div>`;
+  }
+}
+
+// ===== 테이블 렌더링 =====
+function renderTable() {
+  const wrap = document.getElementById('hwTableWrap');
+  if(currentStudents.length === 0) {
+    wrap.innerHTML = `<div class="empty-state"><div class="empty-icon">👥</div><div>학생이 없어요!<br><small style="color:var(--muted)">반 관리 탭에서 학생의 반 정보를 확인해주세요</small></div></div>`;
+    return;
+  }
+
+  // 완료율 계산
+  const totalCells = currentStudents.length * hwItems.length;
+  const doneCells = Object.values(currentData).reduce((sum, rec) => {
+    return sum + hwItems.filter(item => rec[item] === true).length;
+  }, 0);
+  const rate = totalCells > 0 ? Math.round((doneCells/totalCells)*100) : 0;
+
+  wrap.innerHTML = `
+    <div class="hw-table-wrap">
+      <div class="hw-table-header">
+        <div>
+          <div class="hw-table-title">${currentClass}</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px;">총 ${currentStudents.length}명</div>
+        </div>
+        <div style="text-align:right;">
+          <div class="hw-week-badge">${getWeekStr(currentWeek)}</div>
+          <div style="font-size:12px;color:var(--green);font-weight:700;margin-top:4px;">완료율 ${rate}%</div>
+          <div class="rate-bar" style="width:120px;margin-top:4px;margin-left:auto;"><div class="rate-fill" style="width:${rate}%"></div></div>
+        </div>
+      </div>
+      <div style="overflow-x:auto;">
+        <table id="hwTable">
+          <thead>
+            <tr>
+              <th style="min-width:120px">학생</th>
+              ${hwItems.map(item => `<th style="min-width:64px">${item}</th>`).join('')}
+              <th style="min-width:100px">📱 학생체크</th>
+              <th style="min-width:140px">💬 코멘트 (학생표시)</th>
+            </tr>
+          </thead>
+          <tbody id="hwTbody"></tbody>
+        </table>
+      </div>
+    </div>`;
+
+  const tbody = document.getElementById('hwTbody');
+  currentStudents.forEach(stu => {
+    const rec = currentData[stu.id] || {};
+    const lv = getLv(stu.points||0);
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>
+        <div class="stu-cell">
+          <div class="stu-emoji">${EMOJIS[lv-1]}</div>
+          <div>
+            <div class="stu-name-cell">${stu.name||'학생'}</div>
+            <div class="stu-pts-cell">${(stu.points||0).toLocaleString()}pt</div>
+          </div>
+        </div>
+      </td>
+      ${hwItems.map(item => {
+        const val = rec[item];
+        const cls = val===true?'done':val===false?'undone':'none';
+        const icon = val===true?'✅':val===false?'❌':'－';
+        return `<td><button class="hw-check ${cls}" data-sid="${stu.id}" data-item="${item}">${icon}</button></td>`;
+      }).join('')}
+      <td>
+        <div style="display:flex;flex-wrap:wrap;gap:3px;justify-content:center;">
+          ${hwItems.map(item => {
+            const self = studentSelfChecks[stu.id]?.[item];
+            return `<span style="font-size:10px;padding:2px 5px;border-radius:4px;font-weight:700;background:${self===true?'var(--green-light)':'rgba(255,255,255,0.5)'};color:${self===true?'var(--green)':'var(--muted)'};">${self===true?'✅':'○'}</span>`;
+          }).join('')}
+        </div>
+      </td>
+      <td><textarea class="memo-input comment-input" rows="1" data-sid="${stu.id}" placeholder="코멘트 (학생에게 표시)">${rec.teacherComment||''}</textarea></td>`;
+    tbody.appendChild(tr);
+  });
+
+  // 체크 버튼 이벤트
+  tbody.querySelectorAll('.hw-check').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const {sid, item} = btn.dataset;
+      if(!currentData[sid]) currentData[sid] = {};
+      const cur = currentData[sid][item];
+      // 순환: 미확인 → 완료 → 미완료 → 미확인
+      if(cur === undefined || cur === null) {
+        currentData[sid][item] = true;
+        btn.className = 'hw-check done'; btn.textContent = '✅';
+      } else if(cur === true) {
+        currentData[sid][item] = false;
+        btn.className = 'hw-check undone'; btn.textContent = '❌';
+      } else {
+        delete currentData[sid][item];
+        btn.className = 'hw-check none'; btn.textContent = '－';
+      }
+      updateRateDisplay();
+    });
+  });
+
+  // 코멘트 이벤트 (학생에게 표시)
+  tbody.querySelectorAll('.comment-input').forEach(inp => {
+    inp.addEventListener('input', () => {
+      const sid = inp.dataset.sid;
+      if(!currentData[sid]) currentData[sid] = {};
+      currentData[sid].teacherComment = inp.value;
+    });
+    // 코멘트 저장 시 studentHw에도 반영 (blur 시)
+    inp.addEventListener('blur', async () => {
+      const sid = inp.dataset.sid;
+      const comment = inp.value.trim();
+      const weekStart = currentWeek;
+      if(!weekStart) return;
+      try {
+        await setDoc(doc(db,'studentHw', `student_${sid}_${weekStart}`), {
+          teacherComment: comment,
+          updatedAt: new Date()
+        }, {merge: true});
+        if(comment) showToast('💬 코멘트 저장됨!');
+      } catch(e) {}
+    });
+  });
+}
+
+function updateRateDisplay() {
+  const totalCells = currentStudents.length * hwItems.length;
+  const doneCells = Object.values(currentData).reduce((sum, rec) => {
+    return sum + hwItems.filter(item => rec[item] === true).length;
+  }, 0);
+  const rate = totalCells > 0 ? Math.round((doneCells/totalCells)*100) : 0;
+  const rateEl = document.querySelector('.rate-fill');
+  const rateTxt = document.querySelector('.hw-table-header .rate-bar + div');
+  if(rateEl) rateEl.style.width = rate + '%';
+}
+
+// ===== 전체 저장 =====
+document.getElementById('btnSaveAll').addEventListener('click', saveHomework);
+
+async function saveHomework() {
+  if(!currentClass || !currentWeek) return;
+  const btn = document.getElementById('btnSaveAll');
+  btn.textContent = '⏳ 저장 중...'; btn.disabled = true;
+  try {
+    const hwDocId = `${currentClass}_${currentWeek}`.replace(/[^a-zA-Z0-9가-힣_-]/g,'_');
+    await setDoc(doc(db,'homework', hwDocId), {
+      class: currentClass,
+      week: currentWeek,
+      weekStr: getWeekStr(currentWeek),
+      hwItems,
+      records: currentData,
+      studentCount: currentStudents.length,
+      savedAt: new Date()
+    });
+    showToast('💾 저장 완료!');
+  } catch(e) {
+    showToast('저장 실패: ' + e.message);
+  }
+  btn.textContent = '💾 전체 저장'; btn.disabled = false;
+}
+
+// ===== 이력 조회 =====
+async function loadHistory() {
+  const cls = document.getElementById('selClassHistory').value;
+  const name = document.getElementById('historyName').value.trim();
+  const listEl = document.getElementById('historyList');
+  listEl.innerHTML = '<div class="loading">불러오는 중...</div>';
+
+  try {
+    const snap = await getDocs(collection(db,'homework'));
+    let docs = snap.docs.map(d => d.data());
+
+    if(cls) docs = docs.filter(d => d.class === cls);
+    docs.sort((a,b) => (b.week||'').localeCompare(a.week||''));
+
+    if(docs.length === 0) {
+      listEl.innerHTML = '<div class="empty-state"><div class="empty-icon">📅</div><div>저장된 이력이 없어요!</div></div>';
+      return;
+    }
+
+    listEl.innerHTML = docs.map(d => {
+      const records = d.records || {};
+      const items = d.hwItems || hwItems;
+      const students = Object.entries(records);
+
+      // 이름 검색 필터
+      let filteredStudents = students;
+      if(name) {
+        const matchIds = currentStudents.filter(s => s.name?.includes(name)).map(s => s.id);
+        filteredStudents = students.filter(([sid]) => matchIds.includes(sid));
+      }
+
+      const totalCells = filteredStudents.length * items.length;
+      const doneCells = filteredStudents.reduce((sum,[,rec]) =>
+        sum + items.filter(i => rec[i]===true).length, 0);
+      const rate = totalCells > 0 ? Math.round((doneCells/totalCells)*100) : 0;
+
+      const studentRows = filteredStudents.map(([sid, rec]) => {
+        const stu = currentStudents.find(s=>s.id===sid);
+        const stuName = stu?.name || sid;
+        const doneItems = items.filter(i=>rec[i]===true);
+        const undoneItems = items.filter(i=>rec[i]===false);
+        return `<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px;">
+          <div style="width:70px;font-weight:700">${stuName}</div>
+          <div style="flex:1;display:flex;flex-wrap:wrap;gap:4px;">
+            ${items.map(item => `<span style="padding:2px 7px;border-radius:6px;font-size:11px;font-weight:700;background:${rec[item]===true?'var(--green-light)':rec[item]===false?'var(--red-light)':'var(--surface2)'};color:${rec[item]===true?'var(--green)':rec[item]===false?'var(--red)':'var(--muted)'}">
+              ${rec[item]===true?'✅':rec[item]===false?'❌':'－'} ${item}
+            </span>`).join('')}
+          </div>
+          ${rec.memo ? `<div style="font-size:11px;color:var(--muted);max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${rec.memo}</div>` : ''}
+        </div>`;
+      }).join('');
+
+      return `<div class="history-card">
+        <div class="history-header">
+          <div>
+            <div class="history-week">${d.weekStr || d.week}</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:2px;">${d.studentCount||0}명</div>
+          </div>
+          <div style="text-align:right;">
+            <div class="history-class">${d.class}</div>
+            <div style="font-size:12px;color:var(--green);font-weight:700;margin-top:4px;">${rate}% 완료</div>
+          </div>
+        </div>
+        <div class="rate-bar"><div class="rate-fill" style="width:${rate}%"></div></div>
+        ${filteredStudents.length > 0 ? `<div style="margin-top:12px;">${studentRows}</div>` : ''}
+      </div>`;
+    }).join('');
+
+  } catch(e) {
+    listEl.innerHTML = `<div class="empty-state">불러오기 실패: ${e.message}</div>`;
+  }
+}
+
+// ===== 반 관리 =====
+function renderClassManager() {
+  const listEl = document.getElementById('classList');
+  listEl.innerHTML = classes.length === 0
+    ? '<div style="font-size:13px;color:var(--muted)">아직 반이 없어요!</div>'
+    : classes.map(c => `
+        <div class="class-chip">
+          ${c}
+          <button class="chip-del" data-cls="${c}">✕</button>
+        </div>`).join('');
+
+  listEl.querySelectorAll('.chip-del').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      classes = classes.filter(c => c !== btn.dataset.cls);
+      await saveSettings();
+      populateClassSelects();
+      renderClassManager();
+      showToast('반이 삭제됐어요!');
+    });
+  });
+
+  // 숙제 항목 렌더링
+  const hwEl = document.getElementById('hwItemList');
+  hwEl.innerHTML = hwItems.map(item => `
+    <div class="class-chip" style="background:var(--gold-light);color:var(--gold);">
+      ${item}
+      <button class="chip-del" data-item="${item}" style="color:var(--gold);">✕</button>
+    </div>`).join('');
+
+  hwEl.querySelectorAll('.chip-del').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      hwItems = hwItems.filter(i => i !== btn.dataset.item);
+      await saveSettings();
+      renderClassManager();
+      showToast('항목이 삭제됐어요!');
+    });
+  });
+}
+
+document.getElementById('btnAddClass').addEventListener('click', async () => {
+  const name = document.getElementById('newClassName').value.trim();
+  if(!name) return;
+  if(classes.includes(name)) { showToast('이미 있는 반이에요!'); return; }
+  classes.push(name);
+  await saveSettings();
+  populateClassSelects();
+  renderClassManager();
+  document.getElementById('newClassName').value = '';
+  showToast('✅ 반이 추가됐어요!');
+});
+
+document.getElementById('btnAddHwItem').addEventListener('click', async () => {
+  const item = document.getElementById('newHwItem').value.trim();
+  if(!item) return;
+  if(hwItems.includes(item)) { showToast('이미 있는 항목이에요!'); return; }
+  hwItems.push(item);
+  await saveSettings();
+  renderClassManager();
+  document.getElementById('newHwItem').value = '';
+  showToast('✅ 항목이 추가됐어요!');
+});
+
+// Enter 키
+document.getElementById('loginPw').addEventListener('keydown', e => {
+  if(e.key==='Enter') document.getElementById('btnLogin').click();
+});
+document.getElementById('newClassName').addEventListener('keydown', e => {
+  if(e.key==='Enter') document.getElementById('btnAddClass').click();
+});
+document.getElementById('newHwItem').addEventListener('keydown', e => {
+  if(e.key==='Enter') document.getElementById('btnAddHwItem').click();
+});
+</script>
+</body>
+</html>

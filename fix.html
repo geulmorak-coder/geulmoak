@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>포인트 수동 지급</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  :root { --purple:#7c5cbf; --green:#16a34a; --red:#dc2626; --border:#e5e3f5; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Noto Sans KR',sans-serif; background:#f4f3ff; min-height:100vh; padding:24px 16px; }
+  .wrap { max-width:500px; margin:0 auto; }
+  h1 { font-size:20px; font-weight:900; color:var(--purple); margin-bottom:4px; }
+  .sub { font-size:13px; color:#6b7280; margin-bottom:24px; }
+  .card { background:white; border-radius:16px; border:1px solid var(--border); padding:20px; margin-bottom:16px; }
+  .card-title { font-size:15px; font-weight:900; margin-bottom:14px; }
+  .field { margin-bottom:12px; }
+  .field label { font-size:12px; font-weight:700; color:#6b7280; display:block; margin-bottom:5px; }
+  .field input { width:100%; padding:10px 12px; border:1px solid var(--border); border-radius:10px; font-family:'Noto Sans KR',sans-serif; font-size:14px; outline:none; }
+  .field input:focus { border-color:var(--purple); }
+  .btn { width:100%; padding:12px; border:none; border-radius:10px; font-family:'Noto Sans KR',sans-serif; font-size:14px; font-weight:700; cursor:pointer; margin-bottom:8px; }
+  .btn-purple { background:var(--purple); color:white; }
+  .btn-green { background:var(--green); color:white; }
+  .btn-gray { background:#f3f4f6; color:#6b7280; }
+  .result { font-size:13px; font-weight:700; text-align:center; padding:8px; border-radius:8px; margin-top:8px; min-height:20px; }
+  .ok { background:#dcfce7; color:var(--green); }
+  .err { background:#fee2e2; color:var(--red); }
+  .info { background:#ede9fb; color:var(--purple); }
+  .divider { height:1px; background:var(--border); margin:16px 0; }
+  .student-row { display:flex; gap:8px; align-items:center; margin-bottom:10px; padding:10px 12px; background:#f9f8ff; border-radius:10px; border:1px solid var(--border); }
+  .stu-name { flex:1; font-weight:700; font-size:14px; }
+  .stu-pts { font-size:13px; color:var(--purple); font-weight:900; }
+  .btn-small { padding:7px 14px; border:none; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:12px; font-weight:700; cursor:pointer; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🔧 포인트 수동 지급</h1>
+  <div class="sub">교장 계정으로 로그인 후 사용하세요</div>
+
+  <!-- 로그인 -->
+  <div class="card" id="loginCard">
+    <div class="card-title">👑 교장 로그인</div>
+    <div class="field"><label>이메일</label><input type="email" id="email" placeholder="이메일 입력"></div>
+    <div class="field"><label>비밀번호</label><input type="password" id="pw" placeholder="비밀번호 입력"></div>
+    <button class="btn btn-purple" id="btnLogin">로그인</button>
+    <div class="result" id="loginResult"></div>
+  </div>
+
+  <!-- 전체 학생 목록 -->
+  <div class="card" id="studentsCard" style="display:none">
+    <div class="card-title">👥 전체 학생 포인트 현황</div>
+    <div id="studentList"><div style="text-align:center;color:#6b7280;padding:20px;">불러오는 중...</div></div>
+    <div class="divider"></div>
+    <button class="btn btn-gray" id="btnRefresh">🔄 새로고침</button>
+  </div>
+
+  <!-- 수동 지급 -->
+  <div class="card" id="manualCard" style="display:none">
+    <div class="card-title">💰 포인트 수동 지급</div>
+    <div class="field"><label>학생 이름</label><input type="text" id="targetName" placeholder="예: 허준범"></div>
+    <div class="field"><label>지급할 포인트</label><input type="number" id="addPts" value="100" min="1"></div>
+    <button class="btn btn-green" id="btnGive">💰 포인트 지급하기</button>
+    <div class="result" id="giveResult"></div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, collection, getDocs, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const app = initializeApp({
+  apiKey: "AIzaSyB_f-U4h2PMzDv2zHhH0AEtffr3XfGYxsQ",
+  authDomain: "chaek-mabeopsa.firebaseapp.com",
+  projectId: "chaek-mabeopsa",
+  storageBucket: "chaek-mabeopsa.firebasestorage.app",
+  messagingSenderId: "957424809777",
+  appId: "1:957424809777:web:7a67c94015066703d32210"
+});
+const auth = getAuth(app);
+const db = getFirestore(app);
+let students = [];
+
+async function loadStudents() {
+  const list = document.getElementById('studentList');
+  list.innerHTML = '<div style="text-align:center;color:#6b7280;padding:20px;">불러오는 중...</div>';
+  const snap = await getDocs(collection(db,'users'));
+  students = snap.docs.map(d=>({id:d.id,...d.data()}))
+    .filter(u=>!u.role||u.role!=='teacher')
+    .sort((a,b)=>(b.points||0)-(a.points||0));
+  list.innerHTML = students.map(s=>`
+    <div class="student-row">
+      <div class="stu-name">${s.name||'이름없음'}</div>
+      <div class="stu-pts">${(s.points||0).toLocaleString()}pt</div>
+      <button class="btn-small btn-purple" style="color:white"
+        onclick="quickAdd('${s.id}','${s.name||''}',${s.points||0})">+100</button>
+    </div>`).join('');
+}
+
+window.quickAdd = async (uid, name, curPts) => {
+  if(!confirm(`${name}에게 +100pt 지급할까요? (${curPts}pt → ${curPts+100}pt)`)) return;
+  try {
+    await updateDoc(doc(db,'users',uid), {points: curPts+100});
+    alert(`✅ ${name} +100pt 완료!`);
+    loadStudents();
+  } catch(e) { alert('오류: '+e.message); }
+};
+
+document.getElementById('btnLogin').onclick = async () => {
+  const email = document.getElementById('email').value.trim();
+  const pw = document.getElementById('pw').value;
+  const res = document.getElementById('loginResult');
+  try {
+    await signInWithEmailAndPassword(auth, email, pw);
+    res.className='result ok'; res.textContent='✅ 로그인 성공!';
+    document.getElementById('loginCard').style.display='none';
+    document.getElementById('studentsCard').style.display='block';
+    document.getElementById('manualCard').style.display='block';
+    await loadStudents();
+  } catch(e) {
+    res.className='result err'; res.textContent='❌ 로그인 실패: 이메일/비밀번호 확인';
+  }
+};
+
+document.getElementById('btnRefresh').onclick = loadStudents;
+
+document.getElementById('pw').addEventListener('keydown', e=>{
+  if(e.key==='Enter') document.getElementById('btnLogin').click();
+});
+
+document.getElementById('btnGive').onclick = async () => {
+  const name = document.getElementById('targetName').value.trim();
+  const pts = parseInt(document.getElementById('addPts').value)||0;
+  const res = document.getElementById('giveResult');
+  if(!name||pts<=0) { res.className='result err'; res.textContent='이름과 포인트를 입력해주세요!'; return; }
+  const matched = students.find(s=>s.name===name);
+  if(!matched) { res.className='result err'; res.textContent=`❌ "${name}" 학생을 찾을 수 없어요!`; return; }
+  try {
+    const cur = matched.points||0;
+    await updateDoc(doc(db,'users',matched.id), {points: cur+pts});
+    res.className='result ok'; res.textContent=`✅ ${name} +${pts}pt 완료! (${cur}→${cur+pts}pt)`;
+    await loadStudents();
+  } catch(e) { res.className='result err'; res.textContent='❌ 오류: '+e.message; }
+};
+</script>
+</body>
+</html>
