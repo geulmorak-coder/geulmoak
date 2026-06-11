@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>글모락 국어연구소 · 신입생 안내</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Noto Sans KR',sans-serif;background:#f7f6f3;color:#1a1a1a;min-height:100vh;}
+.wrap{max-width:480px;margin:0 auto;padding:0 16px 48px;}
+.topbar{display:flex;align-items:center;gap:12px;padding:20px 0 16px;border-bottom:1px solid #e8e4de;margin-bottom:20px;}
+.logo{width:40px;height:40px;border-radius:50%;background:#7F77DD;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:700;color:#fff;flex-shrink:0;}
+.top-title{font-size:17px;font-weight:700;color:#1a1a1a;}
+.top-sub{font-size:12px;color:#888;margin-top:2px;}
+.prog-wrap{height:4px;background:#e8e4de;border-radius:2px;margin-bottom:24px;}
+.prog-bar{height:100%;background:#7F77DD;border-radius:2px;transition:width .4s ease;}
+.screen{display:none;}
+.screen.active{display:block;}
+h2{font-size:22px;font-weight:700;color:#1a1a1a;margin-bottom:8px;line-height:1.4;}
+.sub{font-size:14px;color:#666;margin-bottom:20px;line-height:1.7;}
+.card{background:#fff;border:1px solid #e8e4de;border-radius:16px;padding:16px 20px;margin-bottom:12px;}
+.card-title{font-size:14px;font-weight:700;color:#1a1a1a;margin-bottom:8px;}
+.badge{display:inline-block;font-size:11px;font-weight:500;padding:3px 10px;border-radius:20px;margin-bottom:10px;}
+.bp{background:#EEEDFE;color:#534AB7;}
+.bt{background:#E1F5EE;color:#0F6E56;}
+.ba{background:#FAEEDA;color:#854F0B;}
+.bc{background:#FAECE7;color:#993C1D;}
+.btn-p{width:100%;padding:15px;background:#7F77DD;color:#fff;border:none;border-radius:14px;font-size:16px;font-weight:700;cursor:pointer;margin-top:16px;font-family:'Noto Sans KR',sans-serif;transition:opacity .15s;}
+.btn-p:active{opacity:.85;}
+.btn-o{width:100%;padding:13px;background:#fff;color:#444;border:1px solid #ddd;border-radius:14px;font-size:14px;font-weight:500;cursor:pointer;margin-top:8px;font-family:'Noto Sans KR',sans-serif;}
+.input-group{margin-bottom:14px;}
+.input-label{font-size:13px;font-weight:500;color:#444;margin-bottom:6px;display:block;}
+input[type=text]{width:100%;padding:12px 14px;border:1px solid #e0ddd8;border-radius:10px;font-size:15px;font-family:'Noto Sans KR',sans-serif;background:#fff;color:#1a1a1a;outline:none;}
+input[type=text]:focus{border-color:#7F77DD;}
+select{width:100%;padding:12px 14px;border:1px solid #e0ddd8;border-radius:10px;font-size:15px;font-family:'Noto Sans KR',sans-serif;background:#fff;color:#1a1a1a;outline:none;-webkit-appearance:none;appearance:none;}
+select:focus{border-color:#7F77DD;}
+.checkbox-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.checkbox-item{display:flex;align-items:center;gap:8px;padding:10px 12px;background:#fff;border:1px solid #e0ddd8;border-radius:10px;cursor:pointer;font-size:13px;color:#444;transition:all .15s;}
+.checkbox-item.checked{border-color:#7F77DD;background:#EEEDFE;color:#534AB7;}
+.checkbox-item input{display:none;}
+.q-num{font-size:12px;color:#999;margin-bottom:10px;font-weight:500;}
+.q-opt{display:block;width:100%;text-align:left;padding:13px 16px;background:#fff;border:1px solid #e0ddd8;border-radius:12px;font-size:14px;color:#333;cursor:pointer;margin-bottom:8px;font-family:'Noto Sans KR',sans-serif;transition:all .15s;}
+.q-opt:hover{border-color:#AFA9EC;background:#f5f4ff;}
+.q-opt.sel{border-color:#7F77DD;background:#EEEDFE;color:#534AB7;font-weight:500;}
+.notice{background:#FFF8ED;border:1px solid #FFD88A;border-radius:12px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:flex-start;gap:10px;}
+.notice-dot{width:8px;height:8px;border-radius:50%;background:#F5A623;margin-top:5px;flex-shrink:0;}
+.notice-text{font-size:13px;color:#7A4F00;line-height:1.6;}
+.highlight{background:#EEEDFE;border-radius:14px;padding:14px 18px;margin-bottom:16px;}
+.hl-text{font-size:13px;color:#534AB7;line-height:2.2;}
+.result-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px;}
+.result-item{background:#fff;border:1px solid #e8e4de;border-radius:12px;padding:12px 14px;}
+.result-school{font-size:11px;color:#999;margin-bottom:4px;}
+.result-rank{font-size:14px;font-weight:700;color:#1a1a1a;}
+.review-card{background:#fff;border:1px solid #e8e4de;border-radius:16px;padding:16px 20px;margin-bottom:10px;}
+.review-header{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.avatar{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;}
+.review-name{font-size:13px;font-weight:700;color:#1a1a1a;}
+.review-meta{font-size:11px;color:#999;margin-top:2px;}
+.stars{color:#F5A623;font-size:12px;}
+.review-text{font-size:13px;color:#555;line-height:1.75;}
+.review-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;}
+.chip{font-size:11px;padding:3px 10px;border-radius:20px;background:#f0eff9;color:#534AB7;}
+.section-label{font-size:12px;font-weight:700;color:#999;letter-spacing:.5px;margin:20px 0 8px;text-transform:uppercase;}
+.tab-row{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-bottom:16px;}
+.tab-btn{padding:10px;font-size:13px;font-weight:500;background:#fff;color:#888;border:1px solid #e0ddd8;border-radius:10px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;transition:all .15s;}
+.tab-btn.on{background:#7F77DD;color:#fff;border-color:#7F77DD;}
+.tab-content{display:none;}
+.tab-content.on{display:block;}
+.row-item{font-size:13px;color:#666;line-height:2.2;}
+.fee-row{display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap;}
+.fee-pill{font-size:12px;font-weight:700;padding:4px 12px;border-radius:20px;background:#EEEDFE;color:#534AB7;}
+.fee-disc{font-size:11px;color:#999;}
+.class-card{background:#fff;border:1px solid #e8e4de;border-radius:14px;padding:14px 18px;margin-bottom:10px;}
+.class-card.rec{border:2px solid #7F77DD;}
+.class-name{font-size:15px;font-weight:700;color:#1a1a1a;margin-bottom:3px;}
+.class-time{font-size:12px;color:#999;margin-bottom:8px;}
+.class-desc{font-size:13px;color:#555;line-height:1.6;}
+.intensity-wrap{display:flex;align-items:center;gap:6px;margin-top:8px;}
+.dot-f{width:9px;height:9px;border-radius:50%;background:#7F77DD;}
+.dot-e{width:9px;height:9px;border-radius:50%;background:#e0ddd8;}
+.tag{display:inline-block;font-size:11px;padding:2px 8px;border-radius:20px;background:#f0eff9;color:#666;margin-right:4px;margin-top:6px;}
+.faq-section{margin-top:4px;}
+.faq-group{font-size:11px;font-weight:700;color:#7F77DD;padding:10px 0 4px;border-bottom:1px solid #EEEDFE;letter-spacing:.5px;}
+.faq-item{border-bottom:1px solid #f0eff0;padding:12px 0;}
+.faq-item:last-child{border-bottom:none;}
+.faq-q{font-size:13px;font-weight:500;color:#333;cursor:pointer;display:flex;justify-content:space-between;align-items:flex-start;gap:8px;line-height:1.5;}
+.faq-q span{color:#aaa;font-size:14px;flex-shrink:0;}
+.faq-a{font-size:13px;color:#666;line-height:1.75;margin-top:8px;display:none;padding-bottom:2px;}
+.faq-a.open{display:block;}
+.result-circle{width:80px;height:80px;border-radius:50%;background:#EEEDFE;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:36px;}
+.result-type{font-size:24px;font-weight:700;color:#1a1a1a;text-align:center;margin-bottom:8px;}
+.result-desc-text{font-size:14px;color:#666;text-align:center;line-height:1.7;margin-bottom:20px;}
+.contact-card{background:#fff;border:1px solid #e8e4de;border-radius:16px;padding:16px 20px;margin-bottom:12px;}
+.contact-item{display:flex;align-items:flex-start;gap:10px;font-size:13px;color:#555;margin-bottom:10px;line-height:1.5;}
+.contact-item:last-child{margin-bottom:0;}
+.contact-icon{width:20px;text-align:center;flex-shrink:0;color:#7F77DD;font-size:15px;}
+.my-result-box{background:linear-gradient(135deg,#7F77DD 0%,#AFA9EC 100%);border-radius:16px;padding:20px;margin-bottom:16px;color:#fff;}
+.my-result-title{font-size:14px;font-weight:700;margin-bottom:4px;opacity:.85;}
+.my-result-name{font-size:22px;font-weight:700;margin-bottom:2px;}
+.my-result-sub{font-size:13px;opacity:.8;}
+.clinic-tag{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;margin-right:4px;margin-bottom:6px;}
+.ct-e{background:#EEEDFE;color:#534AB7;}
+.ct-m{background:#E1F5EE;color:#0F6E56;}
+.ct-h{background:#FAECE7;color:#993C1D;}
+.complete-icon{width:64px;height:64px;border-radius:50%;background:#E1F5EE;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:28px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <div class="logo">글</div>
+    <div>
+      <div class="top-title">글모락 국어연구소</div>
+      <div class="top-sub">깊이 읽고 바르게 쓰는 공간</div>
+    </div>
+  </div>
+  <div class="prog-wrap"><div class="prog-bar" id="prog" style="width:0%"></div></div>
+
+  <!-- S0: 홈 -->
+  <div class="screen active" id="s0">
+    <div class="notice">
+      <div class="notice-dot"></div>
+      <div class="notice-text">6월 내신대비 진행 중 (~ 7월 10일) · 초6·중2·중3반 마감 임박!</div>
+    </div>
+    <h2>안녕하세요! 👋</h2>
+    <p class="sub">상담 전에 아이 성향을 미리 파악해드릴게요.<br>잠깐이면 딱 맞는 반을 찾아드릴 수 있어요.</p>
+    <div class="highlight">
+      <div class="hl-text">
+        📚 글모락 수업 미리보기<br>
+        ✏️ 성향 테스트<br>
+        ⭐ 맞춤 반 추천 + 수강료 안내
+      </div>
+    </div>
+    <div class="section-label">학생 실적</div>
+    <div class="result-grid">
+      <div class="result-item"><div class="result-school">신평중 2학년</div><div class="result-rank">전교 1등</div></div>
+      <div class="result-item"><div class="result-school">미강중 3학년</div><div class="result-rank">전교 1등</div></div>
+      <div class="result-item"><div class="result-school">미강중 2·3학년</div><div class="result-rank">전교권 유지</div></div>
+      <div class="result-item"><div class="result-school">윤슬중 2·3학년</div><div class="result-rank">전교권 유지</div></div>
+      <div class="result-item"><div class="result-school">중등 → 고1 모의고사</div><div class="result-rank">1등급 달성</div></div>
+      <div class="result-item"><div class="result-school">웩슬러 지능검사</div><div class="result-rank">영재 다수 재원</div></div>
+    </div>
+    <div class="section-label">학부모님들의 이야기</div>
+    <div class="review-card">
+      <div class="review-header">
+        <div class="avatar" style="background:#EEEDFE;color:#534AB7;">학</div>
+        <div><div class="review-name">학부모 S · 중2 자녀</div><div class="stars">★★★★★</div><div class="review-meta">네이버 블로그 후기</div></div>
+      </div>
+      <div class="review-text">"대형 학원의 커리큘럼 + 개인 학원의 디테일 + 원장님의 독기 어린 집요함이 매우 만족스러워요. 국어를 놓고 이렇게 마음이 편해도 되나 하는 호시절을 보내고 있어요."</div>
+      <div class="review-chips"><span class="chip">중2 국어 100점</span><span class="chip">지필 평균 99점대</span></div>
+    </div>
+    <div class="review-card">
+      <div class="review-header">
+        <div class="avatar" style="background:#E1F5EE;color:#0F6E56;">학</div>
+        <div><div class="review-name">학부모 H · 초등 자녀</div><div class="stars">★★★★★</div></div>
+      </div>
+      <div class="review-text">"수업 끝나고 난 뒤엔 뭔가 배움이 충족되어서 그런지 얼굴이 아주 밝아요! 앞으로도 변화될 아이가 더욱 기대됩니다."</div>
+      <div class="review-chips"><span class="chip">독서평설 정기구독 시작</span><span class="chip">수업 후 표정이 달라짐</span></div>
+    </div>
+    <div class="review-card">
+      <div class="review-header">
+        <div class="avatar" style="background:#FAECE7;color:#993C1D;">학</div>
+        <div><div class="review-name">학부모 W · 초등 자녀</div><div class="stars">★★★★★</div></div>
+      </div>
+      <div class="review-text">"아이의 글에 보이는 단점을 정확하게 파악하시네요. 무조건 똑같이 수정하지 않아서 더 좋은 것 같아요."</div>
+      <div class="review-chips"><span class="chip">1:1 첨삭 피드백</span><span class="chip">아이 주도 글쓰기</span></div>
+    </div>
+    <div class="review-card">
+      <div class="review-header">
+        <div class="avatar" style="background:#FAEEDA;color:#854F0B;">학</div>
+        <div><div class="review-name">학부모 Y · 중3 자녀</div><div class="stars">★★★★★</div></div>
+      </div>
+      <div class="review-text">"좀 더 일찍 글모락을 알았다면 문법과 고전도 탄탄히 했을 텐데. 정말 좋은 프로그램이네요. H의 국어 수업으로 대화 주제가 다양해지고 있어요."</div>
+      <div class="review-chips"><span class="chip">미사중 3학년</span><span class="chip">대화가 풍부해짐</span></div>
+    </div>
+    <button class="btn-p" onclick="go(1)">시작하기 →</button>
+  </div>
+
+  <!-- S1: 자녀 정보 입력 -->
+  <div class="screen" id="s1">
+    <h2>자녀 정보를 입력해주세요</h2>
+    <p class="sub">상담 시 더 정확한 안내를 드릴 수 있어요.</p>
+    <div class="input-group">
+      <label class="input-label">자녀 이름 (닉네임도 OK)</label>
+      <input type="text" id="childName" placeholder="예: 김○○">
+    </div>
+    <div class="input-group">
+      <label class="input-label">학교</label>
+      <input type="text" id="childSchool" placeholder="예: 미강중학교">
+    </div>
+    <div class="input-group">
+      <label class="input-label">학년</label>
+      <select id="childGrade">
+        <option value="">선택해주세요</option>
+        <option value="초등 1학년">초등 1학년</option>
+        <option value="초등 2학년">초등 2학년</option>
+        <option value="초등 3학년">초등 3학년</option>
+        <option value="초등 4학년">초등 4학년</option>
+        <option value="초등 5학년">초등 5학년</option>
+        <option value="초등 6학년">초등 6학년</option>
+        <option value="중학교 1학년">중학교 1학년</option>
+        <option value="중학교 2학년">중학교 2학년</option>
+        <option value="중학교 3학년">중학교 3학년</option>
+        <option value="고등학교 1학년">고등학교 1학년</option>
+        <option value="고등학교 2학년">고등학교 2학년</option>
+        <option value="고등학교 3학년">고등학교 3학년</option>
+      </select>
+    </div>
+    <div class="input-group">
+      <label class="input-label">국어에서 가장 고치고 싶은 점 (여러 개 선택 가능)</label>
+      <div class="checkbox-grid" id="concernGrid">
+        <label class="checkbox-item" onclick="toggleCheck(this)"><input type="checkbox" value="글쓰기가 막막해요">글쓰기가 막막해요</label>
+        <label class="checkbox-item" onclick="toggleCheck(this)"><input type="checkbox" value="독해가 어려워요">독해가 어려워요</label>
+        <label class="checkbox-item" onclick="toggleCheck(this)"><input type="checkbox" value="어휘·문법이 부족해요">어휘·문법이 부족해요</label>
+        <label class="checkbox-item" onclick="toggleCheck(this)"><input type="checkbox" value="내신 성적을 올리고 싶어요">내신 성적 올리기</label>
+        <label class="checkbox-item" onclick="toggleCheck(this)"><input type="checkbox" value="수능 국어가 걱정돼요">수능 국어 대비</label>
+        <label class="checkbox-item" onclick="toggleCheck(this)"><input type="checkbox" value="논술·수행평가 준비">논술·수행평가</label>
+        <label class="checkbox-item" onclick="toggleCheck(this)"><input type="checkbox" value="독서 습관을 만들고 싶어요">독서 습관 만들기</label>
+        <label class="checkbox-item" onclick="toggleCheck(this)"><input type="checkbox" value="자신감이 부족해요">자신감이 부족해요</label>
+      </div>
+    </div>
+    <button class="btn-p" onclick="submitInfo()">다음 →</button>
+  </div>
+
+  <!-- S2: 수업 미리보기 -->
+  <div class="screen" id="s2">
+    <h2>글모락 수업 미리보기</h2>
+    <p class="sub">칸만 채우는 글쓰기는 글모락엔 없어요.</p>
+    <div class="tab-row">
+      <button class="tab-btn on" onclick="switchTab('tc')">창의 글쓰기</button>
+      <button class="tab-btn" onclick="switchTab('tr')">독서논술</button>
+      <button class="tab-btn" onclick="switchTab('tm')">성적 관리</button>
+      <button class="tab-btn" onclick="switchTab('tcl')">클리닉</button>
+    </div>
+    <div id="tc" class="tab-content on">
+      <div class="card"><span class="badge bp">초등 1–2학년</span><div class="card-title">동화·동시 놀이터반</div><div style="font-size:13px;color:#666;line-height:1.7;">그림책 읽기, 동시 짓기, 동요 노랫말 만들기. 글쓰기와 처음 친해지는 시간이에요.</div><div class="fee-row"><span class="fee-pill">월 12만원</span><span class="fee-disc">형제 할인 시 114,000원</span></div></div>
+      <div class="card"><span class="badge bp">초등 3–4학년</span><div class="card-title">상상 발전소반</div><div style="font-size:13px;color:#666;line-height:1.7;">동화 작가가 되어 결말 바꿔보기! 기발한 상상력을 탄탄한 문장으로 엮는 스토리텔링 수업.</div><div class="fee-row"><span class="fee-pill">월 14만원</span><span class="fee-disc">형제 할인 시 133,000원</span></div></div>
+      <div class="card"><span class="badge bp">초등 5–6학년</span><div class="card-title">주니어 작가 스튜디오반</div><div style="font-size:13px;color:#666;line-height:1.7;">단편소설·에세이·시사 비평까지. 하반기 정식 작품집 출판 예정!</div><div class="fee-row"><span class="fee-pill">월 16만원</span><span class="fee-disc">형제 할인 시 152,000원</span></div></div>
+      <div class="card" style="background:#f7f6f3;border:none;"><div class="row-item">🎁 토요반 수강생 주중 무상 클리닉<br>📖 하반기 연합 작품집 정식 출판<br>👥 반별 정원 6명 소수정예</div></div>
+    </div>
+    <div id="tr" class="tab-content">
+      <div class="card"><div class="card-title">상위권을 위한 독서논술</div><div style="font-size:13px;color:#666;line-height:1.7;margin-bottom:10px;">책과 영화 덕후라면 딱! 매월 테마 집중 탐구로 배경지식과 문해력을 동시에 키워요.</div><div class="row-item">📅 1주 세계문학 / 2주 한국문학<br>📅 3주 비문학 / 4주 영화 비평<br>💡 정답보다 중요한 생각하는 힘<br>📈 학력평가 지문 분석으로 독해 완성</div></div>
+      <div class="card"><div class="card-title">한 회 수업 (1분도 허투루 없어요)</div><div class="row-item">⏱ 주간 테스트 30분 (단어·고사성어·문해력)<br>📊 해설·판서 30분 (PPT 논리 추론)<br>✍️ 독서논술 70분 (배경지식·문해력)<br>📝 1:1 글쓰기 첨삭 + 국어 문법</div></div>
+      <div class="card"><div class="card-title">수강료</div><div class="fee-row" style="flex-direction:column;align-items:flex-start;gap:8px;"><div style="display:flex;align-items:center;gap:8px;"><span class="fee-pill">라이트반 월 10만원</span><span class="fee-disc">형제 할인 95,000원</span></div><div style="display:flex;align-items:center;gap:8px;"><span class="fee-pill">초등 정규 월 22만원</span><span class="fee-disc">형제 할인 209,000원</span></div><div style="display:flex;align-items:center;gap:8px;"><span class="fee-pill">중등 정규 월 27만원</span><span class="fee-disc">형제 할인 256,500원</span></div><div style="display:flex;align-items:center;gap:8px;"><span class="fee-pill">고등 월 32만원</span><span class="fee-disc">별도 문의</span></div></div></div>
+    </div>
+    <div id="tm" class="tab-content">
+      <div class="card"><div class="card-title">매월 전국연합학력평가</div><div class="row-item">⏱ 80분 실전 시험 + OMR 마킹<br>📊 객관적 성적 분석 및 평가<br>🗺 고등 입시 전략·대학 진학 컨설팅</div></div>
+      <div class="card"><div class="card-title">초등 정기평가 (2달 1회)</div><div class="row-item">📝 중학교 수준 출제로 실력 점검<br>📈 점수·등급 객관적 분석<br>🏆 월말평가 리더보드 운영</div></div>
+      <div class="card"><div class="card-title">학교 시험 완벽 대비</div><div class="row-item">✏️ 내신 서술형 완벽 대비<br>📄 자체 제작 모의고사 제공<br>📅 시험 3주 전부터 학교별 밀착 대비</div></div>
+      <div class="card"><div class="card-title">고등부 특별 관리</div><div class="row-item">🗺 1:1 맞춤 입시 로드맵<br>▶️ 유튜브 무료 모의고사 해설 강의<br>✍️ 매월 4주차 입시 논술 특강<br>💡 LEET·PSAT까지 이어지는 사고력</div></div>
+    </div>
+    <div id="tcl" class="tab-content">
+      <div class="card"><div class="card-title">목·금 클리닉</div><div class="row-item">🕕 목 18:30–20:30<br>🕕 금 15:00–17:30 / 18:30–20:30<br>⚙️ 30분–최대 2시간 선택 참여<br>🚪 주말 등원 자습·질의응답 가능</div></div>
+      <div class="card"><span class="clinic-tag ct-e">초등</span><div class="card-title" style="margin-top:6px;">초등 클리닉</div><div class="row-item">📖 독서 기록장 작성<br>🏆 백일장·공모전 원고 집중 첨삭<br>✏️ 수행평가·학교 숙제 완벽 관리</div></div>
+      <div class="card"><span class="clinic-tag ct-m">중등</span><div class="card-title" style="margin-top:6px;">중등 클리닉</div><div class="row-item">📄 어휘·맞춤법 문해력 보충<br>🏫 내신 서술형·수행평가 집중 관리<br>📈 학력평가 오답 분석</div></div>
+      <div class="card"><span class="clinic-tag ct-h">고등</span><div class="card-title" style="margin-top:6px;">고등 클리닉</div><div class="row-item">✍️ 수능·모의고사 오답 집중 분석<br>✏️ 논술 첨삭 및 입시 논술 대비<br>▶️ 유튜브 해설 강의 복습 지도</div></div>
+      <div class="card" style="background:#f0eff9;border:none;"><div style="font-size:13px;color:#534AB7;">토요 창의반 수강생은 클리닉 무료 제공이에요.</div></div>
+    </div>
+    <button class="btn-p" style="margin-top:16px;" onclick="go(3)">성향 테스트 시작 →</button>
+  </div>
+
+  <!-- S3: 성향 테스트 -->
+  <div class="screen" id="s3">
+    <div id="qarea"></div>
+    <button class="btn-o" id="prevbtn" style="display:none;" onclick="prevQ()">← 이전</button>
+  </div>
+
+  <!-- S4: 결과 -->
+  <div class="screen" id="s4">
+    <div id="myResultBox" class="my-result-box"></div>
+    <div class="result-circle" id="resIcon"></div>
+    <div class="result-type" id="resType"></div>
+    <div class="result-desc-text" id="resDesc"></div>
+    <div class="section-label">추천 반</div>
+    <div id="recCards"></div>
+    <div class="section-label">다른 반도 살펴보기</div>
+    <div id="allCards"></div>
+    <button class="btn-p" onclick="go(5)">상담 안내 보기 →</button>
+    <button class="btn-o" onclick="go(3)">테스트 다시 하기</button>
+  </div>
+
+  <!-- S5: 상담 안내 + FAQ -->
+  <div class="screen" id="s5">
+    <div class="complete-icon">✅</div>
+    <h2 style="text-align:center;">준비 완료!</h2>
+    <p class="sub" style="text-align:center;">선생님이 상담 때 더 자세히 안내해드릴게요.</p>
+    <div class="contact-card">
+      <div class="card-title">문의 및 방문 안내</div>
+      <div style="margin-top:10px;">
+        <div class="contact-item"><span class="contact-icon">📞</span><span>031-792-2171 / 010-7364-2171</span></div>
+        <div class="contact-item"><span class="contact-icon">💬</span><span>수업 중엔 문자로 남겨주세요</span></div>
+        <div class="contact-item"><span class="contact-icon">📍</span><span>하남시 미사강변대로 80, 303호</span></div>
+      </div>
+    </div>
+    <div class="contact-card" style="border-color:#AFA9EC;">
+      <div class="card-title">고등부 수업 예약</div>
+      <div style="font-size:13px;color:#666;margin-top:6px;margin-bottom:10px;">고등부 상담 및 수업 예약은 별도로 연락 주세요.</div>
+      <div class="contact-item"><span class="contact-icon">💬</span><span>010-7364-2171 문자 문의</span></div>
+    </div>
+    <div class="contact-card">
+      <div class="card-title">문자 상담 양식</div>
+      <div style="font-size:13px;color:#666;margin-top:8px;line-height:2.1;">학생 성함 / 학교 / 학년<br>현재 국어 고민<br>상담 가능한 시간대</div>
+    </div>
+    <div class="section-label">자주 묻는 질문</div>
+    <div class="card faq-section">
+      <div class="faq-group">커리큘럼 & 교재</div>
+      <div class="faq-item"><div class="faq-q" onclick="tf(this)">교재는 어떤 걸 쓰나요? <span>﹀</span></div><div class="faq-a">독서논술은 학원 자체 제작 교재를 사용해요. 문법 등 세부 분야는 전문 교재로 진행하며, 방학 특강 때만 시중 교재를 병행해요.</div></div>
+      <div class="faq-item"><div class="faq-q" onclick="tf(this)">독서·논술 수업은 어떻게 진행되나요? <span>﹀</span></div><div class="faq-a">주 1회 수업 중 약 70분간 독서논술을 진행해요. 1주 세계문학, 2주 한국문학, 3주 비문학, 4주 영화 비평으로 구성돼요.</div></div>
+      <div class="faq-item"><div class="faq-q" onclick="tf(this)">왜 중등 때부터 시작해야 하나요? <span>﹀</span></div><div class="faq-a">고등학교에 가서 갑자기 물을 부어봤자 다 튕겨 나가요. 중학생 때부터 사고의 그릇 자체를 키워야 해요.</div></div>
+      <div class="faq-item"><div class="faq-q" onclick="tf(this)">수능과는 어떻게 연계되나요? <span>﹀</span></div><div class="faq-a">화법·작문, 언어·매체, 문학, 독서(비문학) 전 영역을 아우르고 매월 정기 모의고사로 실전 감각을 키워요. 논술 학원이 따로 필요 없는 올인원 국어예요.</div></div>
+      <div class="faq-group" style="margin-top:8px;">강사 & 수업 방식</div>
+      <div class="faq-item"><div class="faq-q" onclick="tf(this)">학생 관리는 누가 하나요? <span>﹀</span></div><div class="faq-a">원장이 직접 담임을 맡아 수업부터 과제 체크, 상담까지 모두 책임져요. 매주 수업 리뷰를 문자로 브리핑해 드려요.</div></div>
+      <div class="faq-item"><div class="faq-q" onclick="tf(this)">수업 분위기는 어떤가요? <span>﹀</span></div><div class="faq-a">핵심 개념은 명쾌한 판서로, 독서토론과 수행평가 발표는 아이들이 직접 참여하는 능동적인 방식으로 진행돼요.</div></div>
+      <div class="faq-group" style="margin-top:8px;">성적 관리 & 테스트</div>
+      <div class="faq-item"><div class="faq-q" onclick="tf(this)">반 배정 기준은 무엇인가요? <span>﹀</span></div><div class="faq-a">최상위권 목표를 가진 모범적인 학생들이 함께하고 있어요. 학습 태도와 기초 역량을 확인 후 배정해요. 현재 초6·중2·중3반은 마감 임박!</div></div>
+      <div class="faq-item"><div class="faq-q" onclick="tf(this)">테스트 미통과 시 조치가 있나요? <span>﹀</span></div><div class="faq-a">단어나 고사성어 미통과 시 남아서 3번씩 써야 해요. 남기 싫어서라도 완벽하게 외워오는 습관이 자연스럽게 잡혀요.</div></div>
+      <div class="faq-group" style="margin-top:8px;">학원 운영 & 정책</div>
+      <div class="faq-item"><div class="faq-q" onclick="tf(this)">한 반 정원은 몇 명인가요? <span>﹀</span></div><div class="faq-a">정규반은 최대 20명이에요. 고등부는 소규모 과외 형태로 별도 문의 주세요.</div></div>
+      <div class="faq-item"><div class="faq-q" onclick="tf(this)">결석하면 수강료 처리는요? <span>﹀</span></div><div class="faq-a">개인 사정은 미리 말씀해 주시면 다음 달 수강료에서 차감해드려요. 아플 경우 진료확인서 제출 시 동일하게 처리돼요. (무단결석 차감 불가)</div></div>
+      <div class="faq-item"><div class="faq-q" onclick="tf(this)">형제·자매 할인이 있나요? <span>﹀</span></div><div class="faq-a">모든 반에 형제·자매 5% 할인이 적용돼요. 기존 주중·주말 수강생과 연계도 가능해요.</div></div>
+      <div class="faq-item"><div class="faq-q" onclick="tf(this)">휴대폰 관리는 어떻게 하나요? <span>﹀</span></div><div class="faq-a">등원 즉시 수거하고, 오직 학습에만 몰입할 수 있는 환경을 만들어요.</div></div>
+    </div>
+    <button class="btn-o" onclick="restart()" style="margin-top:8px;">처음으로 돌아가기</button>
+  </div>
+</div>
+
+<script>
+const STORAGE_KEY = 'geulmoak_responses';
+
+const questions=[
+  {q:"이전에 국어 학원을 다닌 적 있나요?",opts:["처음이에요 (학원 경험 없음)","독학으로 혼자 공부했어요","다른 국어 학원 다닌 적 있어요","과외를 받은 적 있어요"],key:"exp"},
+  {q:"글쓰기에 대해 어떻게 생각하나요?",opts:["좋아해요, 쓰는 게 즐거워요","싫지는 않은데 잘 모르겠어요","별로 안 좋아해요","써본 적이 거의 없어요"],key:"writing"},
+  {q:"어떤 방향의 국어 공부를 원하나요?",opts:["글쓰기·창작 위주로 즐겁게","독해·논술까지 체계적으로","문법·어휘 기초부터 탄탄하게","수능·내신 실전 대비 집중적으로"],key:"goal"},
+  {q:"숙제나 과제는 어느 정도가 좋나요?",opts:["거의 없으면 좋겠어요","주 1–2회 정도는 괜찮아요","매일 조금씩 꾸준히 할 수 있어요","많아도 OK, 빠르게 늘고 싶어요"],key:"hw"},
+  {q:"학년이 어떻게 되나요?",opts:["초등 1–2학년","초등 3–4학년","초등 5–6학년","중학교 이상"],key:"grade"},
+  {q:"원하는 수업 요일은?",opts:["평일 (금요일 포함)","토요일","일요일","상관없어요"],key:"day"}
+];
+
+const classes=[
+  {id:"d1",name:"동화·동시 놀이터반",time:"토 10:00–11:30",intensity:1,tags:["초등 1–2학년","창의글쓰기"],goal:[0],grade:[0],day_idx:[1,3],fee:"월 12만원",disc:"형제 할인 114,000원",desc:"그림책 읽기, 동시 짓기, 동요 노랫말 만들기. 글쓰기와 처음 친해지는 반이에요."},
+  {id:"d2",name:"상상 발전소반",time:"토 13:00–15:00",intensity:2,tags:["초등 3–4학년","창의글쓰기"],goal:[0,1],grade:[1],day_idx:[1,3],fee:"월 14만원",disc:"형제 할인 133,000원",desc:"동화 작가가 되어 결말 바꿔보기! 상상력을 탄탄한 문장으로 엮는 스토리텔링 수업."},
+  {id:"d3",name:"주니어 작가 스튜디오반",time:"토 15:30–17:30",intensity:3,tags:["초등 5–6학년","창의글쓰기"],goal:[0,1],grade:[2],day_idx:[1,3],fee:"월 16만원",disc:"형제 할인 152,000원",desc:"단편소설·에세이·시사 비평까지. 하반기 정식 출판을 목표로 하는 진짜 작가들의 공간."},
+  {id:"light1",name:"라이트반 15:00",time:"금 15:00",intensity:1,tags:["초중등","독해·작문"],goal:[0,1],grade:[0,1,2,3],day_idx:[0,3],fee:"월 10만원",disc:"형제 할인 95,000원",desc:"부담 없이 시작하는 독해·글쓰기 입문반. 읽고 쓰는 습관을 자연스럽게 길러요."},
+  {id:"light2",name:"라이트반 18:30",time:"금 18:30",intensity:1,tags:["초중등","독해·작문"],goal:[0,1],grade:[0,1,2,3],day_idx:[0,3],fee:"월 10만원",disc:"형제 할인 95,000원",desc:"저녁 시간대 라이트반. 학교 수업 후 부담 없이 참여할 수 있어요."},
+  {id:"dalm",name:"달무리반",time:"토 10:00",intensity:2,tags:["초등","독해·논술"],goal:[1,2],grade:[1,2],day_idx:[1,3],fee:"월 22만원",disc:"형제 할인 209,000원",desc:"독해력과 논리적 사고를 함께 키우는 반."},
+  {id:"star",name:"별빛반",time:"토 14:00",intensity:2,tags:["초등","독해·작문"],goal:[1,2],grade:[1,2],day_idx:[1,3],fee:"월 22만원",disc:"형제 할인 209,000원",desc:"체계적인 글쓰기와 독해를 함께 배우는 반."},
+  {id:"yeo",name:"여울반",time:"일 12:00",intensity:2,tags:["초등","창의글쓰기"],goal:[0,1],grade:[0,1,2],day_idx:[2,3],fee:"월 22만원",disc:"형제 할인 209,000원",desc:"자유로운 창의 글쓰기 중심. 다양한 장르로 표현력을 키워요."},
+  {id:"sol",name:"솔빛반",time:"일 15:30",intensity:3,tags:["중등","독해·논술"],goal:[1,2],grade:[3],day_idx:[2,3],fee:"월 27만원",disc:"형제 할인 256,500원",desc:"중등 독해·논술 심화반. 긴 지문 분석과 논리적 글쓰기를 집중 훈련해요."},
+  {id:"grape",name:"포도반",time:"일 19:00",intensity:3,tags:["중등","논술"],goal:[1,3],grade:[3],day_idx:[2,3],fee:"월 27만원",disc:"형제 할인 256,500원",desc:"중등 논술 심화반. 실전 문제와 비문학 지문을 집중 분석해요."},
+  {id:"g3",name:"고3 미사고 내신반",time:"수 18:00",intensity:4,tags:["고등","내신·수능"],goal:[3],grade:[3],day_idx:[0,3],fee:"월 32만원",disc:"별도 문의",desc:"고3 수능·내신 집중반. 학교별 맞춤 작품 분석, 문제 풀이, 오답 관리."}
+];
+
+const types=[
+  {name:"자유로운 표현가",icon:"✏️",desc:"글 쓰는 게 즐겁고 창의적인 표현을 좋아하는 타입이에요. 동화·동시·에세이로 나만의 글쓰기 세계를 만들어 가요."},
+  {name:"차근차근 탐구자",icon:"📖",desc:"꼼꼼하게 읽고 논리적으로 정리하는 걸 좋아하는 타입이에요. 체계적인 독해·논술 수업이 잘 맞아요."},
+  {name:"실전형 승부사",icon:"🎯",desc:"목표가 뚜렷하고 빠르게 실력을 올리고 싶은 타입이에요. 강도 높은 수업으로 확실한 결과를 만들어요."},
+  {name:"기초부터 탄탄형",icon:"🌱",desc:"어휘·문법 기초부터 차근차근 쌓아가는 타입이에요. 읽기·쓰기의 뿌리를 튼튼하게 만들어요."}
+];
+
+let cur=0,ans={},curScreen=0,childInfo={};
+
+function prog(n){document.getElementById('prog').style.width=(n/5*100)+'%';}
+
+function toggleCheck(el){el.classList.toggle('checked');}
+
+function submitInfo(){
+  const name=document.getElementById('childName').value.trim();
+  const school=document.getElementById('childSchool').value.trim();
+  const grade=document.getElementById('childGrade').value;
+  if(!name||!school||!grade){alert('이름, 학교, 학년을 모두 입력해주세요!');return;}
+  const concerns=Array.from(document.querySelectorAll('#concernGrid .checked input')).map(i=>i.value);
+  childInfo={name,school,grade,concerns,time:new Date().toLocaleString('ko-KR')};
+  go(2);
+}
+
+function switchTab(id){
+  ['tc','tr','tm','tcl'].forEach(tid=>{
+    document.getElementById(tid).classList.toggle('on',tid===id);
+  });
+  document.querySelectorAll('.tab-btn').forEach(b=>{
+    b.classList.toggle('on',b.getAttribute('onclick').includes("'"+id+"'"));
+  });
+}
+
+function go(n){
+  document.getElementById('s'+curScreen).classList.remove('active');
+  curScreen=n;
+  document.getElementById('s'+curScreen).classList.add('active');
+  prog(n);
+  window.scrollTo(0,0);
+  if(n===3){cur=0;ans={};renderQ();}
+  if(n===4)renderResult();
+}
+
+function renderQ(){
+  const q=questions[cur];
+  document.getElementById('qarea').innerHTML=`
+    <h2 style="margin-bottom:6px;">성향 체크</h2>
+    <p class="q-num" style="margin-bottom:16px;">질문 ${cur+1} / ${questions.length}</p>
+    <div style="background:#e8e4de;border-radius:4px;height:4px;margin-bottom:20px;"><div style="height:100%;background:#7F77DD;border-radius:4px;width:${((cur)/questions.length*100)}%;transition:width .3s;"></div></div>
+    <p style="font-size:17px;font-weight:700;color:#1a1a1a;margin-bottom:16px;line-height:1.5;">${q.q}</p>
+    ${q.opts.map((o,i)=>`<button class="q-opt" onclick="pickQ('${q.key}',${i})">${o}</button>`).join('')}
+  `;
+  document.getElementById('prevbtn').style.display=cur>0?'block':'none';
+}
+
+function pickQ(key,i){
+  ans[key]=i;
+  if(cur<questions.length-1){cur++;renderQ();}else go(4);
+}
+
+function prevQ(){if(cur>0){cur--;renderQ();}}
+
+function renderResult(){
+  const goal=ans.goal||0,grade=ans.grade||0,day=ans.day||3;
+  const typeIdx=goal===3?2:goal===2?3:goal===1?1:0;
+  const t=types[typeIdx];
+
+  document.getElementById('myResultBox').innerHTML=`
+    <div class="my-result-title">${childInfo.name}님의 결과</div>
+    <div class="my-result-name">${t.icon} ${t.name}</div>
+    <div class="my-result-sub">${childInfo.school} · ${childInfo.grade}</div>
+  `;
+  document.getElementById('resIcon').textContent=t.icon;
+  document.getElementById('resType').textContent=t.name;
+  document.getElementById('resDesc').textContent=t.desc;
+
+  const filtered=classes.filter(c=>(c.grade.includes(grade)||c.grade.includes(3))&&c.goal.includes(goal)&&(c.day_idx.includes(day)||day===3));
+  const recs=filtered.slice(0,2);
+  const recIds=new Set(recs.map(c=>c.id));
+
+  function classCard(c,isRec){
+    const dots=[1,2,3,4].map(i=>`<div class="${i<=c.intensity?'dot-f':'dot-e'}"></div>`).join('');
+    return `<div class="class-card${isRec?' rec':''}">
+      ${isRec?'<span class="badge bp" style="margin-bottom:8px;">추천</span>':''}
+      <div class="class-name">${c.name}</div>
+      <div class="class-time">🕐 ${c.time}</div>
+      <div class="class-desc">${c.desc}</div>
+      <div class="intensity-wrap"><span style="font-size:11px;color:#999;">강도</span><div style="display:flex;gap:4px;">${dots}</div></div>
+      <div class="fee-row"><span class="fee-pill">${c.fee}</span><span class="fee-disc">${c.disc}</span></div>
+      <div>${c.tags.map(tag=>`<span class="tag">${tag}</span>`).join('')}</div>
+    </div>`;
+  }
+
+  document.getElementById('recCards').innerHTML=recs.length>0?recs.map(c=>classCard(c,true)).join(''):'<div class="card"><div style="font-size:13px;color:#666;">조건에 맞는 반은 상담 시 안내드릴게요.</div></div>';
+  document.getElementById('allCards').innerHTML=classes.filter(c=>!recIds.has(c.id)).map(c=>classCard(c,false)).join('');
+
+  // localStorage에 저장
+  const typeIdx2=goal===3?2:goal===2?3:goal===1?1:0;
+  const recList=recs.map(c=>c.name).join(', ')||'상담 필요';
+  const record={
+    id: Date.now(),
+    time: childInfo.time||new Date().toLocaleString('ko-KR'),
+    name: childInfo.name,
+    school: childInfo.school,
+    grade: childInfo.grade,
+    concerns: childInfo.concerns||[],
+    type: types[typeIdx2].name,
+    typeIcon: types[typeIdx2].icon,
+    answers:{
+      exp: questions[0].opts[ans.exp||0],
+      writing: questions[1].opts[ans.writing||0],
+      goal: questions[2].opts[ans.goal||0],
+      hw: questions[3].opts[ans.hw||0],
+      gradeQ: questions[4].opts[ans.grade||0],
+      day: questions[5].opts[ans.day||0]
+    },
+    recommended: recList
+  };
+  try{
+    const existing=JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]');
+    existing.push(record);
+    localStorage.setItem(STORAGE_KEY,JSON.stringify(existing));
+  }catch(e){}
+}
+
+function tf(el){el.nextElementSibling.classList.toggle('open');}
+function restart(){childInfo={};ans={};cur=0;go(0);}
+prog(0);
+</script>
+</body>
+</html>
