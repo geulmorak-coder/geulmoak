@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>글모락 · 선생님 대시보드</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Noto Sans KR',sans-serif;background:#f0eff9;color:#1a1a1a;min-height:100vh;}
+
+/* 잠금 화면 */
+#lockScreen{position:fixed;inset:0;background:#f0eff9;display:flex;align-items:center;justify-content:center;z-index:999;}
+.lock-box{background:#fff;border-radius:20px;padding:40px 32px;width:340px;text-align:center;box-shadow:0 4px 24px rgba(127,119,221,.15);}
+.lock-logo{width:56px;height:56px;border-radius:50%;background:#7F77DD;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;color:#fff;margin:0 auto 16px;}
+.lock-title{font-size:20px;font-weight:700;margin-bottom:6px;}
+.lock-sub{font-size:13px;color:#888;margin-bottom:24px;}
+.lock-input{width:100%;padding:14px;border:1.5px solid #e0ddd8;border-radius:12px;font-size:16px;font-family:'Noto Sans KR',sans-serif;text-align:center;letter-spacing:4px;outline:none;margin-bottom:12px;}
+.lock-input:focus{border-color:#7F77DD;}
+.lock-btn{width:100%;padding:14px;background:#7F77DD;color:#fff;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;}
+.lock-err{font-size:13px;color:#E24B4A;margin-top:8px;display:none;}
+
+/* 대시보드 */
+#dashboard{display:none;}
+.topbar{background:#fff;border-bottom:1px solid #e8e4de;padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:60px;position:sticky;top:0;z-index:100;}
+.top-left{display:flex;align-items:center;gap:12px;}
+.logo{width:36px;height:36px;border-radius:50%;background:#7F77DD;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:#fff;}
+.top-title{font-size:16px;font-weight:700;}
+.top-sub{font-size:12px;color:#888;}
+.logout-btn{font-size:13px;color:#999;background:none;border:1px solid #e0ddd8;border-radius:8px;padding:6px 14px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;}
+.main{max-width:1100px;margin:0 auto;padding:24px 20px;}
+
+/* 통계 카드 */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px;}
+.stat-card{background:#fff;border-radius:14px;padding:16px 20px;}
+.stat-label{font-size:12px;color:#999;margin-bottom:6px;font-weight:500;}
+.stat-value{font-size:28px;font-weight:700;color:#1a1a1a;}
+.stat-sub{font-size:12px;color:#7F77DD;margin-top:4px;}
+
+/* 필터/검색 */
+.toolbar{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap;}
+.search-input{flex:1;min-width:180px;padding:10px 14px;border:1px solid #e0ddd8;border-radius:10px;font-size:14px;font-family:'Noto Sans KR',sans-serif;outline:none;}
+.search-input:focus{border-color:#7F77DD;}
+.filter-select{padding:10px 14px;border:1px solid #e0ddd8;border-radius:10px;font-size:13px;font-family:'Noto Sans KR',sans-serif;background:#fff;outline:none;color:#444;}
+.export-btn{padding:10px 18px;background:#7F77DD;color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;white-space:nowrap;}
+.clear-btn{padding:10px 14px;background:#fff;color:#E24B4A;border:1px solid #f0c0c0;border-radius:10px;font-size:13px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;}
+
+/* 차트 영역 */
+.charts-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;}
+.chart-card{background:#fff;border-radius:14px;padding:20px;}
+.chart-title{font-size:14px;font-weight:700;margin-bottom:16px;color:#333;}
+.bar-item{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.bar-label{font-size:12px;color:#555;width:110px;flex-shrink:0;line-height:1.4;}
+.bar-wrap{flex:1;height:18px;background:#f0eff9;border-radius:9px;overflow:hidden;}
+.bar-fill{height:100%;background:#7F77DD;border-radius:9px;transition:width .5s ease;}
+.bar-count{font-size:12px;color:#888;width:24px;text-align:right;flex-shrink:0;}
+.concern-item{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.concern-label{font-size:12px;color:#555;flex:1;}
+.concern-bar-wrap{width:120px;height:14px;background:#f0eff9;border-radius:7px;overflow:hidden;}
+.concern-fill{height:100%;background:#AFA9EC;border-radius:7px;}
+.concern-count{font-size:12px;color:#888;width:20px;text-align:right;}
+
+/* 테이블 */
+.table-card{background:#fff;border-radius:14px;overflow:hidden;margin-bottom:16px;}
+.table-header{padding:16px 20px;border-bottom:1px solid #f0eff0;display:flex;align-items:center;justify-content:space-between;}
+.table-title{font-size:14px;font-weight:700;color:#333;}
+.count-badge{font-size:12px;font-weight:700;padding:3px 10px;border-radius:20px;background:#EEEDFE;color:#534AB7;}
+table{width:100%;border-collapse:collapse;}
+thead th{font-size:12px;font-weight:700;color:#999;padding:10px 16px;text-align:left;background:#f9f8ff;border-bottom:1px solid #f0eff0;}
+tbody tr{border-bottom:1px solid #f9f8f9;transition:background .1s;}
+tbody tr:hover{background:#f9f8ff;}
+tbody tr:last-child{border-bottom:none;}
+td{font-size:13px;color:#444;padding:12px 16px;vertical-align:top;}
+.type-pill{display:inline-block;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;}
+.tp-0{background:#EEEDFE;color:#534AB7;}
+.tp-1{background:#E1F5EE;color:#0F6E56;}
+.tp-2{background:#FAECE7;color:#993C1D;}
+.tp-3{background:#EAF3DE;color:#3B6D11;}
+.concern-tag{display:inline-block;font-size:11px;padding:2px 7px;border-radius:12px;background:#f0eff9;color:#666;margin:2px 2px 2px 0;}
+.detail-btn{font-size:12px;color:#7F77DD;background:none;border:1px solid #AFA9EC;border-radius:8px;padding:4px 10px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;}
+.empty-state{text-align:center;padding:48px 20px;color:#aaa;}
+.empty-state .empty-icon{font-size:40px;margin-bottom:12px;}
+.empty-state p{font-size:14px;}
+
+/* 모달 */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;}
+.modal{background:#fff;border-radius:20px;padding:28px;width:100%;max-width:520px;max-height:85vh;overflow-y:auto;}
+.modal-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;}
+.modal-title{font-size:18px;font-weight:700;}
+.modal-close{background:none;border:none;font-size:20px;cursor:pointer;color:#aaa;}
+.modal-row{display:flex;gap:8px;margin-bottom:10px;font-size:13px;}
+.modal-key{color:#999;width:80px;flex-shrink:0;font-weight:500;}
+.modal-val{color:#333;flex:1;}
+.modal-section{font-size:12px;font-weight:700;color:#7F77DD;margin:16px 0 8px;letter-spacing:.5px;}
+
+@media(max-width:768px){
+  .stats-row{grid-template-columns:1fr 1fr;}
+  .charts-row{grid-template-columns:1fr;}
+  .topbar{padding:0 16px;}
+  table{display:block;overflow-x:auto;}
+}
+</style>
+</head>
+<body>
+
+<!-- 잠금 화면 -->
+<div id="lockScreen">
+  <div class="lock-box">
+    <div class="lock-logo">글</div>
+    <div class="lock-title">선생님 전용 대시보드</div>
+    <div class="lock-sub">글모락 국어연구소</div>
+    <input class="lock-input" type="password" id="pwInput" placeholder="비밀번호" onkeydown="if(event.key==='Enter')checkPw()">
+    <button class="lock-btn" onclick="checkPw()">로그인</button>
+    <div class="lock-err" id="lockErr">비밀번호가 틀렸어요.</div>
+  </div>
+</div>
+
+<!-- 대시보드 -->
+<div id="dashboard">
+  <div class="topbar">
+    <div class="top-left">
+      <div class="logo">글</div>
+      <div>
+        <div class="top-title">글모락 대시보드</div>
+        <div class="top-sub">신입생 상담 응답 현황</div>
+      </div>
+    </div>
+    <button class="logout-btn" onclick="logout()">로그아웃</button>
+  </div>
+  <div class="main">
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-label">전체 응답</div>
+        <div class="stat-value" id="statTotal">0</div>
+        <div class="stat-sub">명</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">오늘 응답</div>
+        <div class="stat-value" id="statToday">0</div>
+        <div class="stat-sub">명</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">가장 많은 성향</div>
+        <div class="stat-value" id="statTopType" style="font-size:18px;">—</div>
+        <div class="stat-sub" id="statTopTypeSub"></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">가장 많은 고민</div>
+        <div class="stat-value" id="statTopConcern" style="font-size:15px;">—</div>
+        <div class="stat-sub" id="statTopConcernSub"></div>
+      </div>
+    </div>
+
+    <div class="charts-row">
+      <div class="chart-card">
+        <div class="chart-title">성향 분포</div>
+        <div id="typeChart"></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">국어 고민 TOP</div>
+        <div id="concernChart"></div>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <input class="search-input" type="text" id="searchInput" placeholder="이름·학교·학년 검색..." oninput="renderTable()">
+      <select class="filter-select" id="filterType" onchange="renderTable()">
+        <option value="">전체 성향</option>
+        <option value="자유로운 표현가">자유로운 표현가</option>
+        <option value="차근차근 탐구자">차근차근 탐구자</option>
+        <option value="실전형 승부사">실전형 승부사</option>
+        <option value="기초부터 탄탄형">기초부터 탄탄형</option>
+      </select>
+      <select class="filter-select" id="filterGrade" onchange="renderTable()">
+        <option value="">전체 학년</option>
+        <option value="초등">초등</option>
+        <option value="중학교">중학교</option>
+        <option value="고등학교">고등학교</option>
+      </select>
+      <button class="export-btn" onclick="exportCSV()">CSV 다운로드</button>
+      <button class="clear-btn" onclick="clearData()">데이터 초기화</button>
+    </div>
+
+    <div class="table-card">
+      <div class="table-header">
+        <div class="table-title">응답 목록</div>
+        <div class="count-badge" id="tableCount">0명</div>
+      </div>
+      <div id="tableBody"></div>
+    </div>
+  </div>
+</div>
+
+<!-- 상세 모달 -->
+<div class="modal-bg" id="modalBg" style="display:none;" onclick="if(event.target===this)closeModal()">
+  <div class="modal" id="modalContent"></div>
+</div>
+
+<script>
+const STORAGE_KEY = 'geulmoak_responses';
+const PASSWORD = 'kookmin27!';
+const typeColors = ['tp-0','tp-1','tp-2','tp-3'];
+const typeNames = ['자유로운 표현가','차근차근 탐구자','실전형 승부사','기초부터 탄탄형'];
+
+function checkPw(){
+  const v = document.getElementById('pwInput').value;
+  if(v === PASSWORD){
+    document.getElementById('lockScreen').style.display='none';
+    document.getElementById('dashboard').style.display='block';
+    loadDashboard();
+  } else {
+    document.getElementById('lockErr').style.display='block';
+    document.getElementById('pwInput').value='';
+  }
+}
+
+function logout(){
+  document.getElementById('lockScreen').style.display='flex';
+  document.getElementById('dashboard').style.display='none';
+  document.getElementById('pwInput').value='';
+  document.getElementById('lockErr').style.display='none';
+}
+
+function getData(){
+  try{return JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]');}catch(e){return [];}
+}
+
+function loadDashboard(){
+  const data = getData();
+  const today = new Date().toLocaleDateString('ko-KR');
+  const todayCount = data.filter(d=>d.time&&d.time.startsWith(today)).length;
+
+  document.getElementById('statTotal').textContent = data.length;
+  document.getElementById('statToday').textContent = todayCount;
+
+  // 성향 분포
+  const typeCounts = {};
+  typeNames.forEach(t=>typeCounts[t]=0);
+  data.forEach(d=>{ if(d.type) typeCounts[d.type]=(typeCounts[d.type]||0)+1; });
+  const topType = Object.entries(typeCounts).sort((a,b)=>b[1]-a[1])[0];
+  if(topType&&topType[1]>0){
+    document.getElementById('statTopType').textContent = topType[0];
+    document.getElementById('statTopTypeSub').textContent = topType[1]+'명';
+  }
+
+  // 고민 집계
+  const concernCounts = {};
+  data.forEach(d=>{ (d.concerns||[]).forEach(c=>{ concernCounts[c]=(concernCounts[c]||0)+1; }); });
+  const topConcern = Object.entries(concernCounts).sort((a,b)=>b[1]-a[1])[0];
+  if(topConcern){
+    document.getElementById('statTopConcern').textContent = topConcern[0];
+    document.getElementById('statTopConcernSub').textContent = topConcern[1]+'명';
+  }
+
+  // 차트 그리기
+  const maxType = Math.max(...Object.values(typeCounts), 1);
+  document.getElementById('typeChart').innerHTML = typeNames.map((name,i)=>`
+    <div class="bar-item">
+      <div class="bar-label">${name}</div>
+      <div class="bar-wrap"><div class="bar-fill" style="width:${Math.round(typeCounts[name]/maxType*100)}%"></div></div>
+      <div class="bar-count">${typeCounts[name]}</div>
+    </div>
+  `).join('');
+
+  const sortedConcerns = Object.entries(concernCounts).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  const maxC = sortedConcerns[0]?sortedConcerns[0][1]:1;
+  document.getElementById('concernChart').innerHTML = sortedConcerns.length>0
+    ? sortedConcerns.map(([label,cnt])=>`
+      <div class="concern-item">
+        <div class="concern-label">${label}</div>
+        <div class="concern-bar-wrap"><div class="concern-fill" style="width:${Math.round(cnt/maxC*100)}%"></div></div>
+        <div class="concern-count">${cnt}</div>
+      </div>
+    `).join('')
+    : '<div style="font-size:13px;color:#aaa;text-align:center;padding:20px 0;">아직 데이터가 없어요</div>';
+
+  renderTable();
+}
+
+function renderTable(){
+  const data = getData();
+  const search = document.getElementById('searchInput').value.toLowerCase();
+  const filterType = document.getElementById('filterType').value;
+  const filterGrade = document.getElementById('filterGrade').value;
+
+  const filtered = data.filter(d=>{
+    const matchSearch = !search || (d.name||'').toLowerCase().includes(search) || (d.school||'').toLowerCase().includes(search) || (d.grade||'').includes(search);
+    const matchType = !filterType || d.type===filterType;
+    const matchGrade = !filterGrade || (d.grade||'').includes(filterGrade);
+    return matchSearch&&matchType&&matchGrade;
+  }).sort((a,b)=>b.id-a.id);
+
+  document.getElementById('tableCount').textContent = filtered.length+'명';
+
+  if(filtered.length===0){
+    document.getElementById('tableBody').innerHTML=`
+      <div class="empty-state">
+        <div class="empty-icon">📭</div>
+        <p>${data.length===0?'아직 응답 데이터가 없어요.<br>학부모님께 index.html 링크를 공유해주세요!':'검색 결과가 없어요.'}</p>
+      </div>`;
+    return;
+  }
+
+  const typeIdx = (name)=>typeNames.indexOf(name);
+  const colorClass = (name)=>typeColors[typeIdx(name)]||'tp-0';
+
+  document.getElementById('tableBody').innerHTML=`
+    <table>
+      <thead>
+        <tr>
+          <th>시간</th>
+          <th>이름</th>
+          <th>학교</th>
+          <th>학년</th>
+          <th>성향</th>
+          <th>추천 반</th>
+          <th>고민</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        ${filtered.map((d,i)=>`
+          <tr>
+            <td style="color:#aaa;font-size:11px;white-space:nowrap;">${(d.time||'').replace(/\./g,'.').substring(0,12)}</td>
+            <td style="font-weight:700;">${d.name||'—'}</td>
+            <td>${d.school||'—'}</td>
+            <td>${d.grade||'—'}</td>
+            <td><span class="type-pill ${colorClass(d.type)}">${d.typeIcon||''} ${d.type||'—'}</span></td>
+            <td style="font-size:12px;color:#555;">${d.recommended||'—'}</td>
+            <td>${(d.concerns||[]).slice(0,2).map(c=>`<span class="concern-tag">${c}</span>`).join('')}${(d.concerns||[]).length>2?`<span class="concern-tag">+${(d.concerns||[]).length-2}</span>`:''}</td>
+            <td><button class="detail-btn" onclick="openModal(${d.id})">상세</button></td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+function openModal(id){
+  const data = getData();
+  const d = data.find(r=>r.id===id);
+  if(!d)return;
+  const typeIdx = typeNames.indexOf(d.type);
+  const colorClass = typeColors[typeIdx]||'tp-0';
+  document.getElementById('modalContent').innerHTML=`
+    <div class="modal-top">
+      <div class="modal-title">${d.typeIcon||''} ${d.name} 상세 정보</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-section">기본 정보</div>
+    <div class="modal-row"><div class="modal-key">이름</div><div class="modal-val">${d.name}</div></div>
+    <div class="modal-row"><div class="modal-key">학교</div><div class="modal-val">${d.school}</div></div>
+    <div class="modal-row"><div class="modal-key">학년</div><div class="modal-val">${d.grade}</div></div>
+    <div class="modal-row"><div class="modal-key">응답 시간</div><div class="modal-val">${d.time}</div></div>
+    <div class="modal-section">성향 결과</div>
+    <div class="modal-row"><div class="modal-key">성향</div><div class="modal-val"><span class="type-pill ${colorClass}">${d.typeIcon} ${d.type}</span></div></div>
+    <div class="modal-row"><div class="modal-key">추천 반</div><div class="modal-val" style="font-weight:700;color:#7F77DD;">${d.recommended}</div></div>
+    <div class="modal-section">국어 고민</div>
+    <div class="modal-row"><div class="modal-key"></div><div class="modal-val">${(d.concerns||[]).length>0?(d.concerns||[]).map(c=>`<span class="concern-tag">${c}</span>`).join(''):'없음'}</div></div>
+    <div class="modal-section">테스트 답변</div>
+    ${d.answers?Object.entries(d.answers).map(([k,v])=>`
+      <div class="modal-row">
+        <div class="modal-key">${{exp:'학원 경험',writing:'글쓰기',goal:'방향',hw:'숙제',gradeQ:'학년',day:'요일'}[k]||k}</div>
+        <div class="modal-val">${v}</div>
+      </div>
+    `).join(''):''}
+  `;
+  document.getElementById('modalBg').style.display='flex';
+}
+
+function closeModal(){
+  document.getElementById('modalBg').style.display='none';
+}
+
+function exportCSV(){
+  const data = getData();
+  if(data.length===0){alert('데이터가 없어요!');return;}
+  const headers = ['응답시간','이름','학교','학년','성향','추천반','고민','학원경험','글쓰기','방향','숙제','학년답변','요일'];
+  const rows = data.map(d=>[
+    d.time||'',d.name||'',d.school||'',d.grade||'',d.type||'',d.recommended||'',
+    (d.concerns||[]).join('|'),
+    d.answers?.exp||'',d.answers?.writing||'',d.answers?.goal||'',
+    d.answers?.hw||'',d.answers?.gradeQ||'',d.answers?.day||''
+  ]);
+  const csv = [headers,...rows].map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n');
+  const blob = new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href=url;a.download='글모락_상담응답_'+new Date().toLocaleDateString('ko-KR').replace(/\./g,'').replace(/ /g,'')+'.csv';
+  a.click();URL.revokeObjectURL(url);
+}
+
+function clearData(){
+  if(!confirm('모든 응답 데이터를 삭제할까요? 되돌릴 수 없어요!'))return;
+  localStorage.removeItem(STORAGE_KEY);
+  loadDashboard();
+}
+</script>
+</body>
+</html>
