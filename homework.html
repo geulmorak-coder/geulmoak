@@ -1,0 +1,1565 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>글모락 - 숙제 관리</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=Black+Han+Sans&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#f4f3ff; --surface:#fff; --surface2:#f9f8ff;
+    --purple:#7c5cbf; --purple2:#a07ee0; --purple-light:#ede9fb;
+    --gold:#e6a820; --gold-light:#fef9ec;
+    --green:#16a34a; --green-light:#dcfce7;
+    --red:#dc2626; --red-light:#fee2e2;
+    --blue:#2563eb; --blue-light:#eff6ff;
+    --text:#1a1a2e; --muted:#6b7280; --border:#e5e3f5;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--text); font-family:'Noto Sans KR',sans-serif; min-height:100vh; }
+
+  /* 로그인 */
+  .login-wrap { min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:24px; }
+  .login-logo { font-family:'Black Han Sans',sans-serif; font-size:28px; color:var(--purple); margin-bottom:4px; }
+  .login-sub { font-size:13px; color:var(--muted); margin-bottom:32px; }
+  .login-box { background:white; border-radius:20px; padding:28px 24px; width:100%; max-width:380px; border:1px solid var(--border); }
+  .login-box h2 { font-size:18px; font-weight:900; margin-bottom:20px; }
+  .field { margin-bottom:14px; }
+  .field label { font-size:12px; font-weight:700; color:var(--muted); display:block; margin-bottom:6px; }
+  .field input { width:100%; padding:12px 14px; border:1px solid var(--border); border-radius:10px; font-family:'Noto Sans KR',sans-serif; font-size:14px; outline:none; }
+  .field input:focus { border-color:var(--purple); }
+  .btn-login { width:100%; padding:13px; background:var(--purple); color:white; border:none; border-radius:12px; font-family:'Noto Sans KR',sans-serif; font-size:15px; font-weight:700; cursor:pointer; }
+  .login-err { color:var(--red); font-size:12px; margin-top:8px; text-align:center; min-height:18px; }
+
+  /* 앱 */
+  .app-wrap { display:none; }
+  header { background:white; border-bottom:1px solid var(--border); padding:14px 20px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:50; }
+  .logo { font-family:'Black Han Sans',sans-serif; font-size:18px; color:var(--purple); }
+  .header-right { display:flex; align-items:center; gap:10px; }
+  .teacher-badge { background:var(--purple-light); color:var(--purple); font-size:12px; font-weight:700; padding:4px 10px; border-radius:20px; }
+  .btn-logout { background:none; border:1px solid var(--border); border-radius:8px; padding:6px 12px; font-size:12px; color:var(--muted); cursor:pointer; font-family:'Noto Sans KR',sans-serif; }
+
+  .wrap { max-width:900px; margin:0 auto; padding:20px 16px 60px; }
+
+  /* 상단 컨트롤 */
+  .top-controls { background:white; border-radius:16px; border:1px solid var(--border); padding:16px; margin-bottom:20px; display:flex; flex-wrap:wrap; gap:12px; align-items:flex-end; }
+  .ctrl-group { display:flex; flex-direction:column; gap:5px; }
+  .ctrl-label { font-size:11px; font-weight:700; color:var(--muted); }
+  .ctrl-select { padding:9px 12px; border:1px solid var(--border); border-radius:10px; font-family:'Noto Sans KR',sans-serif; font-size:13px; font-weight:700; background:white; color:var(--text); cursor:pointer; outline:none; min-width:140px; }
+  .ctrl-input { padding:9px 12px; border:1px solid var(--border); border-radius:10px; font-family:'Noto Sans KR',sans-serif; font-size:13px; background:white; color:var(--text); outline:none; }
+  .ctrl-input:focus, .ctrl-select:focus { border-color:var(--purple); }
+  .btn-load { padding:9px 20px; background:var(--purple); color:white; border:none; border-radius:10px; font-family:'Noto Sans KR',sans-serif; font-size:13px; font-weight:700; cursor:pointer; white-space:nowrap; }
+  .btn-save-all { padding:9px 20px; background:var(--green); color:white; border:none; border-radius:10px; font-family:'Noto Sans KR',sans-serif; font-size:13px; font-weight:700; cursor:pointer; white-space:nowrap; }
+
+  /* 반 관리 */
+  .class-manager { background:white; border-radius:16px; border:1px solid var(--border); padding:16px; margin-bottom:20px; }
+  .section-title { font-size:15px; font-weight:900; margin-bottom:12px; display:flex; align-items:center; gap:8px; }
+  .class-list { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px; }
+  .class-chip { display:flex; align-items:center; gap:6px; padding:6px 12px; background:var(--purple-light); color:var(--purple); border-radius:20px; font-size:13px; font-weight:700; }
+  .chip-del { background:none; border:none; cursor:pointer; color:var(--purple); font-size:14px; line-height:1; }
+  .add-class-row { display:flex; gap:8px; }
+  .add-class-input { flex:1; padding:9px 12px; border:1px solid var(--border); border-radius:10px; font-family:'Noto Sans KR',sans-serif; font-size:13px; outline:none; }
+  .add-class-input:focus { border-color:var(--purple); }
+  .btn-add-class { padding:9px 16px; background:var(--purple-light); color:var(--purple); border:none; border-radius:10px; font-family:'Noto Sans KR',sans-serif; font-size:13px; font-weight:700; cursor:pointer; white-space:nowrap; }
+
+  /* 숙제 테이블 */
+  .hw-table-wrap { background:white; border-radius:16px; border:1px solid var(--border); overflow:hidden; margin-bottom:20px; }
+  .hw-table-header { padding:14px 16px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; }
+  .hw-table-title { font-size:15px; font-weight:900; }
+  .hw-week-badge { font-size:12px; color:var(--purple); background:var(--purple-light); padding:4px 10px; border-radius:20px; font-weight:700; }
+  table { width:100%; border-collapse:collapse; }
+  th { background:var(--surface2); padding:10px 8px; font-size:12px; font-weight:700; color:var(--muted); border-bottom:1px solid var(--border); text-align:center; white-space:nowrap; }
+  th:first-child { text-align:left; padding-left:16px; }
+  td { padding:10px 8px; border-bottom:1px solid var(--border); font-size:13px; text-align:center; vertical-align:middle; }
+  td:first-child { text-align:left; padding-left:16px; }
+  tr:last-child td { border-bottom:none; }
+  tr:hover td { background:var(--surface2); }
+
+  .stu-cell { display:flex; align-items:center; gap:8px; }
+  .stu-emoji { width:32px; height:32px; background:var(--purple-light); border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0; }
+  .stu-name-cell { font-weight:700; font-size:13px; }
+  .stu-pts-cell { font-size:11px; color:var(--muted); }
+
+  /* 체크 버튼 */
+  .hw-check { width:36px; height:28px; border-radius:8px; border:1px solid var(--border); background:white; font-size:14px; cursor:pointer; transition:all 0.15s; display:flex; align-items:center; justify-content:center; margin:0 auto; }
+  .hw-check.done { background:var(--green-light); border-color:var(--green); }
+  .hw-check.undone { background:var(--red-light); border-color:#fca5a5; }
+  .hw-check.none { color:var(--muted); }
+
+  /* 메모 */
+  .memo-input { width:100%; padding:5px 8px; border:1px solid var(--border); border-radius:6px; font-family:'Noto Sans KR',sans-serif; font-size:12px; outline:none; resize:none; background:white; }
+  .memo-input:focus { border-color:var(--purple); }
+
+  /* 이력 탭 */
+  .tabs { display:flex; gap:6px; margin-bottom:16px; background:white; border-radius:12px; padding:5px; border:1px solid var(--border); }
+  .tab-btn { flex:1; padding:9px 6px; background:none; border:none; border-radius:8px; cursor:pointer; font-family:'Noto Sans KR',sans-serif; font-size:13px; font-weight:700; color:var(--muted); transition:all 0.15s; }
+  .tab-btn.active { background:var(--purple); color:white; }
+
+  .history-list { display:flex; flex-direction:column; gap:10px; }
+  .history-card { background:white; border-radius:14px; border:1px solid var(--border); padding:14px 16px; }
+  .history-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+  .history-week { font-size:14px; font-weight:900; }
+  .history-class { font-size:12px; color:var(--purple); background:var(--purple-light); padding:3px 8px; border-radius:10px; font-weight:700; }
+  .history-stats { display:flex; gap:8px; flex-wrap:wrap; }
+  .stat-chip { font-size:11px; padding:3px 8px; border-radius:8px; font-weight:700; }
+  .stat-done { background:var(--green-light); color:var(--green); }
+  .stat-undone { background:var(--red-light); color:var(--red); }
+
+  /* 완료율 바 */
+  .rate-bar { height:6px; background:var(--border); border-radius:3px; margin-top:8px; }
+  .rate-fill { height:6px; border-radius:3px; background:linear-gradient(90deg,var(--purple),var(--purple2)); transition:width 0.4s; }
+
+  /* 토스트 */
+  .toast { position:fixed; top:20px; left:50%; transform:translateX(-50%) translateY(-80px); background:var(--purple); color:white; font-weight:700; font-size:14px; padding:12px 24px; border-radius:30px; z-index:300; transition:transform 0.4s; white-space:nowrap; }
+  .toast.show { transform:translateX(-50%) translateY(0); }
+
+  .loading { text-align:center; padding:40px; color:var(--muted); font-size:14px; }
+  .empty-state { text-align:center; padding:40px; color:var(--muted); }
+  .empty-icon { font-size:40px; margin-bottom:12px; }
+
+  @media(max-width:600px) {
+    th, td { padding:8px 4px; font-size:11px; }
+    th:first-child, td:first-child { padding-left:10px; }
+    .hw-check { width:28px; height:24px; font-size:12px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- 로그인 -->
+<div class="login-wrap" id="loginWrap">
+  <div class="login-logo">📚 글모락</div>
+  <div class="login-sub">숙제 관리 시스템</div>
+  <div class="login-box">
+    <h2>👑 교장 로그인</h2>
+    <div class="field"><label>이메일</label><input type="email" id="loginEmail" placeholder="이메일 입력"></div>
+    <div class="field"><label>비밀번호</label><input type="password" id="loginPw" placeholder="비밀번호 입력"></div>
+    <button class="btn-login" id="btnLogin">로그인</button>
+    <div class="login-err" id="loginErr"></div>
+  </div>
+</div>
+
+<!-- 앱 -->
+<div class="app-wrap" id="appWrap">
+  <header>
+    <div class="logo">📚 글모락 숙제 관리</div>
+    <div class="header-right">
+      <span class="teacher-badge">👑 글모락의 교장</span>
+      <button class="btn-logout" id="btnLogout">로그아웃</button>
+    </div>
+  </header>
+
+  <div class="wrap">
+
+    <!-- 탭 -->
+    <div class="tabs">
+      <button class="tab-btn active" id="tabCurrent" onclick="switchTab('current',this)">📋 이번 주 숙제</button>
+      <button class="tab-btn" id="tabHistory" onclick="switchTab('history',this)">📅 이력 조회</button>
+      <button class="tab-btn" id="tabSheet" onclick="switchTab('sheet',this)">📄 숙제표</button>
+      <button class="tab-btn" id="tabStats" onclick="switchTab('stats',this)">📈 학생 통계</button>
+      <button class="tab-btn" id="tabClasses" onclick="switchTab('classes',this)">🏫 반 관리</button>
+    </div>
+
+    <!-- 이번 주 숙제 탭 -->
+    <div id="sec-current">
+      <!-- 컨트롤 -->
+      <div class="top-controls">
+        <div class="ctrl-group">
+          <div class="ctrl-label">반 선택</div>
+          <select class="ctrl-select" id="selClass">
+            <option value="">-- 반을 선택하세요 --</option>
+          </select>
+        </div>
+        <div class="ctrl-group">
+          <div class="ctrl-label">주차</div>
+          <input type="week" class="ctrl-input" id="selWeek">
+        </div>
+        <button class="btn-load" id="btnLoad">📋 불러오기</button>
+        <button class="btn-save-all" id="btnSaveAll" style="display:none">💾 전체 저장</button>
+      </div>
+
+      <!-- 숙제 테이블 -->
+      <div id="hwTableWrap">
+        <div class="empty-state">
+          <div class="empty-icon">📋</div>
+          <div>반과 주차를 선택하고 불러오기를 눌러주세요!</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 이력 조회 탭 -->
+    <div id="sec-history" style="display:none">
+      <div class="top-controls">
+        <div class="ctrl-group">
+          <div class="ctrl-label">반 선택</div>
+          <select class="ctrl-select" id="selClassHistory">
+            <option value="">전체 반</option>
+          </select>
+        </div>
+        <div class="ctrl-group">
+          <div class="ctrl-label">학생 이름</div>
+          <input type="text" class="ctrl-input" id="historyName" placeholder="이름 검색">
+        </div>
+        <button class="btn-load" onclick="loadHistory()">🔍 조회</button>
+      </div>
+      <div id="historyList" class="history-list">
+        <div class="empty-state"><div class="empty-icon">📅</div><div>조건을 선택하고 조회해주세요!</div></div>
+      </div>
+    </div>
+
+    <!-- 숙제표 탭 -->
+    <div id="sec-sheet" style="display:none">
+      <!-- 상단 컨트롤 -->
+      <div class="top-controls" style="margin-bottom:16px;">
+        <div class="ctrl-group">
+          <div class="ctrl-label">반 선택</div>
+          <select class="ctrl-select" id="sheetSelClass">
+            <option value="">-- 반 선택 --</option>
+          </select>
+        </div>
+        <div class="ctrl-group">
+          <div class="ctrl-label">주차</div>
+          <input type="text" class="ctrl-input" id="sheetWeekLabel" placeholder="예: 6월 2주 차" style="min-width:120px;">
+        </div>
+        <button class="btn-load" id="btnLoadSheet">📄 불러오기</button>
+        <div id="bonusPtsWrap" style="display:none;align-items:center;gap:8px;margin-right:8px;">
+          <span style="font-size:12px;font-weight:700;color:var(--muted);">🎁 전체완료 보너스</span>
+          <input id="sheetBonusPts" type="number" value="50" min="0" max="500"
+            style="width:64px;padding:7px 6px;border:1px solid var(--border);border-radius:8px;font-family:'Noto Sans KR',sans-serif;font-size:13px;font-weight:900;color:var(--green);text-align:center;outline:none;">
+          <span style="font-size:12px;color:var(--muted);">pt</span>
+        </div>
+        <button class="btn-save-all" id="btnSaveSheet" style="display:none;">💾 저장</button>
+        <button onclick="printSheet()" style="padding:9px 16px;background:#f3f4f6;color:#374151;border:none;border-radius:10px;font-family:'Noto Sans KR',sans-serif;font-size:13px;font-weight:700;cursor:pointer;display:none;" id="btnPrintSheet">🖨️ 인쇄</button>
+      </div>
+
+      <!-- 숙제표 편집 영역 -->
+      <div id="sheetEditor" style="display:none;">
+        <div style="background:white;border-radius:16px;border:1px solid var(--border);padding:20px;margin-bottom:16px;">
+          <div style="font-size:15px;font-weight:900;margin-bottom:14px;">✏️ 숙제표 내용 입력</div>
+
+          <!-- 주차 선택 -->
+          <div style="margin-bottom:14px;">
+            <div class="ctrl-label">📅 주차</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <button class="week-type-btn active-week" data-week="1" data-genre="🌍 세계문학" data-nextgenre="🇰🇷 한국문학" style="padding:8px 14px;border-radius:10px;border:2px solid var(--purple);background:var(--purple-light);color:var(--purple);font-family:'Noto Sans KR',sans-serif;font-size:13px;font-weight:700;cursor:pointer;display:flex;flex-direction:column;align-items:flex-start;gap:3px;">
+                <span>1주차 <span style="font-size:10px;background:var(--purple);color:white;padding:2px 6px;border-radius:6px;">🌍 세계문학</span></span>
+                <span style="font-size:10px;color:var(--purple);opacity:0.8;">다음: 🇰🇷 한국문학</span>
+              </button>
+              <button class="week-type-btn" data-week="2" data-genre="🇰🇷 한국문학" data-nextgenre="📰 비문학" style="padding:8px 14px;border-radius:10px;border:2px solid var(--border);background:white;color:var(--muted);font-family:'Noto Sans KR',sans-serif;font-size:13px;font-weight:700;cursor:pointer;display:flex;flex-direction:column;align-items:flex-start;gap:3px;">
+                <span>2주차 <span style="font-size:10px;background:#e5e7eb;color:#374151;padding:2px 6px;border-radius:6px;">🇰🇷 한국문학</span></span>
+                <span style="font-size:10px;color:var(--muted);">다음: 📰 비문학</span>
+              </button>
+              <button class="week-type-btn" data-week="3" data-genre="📰 비문학" data-nextgenre="🎬 영화" style="padding:8px 14px;border-radius:10px;border:2px solid var(--border);background:white;color:var(--muted);font-family:'Noto Sans KR',sans-serif;font-size:13px;font-weight:700;cursor:pointer;display:flex;flex-direction:column;align-items:flex-start;gap:3px;">
+                <span>3주차 <span style="font-size:10px;background:#e5e7eb;color:#374151;padding:2px 6px;border-radius:6px;">📰 비문학</span></span>
+                <span style="font-size:10px;color:var(--muted);">다음: 🎬 영화</span>
+              </button>
+              <button class="week-type-btn" data-week="4" data-genre="🎬 영화" data-nextgenre="🌍 세계문학" style="padding:8px 14px;border-radius:10px;border:2px solid var(--border);background:white;color:var(--muted);font-family:'Noto Sans KR',sans-serif;font-size:13px;font-weight:700;cursor:pointer;display:flex;flex-direction:column;align-items:flex-start;gap:3px;">
+                <span>4주차 <span style="font-size:10px;background:#e5e7eb;color:#374151;padding:2px 6px;border-radius:6px;">🎬 영화</span></span>
+                <span style="font-size:10px;color:var(--muted);">다음: 🌍 세계문학</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- 1~3주차: 다음 주 읽어올 책 / 3주차엔 다음 주 볼 영화 -->
+          <div id="bookInputSection" style="margin-bottom:14px;">
+            <div style="background:#f9f8ff;border-radius:12px;padding:14px;border:1px solid var(--border);">
+              <div class="ctrl-label" id="nextBookLabel" style="font-size:13px;font-weight:700;color:var(--purple);margin-bottom:10px;">📖 다음 주 읽어올 책</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+                <input type="text" class="ctrl-input" id="sheetNextBook" placeholder="다음 주 책 제목" style="width:100%;">
+                <input type="text" class="ctrl-input" id="sheetNextBookAuthor" placeholder="저자" style="width:100%;">
+                <input type="text" class="ctrl-input" id="sheetNextBookPublisher" placeholder="출판사" style="width:100%;">
+              </div>
+            </div>
+          </div>
+
+          <!-- 3주차: 다음 주 볼 영화 입력 -->
+          <div id="movieInputSection" style="display:none;margin-bottom:14px;">
+            <div style="background:#fff8f0;border-radius:12px;padding:14px;border:1px solid #fde68a;">
+              <div style="font-size:13px;font-weight:700;color:#d97706;margin-bottom:10px;">🎬 다음 주 볼 영화</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+                <div>
+                  <div class="ctrl-label">영화 제목</div>
+                  <input type="text" class="ctrl-input" id="sheetMovie" placeholder="예: 기생충" style="width:100%;">
+                </div>
+                <div>
+                  <div class="ctrl-label">감독</div>
+                  <input type="text" class="ctrl-input" id="sheetMovieDirector" placeholder="예: 봉준호" style="width:100%;">
+                </div>
+                <div>
+                  <div class="ctrl-label">개봉년도</div>
+                  <input type="text" class="ctrl-input" id="sheetMovieYear" placeholder="예: 2019" style="width:100%;">
+                </div>
+              </div>
+              <div style="margin-top:10px;">
+                <div class="ctrl-label">📝 감상 포인트 (선택)</div>
+                <input type="text" class="ctrl-input" id="sheetMovieNote" placeholder="예: 계급 사회, 가족의 의미를 생각하며 보세요" style="width:100%;margin-top:4px;">
+              </div>
+            </div>
+          </div>
+
+          <!-- 호환용 hidden inputs -->
+          <input type="hidden" id="sheetBook" value="">
+          <input type="hidden" id="sheetBookAuthor" value="">
+          <input type="hidden" id="sheetBookPublisher" value="">
+          <input type="hidden" id="sheetWeekType" value="book">
+
+          <div style="margin-bottom:14px;">
+            <div class="ctrl-label">✨ 이번 주 명언</div>
+            <input type="text" class="ctrl-input" id="sheetQuote" placeholder="예: 천사들은 고되게 일하는 것이 아니라 그들의 선한 일이 저절로 자라나도록 한다." style="width:100%;">
+          </div>
+
+          <!-- 숙제 항목들 -->
+          <div style="font-size:13px;font-weight:700;margin-bottom:10px;color:var(--muted);">📝 숙제 항목</div>
+          <div id="sheetItemsEditor"></div>
+          <button id="btnAddSheetItem" style="width:100%;padding:10px;background:var(--purple-light);color:var(--purple);border:1px dashed var(--purple);border-radius:10px;font-family:'Noto Sans KR',sans-serif;font-size:13px;font-weight:700;cursor:pointer;margin-top:8px;">+ 항목 추가</button>
+        </div>
+      </div>
+
+      <!-- 미리보기 / 인쇄용 -->
+      <div id="sheetPreview"></div>
+    </div>
+
+    <!-- 통계 탭 -->
+    <div id="sec-stats" style="display:none">
+      <div class="top-controls" style="margin-bottom:16px;">
+        <div class="ctrl-group">
+          <div class="ctrl-label">학생 선택</div>
+          <select class="ctrl-select" id="statsSelStudent">
+            <option value="">-- 학생 선택 --</option>
+          </select>
+        </div>
+        <div class="ctrl-group">
+          <div class="ctrl-label">기간</div>
+          <select class="ctrl-select" id="statsSelPeriod">
+            <option value="4">최근 4주</option>
+            <option value="12">최근 3개월</option>
+            <option value="26">최근 6개월</option>
+            <option value="52">최근 1년</option>
+          </select>
+        </div>
+        <button class="btn-load" id="btnLoadStats">📊 분석하기</button>
+      </div>
+      <div id="statsContent">
+        <div class="empty-state"><div class="empty-icon">📈</div><div>학생을 선택하고 분석하기를 눌러주세요!</div></div>
+      </div>
+    </div>
+
+    <!-- 반 관리 탭 -->
+    <div id="sec-classes" style="display:none">
+      <div class="class-manager">
+        <div class="section-title">🏫 반 목록</div>
+        <div class="class-list" id="classList"></div>
+        <div class="add-class-row">
+          <input type="text" class="add-class-input" id="newClassName" placeholder="새 반 이름 (예: 라이트 15:00)">
+          <button class="btn-add-class" id="btnAddClass">+ 반 추가</button>
+        </div>
+      </div>
+      <div class="hw-table-wrap">
+        <div class="hw-table-header">
+          <div class="hw-table-title">📝 숙제 항목 설정</div>
+          <div style="font-size:12px;color:var(--muted)">모든 반에 공통 적용</div>
+        </div>
+        <div style="padding:16px;">
+          <div id="hwItemList" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;"></div>
+          <div style="display:flex;gap:8px;">
+            <input type="text" class="add-class-input" id="newHwItem" placeholder="새 숙제 항목 (예: 일기쓰기)">
+            <button class="btn-add-class" id="btnAddHwItem">+ 항목 추가</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, doc, setDoc, getDoc, collection, getDocs, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const app = initializeApp({
+  apiKey: "AIzaSyB_f-U4h2PMzDv2zHhH0AEtffr3XfGYxsQ",
+  authDomain: "chaek-mabeopsa.firebaseapp.com",
+  projectId: "chaek-mabeopsa",
+  storageBucket: "chaek-mabeopsa.firebasestorage.app",
+  messagingSenderId: "957424809777",
+  appId: "1:957424809777:web:7a67c94015066703d32210"
+});
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+// ===== 기본 숙제 항목 =====
+const DEFAULT_HW_ITEMS = ['책', '녹음', '독서평설', '서체교정', '한자공부', 'EBS문법'];
+let hwItems = [...DEFAULT_HW_ITEMS];
+let classes = [];
+let currentData = {};
+let studentSelfChecks = {}; // 학생 자체 체크 현황 // { studentId: { 책: true/false, 녹음: true/false, ... , memo: '' } }
+let currentStudents = [];
+let currentClass = '';
+let currentWeek = '';
+
+const EMOJIS = ['🌱','📖','✨','🔮','🧙','⚡','🌟','👑'];
+function getLv(pts) {
+  const LEVELS = [0,500,1500,3000,5000,8000,12000,18000];
+  let l=0; for(const t of LEVELS){if(pts>=t)l++;} return Math.min(Math.max(l,1),8);
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2500);
+}
+
+function getWeekStr(weekVal) {
+  if(!weekVal) return '';
+  const [y, w] = weekVal.split('-W');
+  return `${y}년 ${w}주차`;
+}
+
+function getCurrentWeek() {
+  const now = new Date();
+  const jan1 = new Date(now.getFullYear(), 0, 1);
+  const week = Math.ceil(((now - jan1) / 86400000 + jan1.getDay() + 1) / 7);
+  return `${now.getFullYear()}-W${String(week).padStart(2,'0')}`;
+}
+
+// ===== 탭 전환 =====
+window.switchTab = (name, btn) => {
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  ['current','history','sheet','stats','classes'].forEach(t => {
+    document.getElementById('sec-'+t).style.display = t===name ? 'block' : 'none';
+  });
+  if(name==='classes') renderClassManager();
+  if(name==='history') loadHistory();
+  if(name==='sheet') initSheetTab();
+  if(name==='stats') initStatsTab();
+};
+
+// ===== 로그인 =====
+document.getElementById('btnLogin').addEventListener('click', async () => {
+  const email = document.getElementById('loginEmail').value.trim();
+  const pw = document.getElementById('loginPw').value;
+  const err = document.getElementById('loginErr');
+  err.textContent = '';
+  try {
+    await signInWithEmailAndPassword(auth, email, pw);
+  } catch(e) {
+    err.textContent = '이메일 또는 비밀번호를 확인해주세요.';
+  }
+});
+
+document.getElementById('btnLogout').addEventListener('click', () => signOut(auth));
+
+onAuthStateChanged(auth, async user => {
+  if(user) {
+    document.getElementById('loginWrap').style.display = 'none';
+    document.getElementById('appWrap').style.display = 'block';
+    await loadSettings();
+    populateClassSelects();
+    document.getElementById('selWeek').value = getCurrentWeek();
+  } else {
+    document.getElementById('loginWrap').style.display = 'flex';
+    document.getElementById('appWrap').style.display = 'none';
+  }
+});
+
+// ===== 설정 로드 (반 목록 + 숙제 항목) =====
+async function loadSettings() {
+  try {
+    const snap = await getDoc(doc(db,'settings','homework'));
+    if(snap.exists()) {
+      const d = snap.data();
+      classes = d.classes || [];
+      hwItems = d.hwItems || DEFAULT_HW_ITEMS;
+    } else {
+      classes = [];
+      hwItems = [...DEFAULT_HW_ITEMS];
+    }
+  } catch(e) { classes = []; hwItems = [...DEFAULT_HW_ITEMS]; }
+}
+
+async function saveSettings() {
+  await setDoc(doc(db,'settings','homework'), { classes, hwItems, updatedAt: new Date() });
+}
+
+function populateClassSelects() {
+  ['selClass','selClassHistory'].forEach(id => {
+    const sel = document.getElementById(id);
+    const first = sel.options[0];
+    sel.innerHTML = '';
+    sel.appendChild(first);
+    classes.forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c; opt.textContent = c;
+      sel.appendChild(opt);
+    });
+  });
+}
+
+// ===== 불러오기 =====
+document.getElementById('btnLoad').addEventListener('click', loadHomework);
+
+async function loadHomework() {
+  const cls = document.getElementById('selClass').value;
+  const week = document.getElementById('selWeek').value;
+  if(!cls) { showToast('반을 선택해주세요!'); return; }
+  if(!week) { showToast('주차를 선택해주세요!'); return; }
+
+  currentClass = cls;
+  currentWeek = week;
+  currentData = {};
+
+  const wrap = document.getElementById('hwTableWrap');
+  wrap.innerHTML = '<div class="loading">불러오는 중...</div>';
+
+  // Firebase에서 학생 목록 (해당 반)
+  try {
+    // users 컬렉션에서 반 일치하는 학생 가져오기
+    const usersSnap = await getDocs(collection(db,'users'));
+    currentStudents = usersSnap.docs
+      .map(d => ({id:d.id, ...d.data()}))
+      .filter(u => u.className === cls || u.class === cls)
+      .sort((a,b) => (a.name||'').localeCompare(b.name||''));
+
+    // 반 필드 없으면 전체 학생 (반 미배정)
+    if(currentStudents.length === 0) {
+      currentStudents = usersSnap.docs
+        .map(d => ({id:d.id, ...d.data()}))
+        .filter(u => !u.role || u.role !== 'teacher')
+        .sort((a,b) => (a.name||'').localeCompare(b.name||''));
+    }
+
+    // 기존 저장된 선생님 데이터 로드
+    const hwDocId = `${cls}_${week}`.replace(/[^a-zA-Z0-9가-힣_-]/g,'_');
+    const hwSnap = await getDoc(doc(db,'homework', hwDocId));
+    if(hwSnap.exists()) {
+      currentData = hwSnap.data().records || {};
+    }
+
+    // 학생 자체 체크 현황도 같이 로드
+    studentSelfChecks = {};
+    const weekStart = week; // week 형식 맞춰서 사용
+    // 학생별 studentHw 문서 로드
+    for(const stu of currentStudents) {
+      try {
+        const selfSnap = await getDoc(doc(db,'studentHw', `student_${stu.id}_${weekStart}`));
+        if(selfSnap.exists()) {
+          studentSelfChecks[stu.id] = {
+            ...selfSnap.data().checks || {},
+            dayChecks: selfSnap.data().dayChecks || {}
+          };
+        }
+      } catch(e) {}
+    }
+
+    renderTable();
+    document.getElementById('btnSaveAll').style.display = 'block';
+  } catch(e) {
+    wrap.innerHTML = `<div class="empty-state"><div class="empty-icon">😢</div><div>불러오기 실패: ${e.message}</div></div>`;
+  }
+}
+
+// ===== 테이블 렌더링 =====
+function renderTable() {
+  const wrap = document.getElementById('hwTableWrap');
+  if(currentStudents.length === 0) {
+    wrap.innerHTML = `<div class="empty-state"><div class="empty-icon">👥</div><div>학생이 없어요!<br><small style="color:var(--muted)">반 관리 탭에서 학생의 반 정보를 확인해주세요</small></div></div>`;
+    return;
+  }
+
+  // 완료율 계산
+  const totalCells = currentStudents.length * hwItems.length;
+  const doneCells = Object.values(currentData).reduce((sum, rec) => {
+    return sum + hwItems.filter(item => rec[item] === true).length;
+  }, 0);
+  const rate = totalCells > 0 ? Math.round((doneCells/totalCells)*100) : 0;
+
+  wrap.innerHTML = `
+    <div class="hw-table-wrap">
+      <div class="hw-table-header">
+        <div>
+          <div class="hw-table-title">${currentClass}</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px;">총 ${currentStudents.length}명</div>
+        </div>
+        <div style="text-align:right;">
+          <div class="hw-week-badge">${getWeekStr(currentWeek)}</div>
+          <div style="font-size:12px;color:var(--green);font-weight:700;margin-top:4px;">완료율 ${rate}%</div>
+          <div class="rate-bar" style="width:120px;margin-top:4px;margin-left:auto;"><div class="rate-fill" style="width:${rate}%"></div></div>
+        </div>
+      </div>
+      <div style="overflow-x:auto;">
+        <table id="hwTable">
+          <thead>
+            <tr>
+              <th style="min-width:120px">학생</th>
+              ${hwItems.map(item => `<th style="min-width:64px">${item}</th>`).join('')}
+              <th style="min-width:120px">📱 학생 요일체크</th>
+              <th style="min-width:100px">✅ 숙제 승인</th>
+              <th style="min-width:140px">💬 코멘트</th>
+            </tr>
+          </thead>
+          <tbody id="hwTbody"></tbody>
+        </table>
+      </div>
+    </div>`;
+
+  const tbody = document.getElementById('hwTbody');
+  currentStudents.forEach(stu => {
+    const rec = currentData[stu.id] || {};
+    const lv = getLv(stu.points||0);
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>
+        <div class="stu-cell">
+          <div class="stu-emoji">${EMOJIS[lv-1]}</div>
+          <div>
+            <div class="stu-name-cell">${stu.name||'학생'}</div>
+            <div class="stu-pts-cell">${(stu.points||0).toLocaleString()}pt</div>
+          </div>
+        </div>
+      </td>
+      ${hwItems.map(item => {
+        const val = rec[item];
+        const cls = val===true?'done':val===false?'undone':'none';
+        const icon = val===true?'✅':val===false?'❌':'－';
+        return `<td><button class="hw-check ${cls}" data-sid="${stu.id}" data-item="${item}">${icon}</button></td>`;
+      }).join('')}
+      <td>
+        <div style="display:flex;flex-direction:column;gap:3px;">
+          ${hwItems.map(item => {
+            const dayData = studentSelfChecks[stu.id]?.dayChecks?.[item] || [];
+            const days = ['월','화','수','목','금'];
+            const checkedCount = dayData.filter(Boolean).length;
+            if(dayData.length > 0) {
+              return `<div style="display:flex;align-items:center;gap:2px;margin-bottom:2px;">
+                <span style="font-size:10px;color:var(--muted);width:48px;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${item}</span>
+                ${days.map((d,i) => `<span style="font-size:9px;width:16px;text-align:center;padding:1px 2px;border-radius:3px;font-weight:700;background:${dayData[i]?'var(--green-light)':'rgba(0,0,0,0.05)'};color:${dayData[i]?'var(--green)':'var(--muted)'};">${d}</span>`).join('')}
+                <span style="font-size:9px;color:${checkedCount>=3?'var(--green)':'var(--muted)'};margin-left:2px;">${checkedCount}/5</span>
+              </div>`;
+            }
+            return `<span style="font-size:10px;color:var(--muted);">－ ${item}</span>`;
+          }).join('')}
+        </div>
+      </td>
+      <td style="text-align:center;">
+        <div style="display:flex;flex-direction:column;gap:4px;align-items:center;">
+          ${rec.hwApproved ? 
+            `<span style="font-size:11px;font-weight:700;color:var(--green);">✅ 승인완료</span>
+             <span style="font-size:10px;color:var(--muted);">+${rec.hwPtsAwarded||0}pt</span>
+             <button class="btn-hw-reject" data-sid="${stu.id}" style="font-size:10px;color:var(--red);background:none;border:1px solid #fca5a5;border-radius:6px;padding:2px 6px;cursor:pointer;">취소</button>` :
+            `<span style="font-size:10px;color:var(--muted);text-align:center;line-height:1.5;">피드백 입력 후<br>AI 윤문 → 승인</span>
+             <button class="btn-hw-flag" data-sid="${stu.id}" style="padding:6px 10px;background:var(--red-light);color:var(--red);border:1px solid #fca5a5;border-radius:8px;font-family:'Noto Sans KR',sans-serif;font-size:12px;font-weight:700;cursor:pointer;">❌ 불인정</button>`
+          }
+        </div>
+      </td>
+      <td style="min-width:200px;">
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <!-- 1차: 선생님 입력 -->
+          <textarea class="memo-input comment-input" rows="2" data-sid="${stu.id}"
+            placeholder="1️⃣ 피드백 초안 입력..."
+            style="font-size:11px;">${rec.teacherDraft||rec.teacherComment||''}</textarea>
+          <!-- AI 윤문 버튼 -->
+          <button class="btn-ai-refine" data-sid="${stu.id}"
+            style="padding:5px 8px;background:linear-gradient(135deg,#7c5cbf,#a07ee0);color:white;border:none;border-radius:8px;font-family:'Noto Sans KR',sans-serif;font-size:11px;font-weight:700;cursor:pointer;">
+            ✨ AI 윤문
+          </button>
+          <!-- 2차: AI 윤문 결과 (있을 때만) -->
+          ${rec.aiFeedbackDraft ? `
+          <div style="background:#f9f8ff;border:1px solid var(--purple2);border-radius:8px;padding:6px 8px;font-size:11px;line-height:1.6;color:#1a1a2e;" class="ai-draft-preview" data-sid="${stu.id}">
+            ${rec.aiFeedbackDraft}
+          </div>
+          <div style="display:flex;gap:4px;">
+            <button class="btn-final-approve" data-sid="${stu.id}"
+              style="flex:1;padding:5px;background:var(--green);color:white;border:none;border-radius:8px;font-family:'Noto Sans KR',sans-serif;font-size:11px;font-weight:700;cursor:pointer;">
+              ✅ 이 피드백으로 최종 승인
+            </button>
+          </div>` : ''}
+        </div>
+      </td>`;
+    tbody.appendChild(tr);
+  });
+
+  // 체크 버튼 이벤트
+  tbody.querySelectorAll('.hw-check').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const {sid, item} = btn.dataset;
+      if(!currentData[sid]) currentData[sid] = {};
+      const cur = currentData[sid][item];
+      // 순환: 미확인 → 완료 → 미완료 → 미확인
+      if(cur === undefined || cur === null) {
+        currentData[sid][item] = true;
+        btn.className = 'hw-check done'; btn.textContent = '✅';
+      } else if(cur === true) {
+        currentData[sid][item] = false;
+        btn.className = 'hw-check undone'; btn.textContent = '❌';
+      } else {
+        delete currentData[sid][item];
+        btn.className = 'hw-check none'; btn.textContent = '－';
+      }
+      updateRateDisplay();
+    });
+  });
+
+  // 승인은 최종 승인 버튼(btn-final-approve)으로만 처리
+
+  // 불인정 버튼
+  tbody.querySelectorAll('.btn-hw-flag').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const sid = btn.dataset.sid;
+      if(!currentData[sid]) currentData[sid] = {};
+      currentData[sid].hwApproved = false;
+      currentData[sid].hwPtsAwarded = 0;
+      const hwDocId = `${currentClass}_${currentWeek}`.replace(/[^a-zA-Z0-9가-힣_-]/g,'_');
+      await setDoc(doc(db,'homework',hwDocId), {records:currentData}, {merge:true});
+      await setDoc(doc(db,'studentHw',`student_${sid}_${currentWeek}`), {
+        hwApproved: false
+      }, {merge:true});
+      showToast('❌ 불인정 처리');
+      await loadHomework();
+    });
+  });
+
+  // 승인 취소
+  tbody.querySelectorAll('.btn-hw-reject').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const sid = btn.dataset.sid;
+      const pts = currentData[sid]?.hwPtsAwarded || 0;
+      if(!confirm(`승인을 취소할까요? ${pts>0?`(-${pts}pt 차감)`:''}`) ) return;
+      if(pts > 0) {
+        const userSnap = await getDoc(doc(db,'users',sid));
+        const curPts = Math.max((userSnap.data()?.points||0) - pts, 0);
+        await updateDoc(doc(db,'users',sid), {points: curPts});
+      }
+      currentData[sid].hwApproved = false;
+      currentData[sid].hwPtsAwarded = 0;
+      const hwDocId = `${currentClass}_${currentWeek}`.replace(/[^a-zA-Z0-9가-힣_-]/g,'_');
+      await setDoc(doc(db,'homework',hwDocId), {records:currentData}, {merge:true});
+      showToast('승인 취소됐어요!');
+      await loadHomework();
+    });
+  });
+
+  // 코멘트 이벤트 (학생에게 표시)
+  // 1차 초안 자동 저장
+  tbody.querySelectorAll('.comment-input').forEach(inp => {
+    inp.addEventListener('input', () => {
+      const sid = inp.dataset.sid;
+      if(!currentData[sid]) currentData[sid] = {};
+      currentData[sid].teacherDraft = inp.value;
+    });
+    inp.addEventListener('blur', async () => {
+      const sid = inp.dataset.sid;
+      const draft = inp.value.trim();
+      if(!draft || !currentClass || !currentWeek) return;
+      try {
+        const hwDocId = `${currentClass}_${currentWeek}`.replace(/[^a-zA-Z0-9가-힣_-]/g,'_');
+        if(!currentData[sid]) currentData[sid] = {};
+        currentData[sid].teacherDraft = draft;
+        await setDoc(doc(db,'homework',hwDocId), {records:currentData}, {merge:true});
+      } catch(e) {}
+    });
+  });
+
+  // AI 윤문 버튼
+  tbody.querySelectorAll('.btn-ai-refine').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const sid = btn.dataset.sid;
+      const row = btn.closest('tr');
+      const draftInput = row.querySelector('.comment-input');
+      const draft = draftInput?.value?.trim();
+      if(!draft) { showToast('피드백 초안을 먼저 입력해주세요!'); return; }
+
+      btn.textContent = '⏳ 윤문 중...'; btn.disabled = true;
+
+      const stuName = currentStudents.find(s=>s.id===sid)?.name || '학생';
+      try {
+        const selfSnap = await getDoc(doc(db,'studentHw',`student_${sid}_${currentWeek}`));
+        const dayChecks = selfSnap.data()?.dayChecks || {};
+        const checkSummary = Object.entries(dayChecks).map(([item,days])=>
+          `${item}: ${(days||[]).filter(Boolean).length}/5일`).join(', ');
+
+        const res = await fetch('https://api.anthropic.com/v1/messages', {
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({
+            model: 'claude-sonnet-4-20250514',
+            max_tokens: 500,
+            system: `당신은 글모락 국어학원의 따뜻한 선생님입니다. 선생님이 작성한 피드백 초안을 받아 다음 규칙으로 윤문해주세요:
+1. 학생 이름(${stuName})을 자연스럽게 부르며 시작
+2. 선생님의 의도와 핵심 메시지를 그대로 유지
+3. 1~2문단, 따뜻하고 격려하는 어조로
+4. 이모지 1~2개 포함
+5. 윤문된 피드백만 출력 (설명 없이)`,
+            messages: [{role:'user', content:`선생님 초안: ${draft}
+
+학생 숙제 현황: ${checkSummary}`}]
+          })
+        });
+        const data = await res.json();
+        const refined = data.content?.[0]?.text?.trim() || draft;
+
+        // 저장
+        if(!currentData[sid]) currentData[sid] = {};
+        currentData[sid].aiFeedbackDraft = refined;
+        const hwDocId = `${currentClass}_${currentWeek}`.replace(/[^a-zA-Z0-9가-힣_-]/g,'_');
+        await setDoc(doc(db,'homework',hwDocId), {records:currentData}, {merge:true});
+
+        showToast('✨ AI 윤문 완료! 확인 후 최종 승인해주세요!');
+        await loadHomework();
+      } catch(e) {
+        showToast('AI 윤문 실패 😢 다시 시도해주세요.');
+      }
+      btn.textContent = '✨ AI 윤문'; btn.disabled = false;
+    });
+  });
+
+  // 최종 승인 버튼 (AI 윤문 후)
+  tbody.querySelectorAll('.btn-final-approve').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const sid = btn.dataset.sid;
+      btn.textContent = '⏳ 처리 중...'; btn.disabled = true;
+
+      let totalPts = 0;
+      try {
+        const stuSnap = await getDoc(doc(db,'users',sid));
+        const stuClass = stuSnap.data()?.className || stuSnap.data()?.class || currentClass;
+        if(stuClass) {
+          const classSheetSnap = await getDoc(doc(db,'sheets',stuClass));
+          if(classSheetSnap.exists()) {
+            const shItems = classSheetSnap.data().items || [];
+            const bonusPts = classSheetSnap.data().bonusPts || 0;
+            const selfSnap = await getDoc(doc(db,'studentHw',`student_${sid}_${currentWeek}`));
+            const dayChecks = selfSnap.data()?.dayChecks || {};
+            shItems.forEach(item => {
+              if((dayChecks[item.title]||[]).some(v=>v)) totalPts += (item.points||10);
+            });
+            if(shItems.every(item=>(dayChecks[item.title]||[]).some(v=>v))) totalPts += bonusPts;
+          }
+        }
+        if(totalPts===0) totalPts = hwItems.length * 10;
+      } catch(e) {}
+
+      try {
+        const feedback = currentData[sid]?.aiFeedbackDraft || '';
+        if(!currentData[sid]) currentData[sid] = {};
+        currentData[sid].hwApproved = true;
+        currentData[sid].hwPtsAwarded = totalPts;
+        currentData[sid].teacherComment = feedback;
+
+        const hwDocId = `${currentClass}_${currentWeek}`.replace(/[^a-zA-Z0-9가-힣_-]/g,'_');
+        await setDoc(doc(db,'homework',hwDocId), {
+          class:currentClass, week:currentWeek, records:currentData, savedAt:new Date()
+        }, {merge:true});
+
+        // 포인트 지급
+        if(totalPts > 0) {
+          const userSnap = await getDoc(doc(db,'users',sid));
+          const curPts = userSnap.data()?.points || 0;
+          await updateDoc(doc(db,'users',sid), {points: curPts + totalPts});
+        }
+
+        // 학생에게 전달
+        await setDoc(doc(db,'studentHw',`student_${sid}_${currentWeek}`), {
+          hwApproved: true,
+          hwPtsAwarded: totalPts,
+          aiFeedback: feedback,
+          teacherComment: feedback,
+          approvedAt: new Date()
+        }, {merge:true});
+
+        showToast(`🎉 최종 승인! +${totalPts}pt 지급`);
+        await loadHomework();
+      } catch(e) { showToast('오류: '+e.message); }
+    });
+  });
+}
+
+function updateRateDisplay() {
+  const totalCells = currentStudents.length * hwItems.length;
+  const doneCells = Object.values(currentData).reduce((sum, rec) => {
+    return sum + hwItems.filter(item => rec[item] === true).length;
+  }, 0);
+  const rate = totalCells > 0 ? Math.round((doneCells/totalCells)*100) : 0;
+  const rateEl = document.querySelector('.rate-fill');
+  const rateTxt = document.querySelector('.hw-table-header .rate-bar + div');
+  if(rateEl) rateEl.style.width = rate + '%';
+}
+
+// ===== 전체 저장 =====
+document.getElementById('btnSaveAll').addEventListener('click', saveHomework);
+
+async function saveHomework() {
+  if(!currentClass || !currentWeek) return;
+  const btn = document.getElementById('btnSaveAll');
+  btn.textContent = '⏳ 저장 중...'; btn.disabled = true;
+  try {
+    const hwDocId = `${currentClass}_${currentWeek}`.replace(/[^a-zA-Z0-9가-힣_-]/g,'_');
+    await setDoc(doc(db,'homework', hwDocId), {
+      class: currentClass,
+      week: currentWeek,
+      weekStr: getWeekStr(currentWeek),
+      hwItems,
+      records: currentData,
+      studentCount: currentStudents.length,
+      savedAt: new Date()
+    });
+    showToast('💾 저장 완료!');
+  } catch(e) {
+    showToast('저장 실패: ' + e.message);
+  }
+  btn.textContent = '💾 전체 저장'; btn.disabled = false;
+}
+
+// ===== 이력 조회 =====
+async function loadHistory() {
+  const cls = document.getElementById('selClassHistory').value;
+  const name = document.getElementById('historyName').value.trim();
+  const listEl = document.getElementById('historyList');
+  listEl.innerHTML = '<div class="loading">불러오는 중...</div>';
+
+  try {
+    const snap = await getDocs(collection(db,'homework'));
+    let docs = snap.docs.map(d => d.data());
+
+    if(cls) docs = docs.filter(d => d.class === cls);
+    docs.sort((a,b) => (b.week||'').localeCompare(a.week||''));
+
+    if(docs.length === 0) {
+      listEl.innerHTML = '<div class="empty-state"><div class="empty-icon">📅</div><div>저장된 이력이 없어요!</div></div>';
+      return;
+    }
+
+    listEl.innerHTML = docs.map(d => {
+      const records = d.records || {};
+      const items = d.hwItems || hwItems;
+      const students = Object.entries(records);
+
+      // 이름 검색 필터
+      let filteredStudents = students;
+      if(name) {
+        const matchIds = currentStudents.filter(s => s.name?.includes(name)).map(s => s.id);
+        filteredStudents = students.filter(([sid]) => matchIds.includes(sid));
+      }
+
+      const totalCells = filteredStudents.length * items.length;
+      const doneCells = filteredStudents.reduce((sum,[,rec]) =>
+        sum + items.filter(i => rec[i]===true).length, 0);
+      const rate = totalCells > 0 ? Math.round((doneCells/totalCells)*100) : 0;
+
+      const studentRows = filteredStudents.map(([sid, rec]) => {
+        const stu = currentStudents.find(s=>s.id===sid);
+        const stuName = stu?.name || sid;
+        const doneItems = items.filter(i=>rec[i]===true);
+        const undoneItems = items.filter(i=>rec[i]===false);
+        return `<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px;">
+          <div style="width:70px;font-weight:700">${stuName}</div>
+          <div style="flex:1;display:flex;flex-wrap:wrap;gap:4px;">
+            ${items.map(item => `<span style="padding:2px 7px;border-radius:6px;font-size:11px;font-weight:700;background:${rec[item]===true?'var(--green-light)':rec[item]===false?'var(--red-light)':'var(--surface2)'};color:${rec[item]===true?'var(--green)':rec[item]===false?'var(--red)':'var(--muted)'}">
+              ${rec[item]===true?'✅':rec[item]===false?'❌':'－'} ${item}
+            </span>`).join('')}
+          </div>
+          ${rec.memo ? `<div style="font-size:11px;color:var(--muted);max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${rec.memo}</div>` : ''}
+        </div>`;
+      }).join('');
+
+      return `<div class="history-card">
+        <div class="history-header">
+          <div>
+            <div class="history-week">${d.weekStr || d.week}</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:2px;">${d.studentCount||0}명</div>
+          </div>
+          <div style="text-align:right;">
+            <div class="history-class">${d.class}</div>
+            <div style="font-size:12px;color:var(--green);font-weight:700;margin-top:4px;">${rate}% 완료</div>
+          </div>
+        </div>
+        <div class="rate-bar"><div class="rate-fill" style="width:${rate}%"></div></div>
+        ${filteredStudents.length > 0 ? `<div style="margin-top:12px;">${studentRows}</div>` : ''}
+      </div>`;
+    }).join('');
+
+  } catch(e) {
+    listEl.innerHTML = `<div class="empty-state">불러오기 실패: ${e.message}</div>`;
+  }
+}
+
+// ===== 반 관리 =====
+function renderClassManager() {
+  const listEl = document.getElementById('classList');
+  listEl.innerHTML = classes.length === 0
+    ? '<div style="font-size:13px;color:var(--muted)">아직 반이 없어요!</div>'
+    : classes.map(c => `
+        <div class="class-chip">
+          ${c}
+          <button class="chip-del" data-cls="${c}">✕</button>
+        </div>`).join('');
+
+  listEl.querySelectorAll('.chip-del').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      classes = classes.filter(c => c !== btn.dataset.cls);
+      await saveSettings();
+      populateClassSelects();
+      renderClassManager();
+      showToast('반이 삭제됐어요!');
+    });
+  });
+
+  // 숙제 항목 렌더링
+  const hwEl = document.getElementById('hwItemList');
+  hwEl.innerHTML = hwItems.map(item => `
+    <div class="class-chip" style="background:var(--gold-light);color:var(--gold);">
+      ${item}
+      <button class="chip-del" data-item="${item}" style="color:var(--gold);">✕</button>
+    </div>`).join('');
+
+  hwEl.querySelectorAll('.chip-del').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      hwItems = hwItems.filter(i => i !== btn.dataset.item);
+      await saveSettings();
+      renderClassManager();
+      showToast('항목이 삭제됐어요!');
+    });
+  });
+}
+
+document.getElementById('btnAddClass').addEventListener('click', async () => {
+  const name = document.getElementById('newClassName').value.trim();
+  if(!name) return;
+  if(classes.includes(name)) { showToast('이미 있는 반이에요!'); return; }
+  classes.push(name);
+  await saveSettings();
+  populateClassSelects();
+  renderClassManager();
+  document.getElementById('newClassName').value = '';
+  showToast('✅ 반이 추가됐어요!');
+});
+
+document.getElementById('btnAddHwItem').addEventListener('click', async () => {
+  const item = document.getElementById('newHwItem').value.trim();
+  if(!item) return;
+  if(hwItems.includes(item)) { showToast('이미 있는 항목이에요!'); return; }
+  hwItems.push(item);
+  await saveSettings();
+  renderClassManager();
+  document.getElementById('newHwItem').value = '';
+  showToast('✅ 항목이 추가됐어요!');
+});
+
+// Enter 키
+document.getElementById('loginPw').addEventListener('keydown', e => {
+  if(e.key==='Enter') document.getElementById('btnLogin').click();
+});
+document.getElementById('newClassName').addEventListener('keydown', e => {
+  if(e.key==='Enter') document.getElementById('btnAddClass').click();
+});
+document.getElementById('newHwItem').addEventListener('keydown', e => {
+  if(e.key==='Enter') document.getElementById('btnAddHwItem').click();
+});
+
+// ===== 숙제표 =====
+let sheetData = {}; // { 반명: { weekLabel, book, nextBook, quote, items:[{title,desc,required}] } }
+let currentSheetClass = '';
+
+// 주차 버튼 이벤트
+document.querySelectorAll('.week-type-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.week-type-btn').forEach(b => {
+      b.style.border = '2px solid var(--border)';
+      b.style.background = 'white';
+      b.style.color = 'var(--muted)';
+      b.classList.remove('active-week');
+      const badge = b.querySelector('span');
+      if(badge) { badge.style.background='#e5e7eb'; badge.style.color='#374151'; }
+    });
+    btn.style.border = '2px solid var(--purple)';
+    btn.style.background = 'var(--purple-light)';
+    btn.style.color = 'var(--purple)';
+    btn.classList.add('active-week');
+    const activeBadge = btn.querySelector('span');
+    if(activeBadge) { activeBadge.style.background='var(--purple)'; activeBadge.style.color='white'; }
+    const week = btn.dataset.week;
+    const isMovie = week === '3';
+    // 다음주 라벨 업데이트
+    const nextGenreLabel = btn.dataset.nextgenre || '';
+    const nextLabel = document.getElementById('nextBookLabel');
+    if(nextLabel) {
+      nextLabel.textContent = isMovie ? `🎬 다음 주 볼 영화` : `📖 다음 주 읽어올 책 (${nextGenreLabel})`;
+    }
+    document.getElementById('bookInputSection').style.display = isMovie ? 'none' : 'block';
+    document.getElementById('movieInputSection').style.display = isMovie ? 'block' : 'none';
+    document.getElementById('sheetWeekType').value = isMovie ? 'movie' : 'book';
+    renderSheetPreview();
+  });
+});
+
+function initSheetTab() {
+  // 반 셀렉트 채우기
+  const sel = document.getElementById('sheetSelClass');
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">-- 반 선택 --</option>';
+  classes.forEach(c => {
+    const opt = document.createElement('option');
+    opt.value = c; opt.textContent = c;
+    sel.appendChild(opt);
+  });
+  if(cur) sel.value = cur;
+}
+
+document.getElementById('btnLoadSheet').addEventListener('click', async () => {
+  const cls = document.getElementById('sheetSelClass').value;
+  if(!cls) { showToast('반을 선택해주세요!'); return; }
+  currentSheetClass = cls;
+
+  try {
+    const snap = await getDoc(doc(db, 'sheets', cls));
+    if(snap.exists()) {
+      const d = snap.data();
+      document.getElementById('sheetWeekLabel').value = d.weekLabel || '';
+      document.getElementById('sheetBook').value = d.book || '';
+      if(document.getElementById('sheetBookAuthor')) document.getElementById('sheetBookAuthor').value = d.bookAuthor || '';
+      if(document.getElementById('sheetBookPublisher')) document.getElementById('sheetBookPublisher').value = d.bookPublisher || '';
+      document.getElementById('sheetNextBook').value = d.nextBook || '';
+      if(document.getElementById('sheetNextBookAuthor')) document.getElementById('sheetNextBookAuthor').value = d.nextBookAuthor || '';
+      if(document.getElementById('sheetNextBookPublisher')) document.getElementById('sheetNextBookPublisher').value = d.nextBookPublisher || '';
+      if(document.getElementById('sheetMovie')) document.getElementById('sheetMovie').value = d.movie || '';
+      if(document.getElementById('sheetMovieDirector')) document.getElementById('sheetMovieDirector').value = d.movieDirector || '';
+      if(document.getElementById('sheetMovieYear')) document.getElementById('sheetMovieYear').value = d.movieYear || '';
+      if(document.getElementById('sheetMovieNote')) document.getElementById('sheetMovieNote').value = d.movieNote || '';
+      // 주차 타입 복원
+      if(d.weekType === 'movie') {
+        document.querySelector('.week-type-btn[data-week="3"]')?.click();
+      }
+      document.getElementById('sheetQuote').value = d.quote || '';
+      sheetData[cls] = d;
+      if(document.getElementById('sheetBonusPts')) document.getElementById('sheetBonusPts').value = d.bonusPts || 50;
+      renderSheetEditor(d.items || []);
+    } else {
+      document.getElementById('sheetWeekLabel').value = '';
+      document.getElementById('sheetBook').value = '';
+      document.getElementById('sheetNextBook').value = '';
+      document.getElementById('sheetQuote').value = '';
+      sheetData[cls] = { items: [] };
+      renderSheetEditor([]);
+    }
+    document.getElementById('sheetEditor').style.display = 'block';
+    document.getElementById('btnSaveSheet').style.display = 'block';
+    document.getElementById('btnPrintSheet').style.display = 'block';
+    document.getElementById('bonusPtsWrap').style.display = 'flex';
+    document.getElementById('btnPrintSheet').style.display = 'block';
+    renderSheetPreview();
+  } catch(e) { showToast('불러오기 실패: ' + e.message); }
+});
+
+let sheetItems = [];
+
+function renderSheetEditor(items) {
+  sheetItems = items.length ? [...items] : [];
+  const el = document.getElementById('sheetItemsEditor');
+  el.innerHTML = '';
+  sheetItems.forEach((item, i) => {
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;gap:8px;align-items:flex-start;margin-bottom:10px;';
+    row.innerHTML = `
+      <div style="flex:1;display:flex;flex-direction:column;gap:6px;">
+        <div style="display:flex;gap:6px;">
+          <input type="text" value="${item.title||''}" placeholder="항목 제목 (예: 글모락 기본)"
+            style="flex:1;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-family:'Noto Sans KR',sans-serif;font-size:13px;font-weight:700;outline:none;">
+          <div style="display:flex;align-items:center;gap:4px;flex-shrink:0;">
+            <input type="number" value="${item.points||10}" min="0" max="500" placeholder="pt"
+              style="width:64px;padding:8px 6px;border:1px solid var(--border);border-radius:8px;font-family:'Noto Sans KR',sans-serif;font-size:13px;font-weight:900;color:var(--gold);text-align:center;outline:none;">
+            <span style="font-size:11px;color:var(--muted);">pt</span>
+          </div>
+        </div>
+        <textarea placeholder="세부 내용 (예: 단어 & 고사성어 암기, 서체 교정, 한자&#10;틀린 것은 남아서 3번씩 써야 함)" rows="2"
+          style="padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-family:'Noto Sans KR',sans-serif;font-size:12px;outline:none;resize:none;line-height:1.6;">${item.desc||''}</textarea>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <label style="display:flex;align-items:center;gap:4px;font-size:12px;color:var(--muted);cursor:pointer;">
+            <input type="checkbox" ${item.required?'checked':''} style="cursor:pointer;"> 필수항목 표시 (!)
+          </label>
+          <label style="display:flex;align-items:center;gap:4px;font-size:12px;color:var(--muted);cursor:pointer;">
+            <input type="checkbox" ${item.isNew?'checked':''} style="cursor:pointer;"> NEW! 표시
+          </label>
+        </div>
+      </div>
+      <button data-i="${i}" class="del-sheet-item" style="padding:6px 10px;background:#fee2e2;color:#dc2626;border:none;border-radius:8px;cursor:pointer;font-size:12px;flex-shrink:0;">✕</button>`;
+    // 값 변경 감지
+    const inputs = row.querySelectorAll('input[type="text"], textarea');
+    inputs[0].addEventListener('input', () => { sheetItems[i].title = inputs[0].value; renderSheetPreview(); });
+    inputs[1].addEventListener('input', () => { sheetItems[i].desc = inputs[1].value; renderSheetPreview(); });
+    const ptInput = row.querySelector('input[type="number"]');
+    ptInput.addEventListener('input', () => { sheetItems[i].points = parseInt(ptInput.value)||0; });
+    const checks = row.querySelectorAll('input[type="checkbox"]');
+    checks[0].addEventListener('change', () => { sheetItems[i].required = checks[0].checked; renderSheetPreview(); });
+    checks[1].addEventListener('change', () => { sheetItems[i].isNew = checks[1].checked; renderSheetPreview(); });
+    row.querySelector('.del-sheet-item').addEventListener('click', () => {
+      sheetItems.splice(i, 1);
+      renderSheetEditor(sheetItems);
+      renderSheetPreview();
+    });
+    el.appendChild(row);
+  });
+
+  // 입력 변경시 미리보기 갱신
+  ['sheetBook','sheetBookAuthor','sheetBookPublisher','sheetNextBook','sheetNextBookAuthor','sheetNextBookPublisher','sheetMovie','sheetMovieDirector','sheetMovieYear','sheetMovieNote','sheetQuote','sheetWeekLabel'].forEach(id => {
+    document.getElementById(id).oninput = () => renderSheetPreview();
+  });
+}
+
+document.getElementById('btnAddSheetItem').addEventListener('click', () => {
+  sheetItems.push({ title:'', desc:'', required:false, isNew:false });
+  renderSheetEditor(sheetItems);
+  renderSheetPreview();
+});
+
+function renderSheetPreview() {
+  const cls = currentSheetClass;
+  const week = document.getElementById('sheetWeekLabel').value || '';
+  const book = ''; // 이번 주 읽을 책 필드 제거됨
+  const nextBook = document.getElementById('sheetNextBook').value || '';
+  const quote = document.getElementById('sheetQuote').value || '';
+
+  const previewEl = document.getElementById('sheetPreview');
+  previewEl.innerHTML = `
+    <div style="background:white;border-radius:16px;border:1px solid var(--border);padding:20px;margin-bottom:16px;">
+      <div style="font-size:14px;font-weight:900;margin-bottom:16px;">👀 미리보기</div>
+      <div id="printArea" style="font-family:'Noto Sans KR',sans-serif;">
+        <div style="background:linear-gradient(135deg,#7c5cbf,#a07ee0);color:white;border-radius:14px;padding:16px 18px;margin-bottom:14px;text-align:center;">
+          <div style="font-size:11px;opacity:0.8;margin-bottom:4px;">📚 글모락 숙제표</div>
+          <div style="font-size:20px;font-weight:900;">${cls} ${week}</div>
+        </div>
+        ${(() => {
+          const wt = document.getElementById('sheetWeekType')?.value || 'book';
+          if(wt === 'movie') {
+            const mv = document.getElementById('sheetMovie')?.value || '';
+            const dir = document.getElementById('sheetMovieDirector')?.value || '';
+            const yr = document.getElementById('sheetMovieYear')?.value || '';
+            const note = document.getElementById('sheetMovieNote')?.value || '';
+            return mv ? `<div style="background:#fff8f0;border-radius:10px;padding:10px 14px;margin-bottom:10px;font-size:13px;border:1px solid #fde68a;">
+              <span style="font-weight:700;color:#d97706;">🎬 이번 주 볼 영화</span><br>
+              <span style="font-size:15px;font-weight:900;">${mv}</span>
+              ${dir||yr ? `<span style="font-size:12px;color:#92400e;"> | ${dir}${yr?' ('+yr+')':''}</span>` : ''}
+              ${note ? `<div style="font-size:11px;color:#92400e;margin-top:4px;">💡 ${note}</div>` : ''}
+            </div>` : '';
+          } else {
+            return '';
+          }
+        })()}
+        ${quote ? `<div style="background:#fef9ec;border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:12px;color:#92400e;font-style:italic;line-height:1.6;">"${quote}"</div>` : ''}
+        <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;">
+          ${sheetItems.map(item => `
+            <div style="border:1px solid #e5e3f5;border-radius:10px;padding:10px 14px;">
+              <div style="font-size:13px;font-weight:900;margin-bottom:4px;color:#1a1a2e;">
+                □ ${item.isNew?'<span style="color:#dc2626;font-weight:900;">NEW! </span>':''}
+                ${item.required?'<span style="color:#dc2626;">!</span> ':''} 
+                [${item.title||'항목'}]
+              </div>
+              ${item.desc ? `<div style="font-size:12px;color:#6b7280;line-height:1.7;white-space:pre-line;">${item.desc}</div>` : ''}
+            </div>`).join('')}
+        </div>
+        ${(() => {
+          const wt = document.getElementById('sheetWeekType')?.value || 'book';
+          if(wt === 'movie') return '';
+          const nextAuth = document.getElementById('sheetNextBookAuthor')?.value || '';
+          const nextPub = document.getElementById('sheetNextBookPublisher')?.value || '';
+          return nextBook ? `<div style="background:#f0fdf4;border:1px solid #86efac;border-radius:10px;padding:10px 14px;font-size:12px;">
+            <span style="font-weight:700;color:#16a34a;">📖 다음 주 읽어올 책</span><br>
+            <span style="font-size:13px;font-weight:700;">${nextBook}</span>
+            ${nextAuth ? `<span style="font-size:11px;color:#166534;"> | ${nextAuth}</span>` : ''}
+            ${nextPub ? `<span style="font-size:11px;color:#166534;"> · ${nextPub}</span>` : ''}
+          </div>` : '';
+        })()}
+      </div>
+    </div>`;
+}
+
+document.getElementById('btnSaveSheet').addEventListener('click', async () => {
+  const cls = currentSheetClass;
+  if(!cls) return;
+  const btn = document.getElementById('btnSaveSheet');
+  btn.textContent = '⏳ 저장 중...'; btn.disabled = true;
+  try {
+    const weekType = document.getElementById('sheetWeekType')?.value || 'book';
+    const isMovie = weekType === 'movie';
+    const data = {
+      class: cls,
+      weekLabel: document.getElementById('sheetWeekLabel').value,
+      weekType,
+      // 책 정보
+      book: document.getElementById('sheetBook')?.value || '',
+      bookAuthor: document.getElementById('sheetBookAuthor')?.value || '',
+      bookPublisher: document.getElementById('sheetBookPublisher')?.value || '',
+      nextBook: document.getElementById('sheetNextBook')?.value || '',
+      nextBookAuthor: document.getElementById('sheetNextBookAuthor')?.value || '',
+      nextBookPublisher: document.getElementById('sheetNextBookPublisher')?.value || '',
+      // 영화 정보 (4주차)
+      movie: document.getElementById('sheetMovie')?.value || '',
+      movieDirector: document.getElementById('sheetMovieDirector')?.value || '',
+      movieYear: document.getElementById('sheetMovieYear')?.value || '',
+      movieNote: document.getElementById('sheetMovieNote')?.value || '',
+      quote: document.getElementById('sheetQuote').value,
+      items: sheetItems,
+      bonusPts: parseInt(document.getElementById('sheetBonusPts')?.value)||0,
+      updatedAt: new Date()
+    };
+    await setDoc(doc(db, 'sheets', cls), data);
+    showToast('💾 숙제표 저장 완료!');
+  } catch(e) { showToast('저장 실패: ' + e.message); }
+  btn.textContent = '💾 저장'; btn.disabled = false;
+});
+
+window.printSheet = () => {
+  const printArea = document.getElementById('printArea');
+  if(!printArea) return;
+  const win = window.open('', '_blank');
+  win.document.write(`<!DOCTYPE html><html><head>
+    <meta charset="UTF-8">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+      * { margin:0; padding:0; box-sizing:border-box; }
+      body { font-family:'Noto Sans KR',sans-serif; padding:20px; }
+      @media print { body { padding:10px; } }
+    </style>
+    </head><body>${printArea.innerHTML}</body></html>`);
+  win.document.close();
+  win.onload = () => { win.print(); };
+};
+
+// ===== 학생 통계 =====
+function initStatsTab() {
+  const sel = document.getElementById('statsSelStudent');
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">-- 학생 선택 --</option>';
+  // 전체 학생 목록
+  getDocs(collection(db,'users')).then(snap => {
+    snap.docs
+      .map(d=>({id:d.id,...d.data()}))
+      .filter(u=>!u.role||u.role!=='teacher')
+      .sort((a,b)=>(a.name||'').localeCompare(b.name||''))
+      .forEach(u => {
+        const opt = document.createElement('option');
+        opt.value = u.id; opt.textContent = u.name||u.email||u.id;
+        sel.appendChild(opt);
+      });
+    if(cur) sel.value = cur;
+  });
+}
+
+document.getElementById('btnLoadStats').addEventListener('click', async () => {
+  const uid = document.getElementById('statsSelStudent').value;
+  const weeks = parseInt(document.getElementById('statsSelPeriod').value)||4;
+  if(!uid) { showToast('학생을 선택해주세요!'); return; }
+
+  const btn = document.getElementById('btnLoadStats');
+  btn.textContent = '⏳ 분석 중...'; btn.disabled = true;
+
+  const content = document.getElementById('statsContent');
+  content.innerHTML = '<div class="loading">데이터 불러오는 중...</div>';
+
+  try {
+    // 모든 studentHw 문서 로드
+    const snap = await getDocs(query(
+      collection(db,'studentHw'),
+      where('userId','==',uid)
+    ));
+
+    if(snap.empty) {
+      content.innerHTML = '<div class="empty-state"><div class="empty-icon">📭</div><div>아직 숙제 데이터가 없어요!</div></div>';
+      btn.textContent = '📊 분석하기'; btn.disabled = false;
+      return;
+    }
+
+    // 주차별 데이터 정렬 (최근 N주)
+    const allDocs = snap.docs
+      .map(d => ({id: d.id, ...d.data()}))
+      .filter(d => d.weekStart)
+      .sort((a,b) => b.weekStart.localeCompare(a.weekStart))
+      .slice(0, weeks);
+
+    const stuName = document.getElementById('statsSelStudent').selectedOptions[0]?.text || '학생';
+
+    // 항목별 체크율 계산
+    const itemStats = {}; // { 항목명: { total: 주차수, checked: 체크된 주차수, dayChecked: 총 체크일수, totalDays: 총 가능일수 } }
+    const weeklyRates = []; // [{ week, rate }]
+
+    allDocs.forEach(doc => {
+      const dayChecks = doc.dayChecks || {};
+      const checks = doc.checks || {};
+      const items = Object.keys(dayChecks).length > 0 ? Object.keys(dayChecks) : Object.keys(checks);
+      let weekDone = 0, weekTotal = 0;
+
+      items.forEach(item => {
+        if(!itemStats[item]) itemStats[item] = { total:0, checked:0, totalDays:0, checkedDays:0 };
+        itemStats[item].total++;
+        const days = dayChecks[item] || [];
+        const checkedDays = days.filter(Boolean).length;
+        const anyDone = checkedDays > 0 || checks[item] === true;
+        if(anyDone) { itemStats[item].checked++; weekDone++; }
+        itemStats[item].checkedDays += checkedDays;
+        itemStats[item].totalDays += (days.length > 0 ? days.length : 1);
+        weekTotal++;
+      });
+
+      if(weekTotal > 0) {
+        weeklyRates.push({
+          week: doc.weekStart,
+          rate: Math.round((weekDone/weekTotal)*100)
+        });
+      }
+    });
+
+    weeklyRates.reverse(); // 오래된 것부터
+
+    // 항목별 체크율
+    const itemEntries = Object.entries(itemStats)
+      .map(([item, s]) => ({ item, rate: Math.round((s.checked/s.total)*100), avgDays: s.totalDays>0?Math.round((s.checkedDays/s.total)*10)/10:0 }))
+      .sort((a,b)=>b.rate-a.rate);
+
+    const bestItems = itemEntries.filter(i=>i.rate>=70);
+    const worstItems = itemEntries.filter(i=>i.rate<50);
+    const maxRate = Math.max(...weeklyRates.map(w=>w.rate), 1);
+
+    // AI 분석
+    let aiAnalysis = '';
+    try {
+      const summary = itemEntries.map(i=>`${i.item}: ${i.rate}% (평균 ${i.avgDays}일/주)`).join(', ');
+      const weekSummary = weeklyRates.slice(-4).map(w=>`${w.week}: ${w.rate}%`).join(', ');
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({
+          model:'claude-sonnet-4-20250514',
+          max_tokens:400,
+          system:'당신은 글모락 국어학원의 선생님입니다. 학생의 숙제 데이터를 분석해서 2~3문장으로 핵심만 짚어주세요. 잘 하는 점, 개선이 필요한 점, 구체적인 조언을 포함해주세요. 학생 이름을 부르며 시작하세요.',
+          messages:[{role:'user', content:`학생: ${stuName}
+분석기간: 최근 ${allDocs.length}주
+항목별 완료율: ${summary}
+최근 주차별 완료율: ${weekSummary}`}]
+        })
+      });
+      const data = await res.json();
+      aiAnalysis = data.content?.[0]?.text?.trim() || '';
+    } catch(e) {}
+
+    // 렌더링
+    content.innerHTML = `
+      <div style="margin-bottom:16px;">
+        <div style="font-size:16px;font-weight:900;">${stuName}의 숙제 분석 리포트</div>
+        <div style="font-size:12px;color:var(--muted);">최근 ${allDocs.length}주 데이터 기준</div>
+      </div>
+
+      <!-- AI 분석 -->
+      ${aiAnalysis ? `
+      <div style="background:linear-gradient(135deg,rgba(124,92,191,0.15),rgba(160,126,224,0.1));border:1px solid var(--purple2);border-radius:14px;padding:14px 16px;margin-bottom:16px;">
+        <div style="font-size:11px;font-weight:700;color:var(--purple2);margin-bottom:6px;">🤖 AI 분석</div>
+        <div style="font-size:13px;line-height:1.8;color:var(--text);">${aiAnalysis}</div>
+      </div>` : ''}
+
+      <!-- 요약 칩 -->
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">
+        ${bestItems.length ? `<div style="background:var(--green-light);color:var(--green);font-size:12px;font-weight:700;padding:6px 12px;border-radius:20px;">💪 꾸준한 숙제: ${bestItems.map(i=>i.item).join(', ')}</div>` : ''}
+        ${worstItems.length ? `<div style="background:var(--red-light);color:var(--red);font-size:12px;font-weight:700;padding:6px 12px;border-radius:20px;">⚠️ 개선 필요: ${worstItems.map(i=>i.item).join(', ')}</div>` : ''}
+      </div>
+
+      <!-- 항목별 체크율 그래프 -->
+      <div style="background:white;border-radius:14px;border:1px solid var(--border);padding:16px;margin-bottom:14px;">
+        <div style="font-size:14px;font-weight:900;margin-bottom:14px;">📊 항목별 완료율</div>
+        ${itemEntries.map(({item, rate, avgDays}) => `
+          <div style="margin-bottom:12px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+              <span style="font-size:13px;font-weight:700;">${item}</span>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <span style="font-size:11px;color:var(--muted);">평균 ${avgDays}일/주</span>
+                <span style="font-size:13px;font-weight:900;color:${rate>=70?'var(--green)':rate>=40?'var(--gold)':'var(--red)'};">${rate}%</span>
+              </div>
+            </div>
+            <div style="height:10px;background:#f3f4f6;border-radius:5px;overflow:hidden;">
+              <div style="height:10px;border-radius:5px;width:${rate}%;background:${rate>=70?'var(--green)':rate>=40?'var(--gold)':'var(--red)'};transition:width 0.8s;"></div>
+            </div>
+          </div>`).join('')}
+      </div>
+
+      <!-- 주차별 완료율 흐름 -->
+      <div style="background:white;border-radius:14px;border:1px solid var(--border);padding:16px;margin-bottom:14px;">
+        <div style="font-size:14px;font-weight:900;margin-bottom:14px;">📅 주차별 완료율 흐름</div>
+        <div style="display:flex;align-items:flex-end;gap:6px;height:100px;padding-bottom:20px;position:relative;">
+          ${weeklyRates.map((w,i) => {
+            const h = Math.round((w.rate/100)*80);
+            const color = w.rate>=70?'#16a34a':w.rate>=40?'#e6a820':'#dc2626';
+            const dateStr = w.week ? w.week.slice(5) : '';
+            return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;position:relative;">
+              <div style="font-size:9px;font-weight:700;color:${color};">${w.rate}%</div>
+              <div style="width:100%;background:${color};border-radius:4px 4px 0 0;height:${h}px;min-height:4px;transition:height 0.8s;"></div>
+              <div style="font-size:8px;color:var(--muted);position:absolute;bottom:-18px;white-space:nowrap;">${dateStr}</div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>
+
+      <!-- 1년 보관 안내 -->
+      <div style="background:#f9f8ff;border-radius:10px;padding:10px 14px;font-size:11px;color:var(--muted);text-align:center;">
+        📁 데이터는 최대 1년 보관 · 매년 1월 1일 평균값으로 자동 압축
+      </div>`;
+
+    // 새해 데이터 압축 체크
+    await checkYearlyCompression(uid, stuName);
+
+  } catch(e) {
+    content.innerHTML = `<div class="empty-state"><div class="empty-icon">😢</div><div>불러오기 실패: ${e.message}</div></div>`;
+  }
+  btn.textContent = '📊 분석하기'; btn.disabled = false;
+});
+
+// 새해 자동 압축 (1월 1일 이후 첫 접속 시)
+async function checkYearlyCompression(uid, name) {
+  try {
+    const now = new Date();
+    if(now.getMonth() !== 0) return; // 1월만 체크
+    const year = now.getFullYear() - 1; // 작년
+
+    const archiveRef = doc(db,'hwArchive',`${uid}_${year}`);
+    const archiveSnap = await getDoc(archiveRef);
+    if(archiveSnap.exists()) return; // 이미 압축됨
+
+    // 작년 데이터 수집
+    const snap = await getDocs(query(collection(db,'studentHw'), where('userId','==',uid)));
+    const lastYearDocs = snap.docs
+      .map(d=>d.data())
+      .filter(d => d.weekStart && d.weekStart.startsWith(String(year)));
+
+    if(lastYearDocs.length === 0) return;
+
+    // 항목별 평균 계산
+    const itemStats = {};
+    lastYearDocs.forEach(d => {
+      const dayChecks = d.dayChecks || {};
+      const checks = d.checks || {};
+      const items = Object.keys(dayChecks).length>0 ? Object.keys(dayChecks) : Object.keys(checks);
+      items.forEach(item => {
+        if(!itemStats[item]) itemStats[item] = {total:0, checked:0};
+        itemStats[item].total++;
+        const days = dayChecks[item]||[];
+        if(days.some(v=>v)||checks[item]) itemStats[item].checked++;
+      });
+    });
+
+    const avgRates = Object.fromEntries(
+      Object.entries(itemStats).map(([k,v]) => [k, Math.round((v.checked/v.total)*100)])
+    );
+
+    // 압축본 저장
+    await setDoc(archiveRef, {
+      uid, name, year,
+      weekCount: lastYearDocs.length,
+      avgRates,
+      compressedAt: new Date()
+    });
+
+    console.log(`${name} ${year}년 데이터 압축 완료`);
+  } catch(e) {}
+}
+
+</script>
+</body>
+</html>
