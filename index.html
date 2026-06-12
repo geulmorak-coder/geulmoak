@@ -1,0 +1,2714 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>글모락 - 국어학원</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=Black+Han+Sans&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0d0d1a; --surface:#161628; --surface2:#1e1e38;
+    --gold:#f5c842; --gold2:#e6a820; --purple:#7c5cbf; --purple2:#a07ee0;
+    --teal:#2dd4bf; --red:#f87171; --green:#4ade80;
+    --text:#e8e8f0; --muted:#8888aa; --border:rgba(255,255,255,0.08);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--text); font-family:'Noto Sans KR',sans-serif; min-height:100vh; }
+  .stars {
+    position:fixed; inset:0; pointer-events:none; z-index:0;
+    background-image:
+      radial-gradient(1px 1px at 10% 15%,rgba(255,255,255,0.6) 0%,transparent 100%),
+      radial-gradient(1px 1px at 25% 40%,rgba(255,255,255,0.4) 0%,transparent 100%),
+      radial-gradient(1px 1px at 60% 10%,rgba(255,255,255,0.5) 0%,transparent 100%),
+      radial-gradient(1px 1px at 80% 30%,rgba(255,255,255,0.3) 0%,transparent 100%),
+      radial-gradient(1px 1px at 45% 70%,rgba(255,255,255,0.5) 0%,transparent 100%);
+  }
+  .wrap { position:relative; z-index:1; max-width:480px; margin:0 auto; padding:0 16px 40px; }
+  .screen { display:none; }
+  .screen.on { display:flex; }
+
+  /* 로그인 */
+  .auth-screen {
+    min-height:100vh; flex-direction:column;
+    align-items:center; justify-content:center; padding:20px;
+    position:relative; z-index:1;
+  }
+  .login-logo { font-family:'Black Han Sans',sans-serif; font-size:32px; color:var(--gold); margin-bottom:8px; }
+  .login-sub { font-size:14px; color:var(--muted); margin-bottom:40px; }
+  .login-card { background:var(--surface); border:1px solid var(--border); border-radius:20px; padding:28px 24px; width:100%; max-width:360px; }
+  .login-title { font-size:18px; font-weight:900; margin-bottom:20px; text-align:center; }
+  .inp-group { margin-bottom:14px; }
+  .inp-label { font-size:12px; color:var(--muted); margin-bottom:6px; }
+  .inp {
+    width:100%; padding:12px 14px;
+    background:rgba(255,255,255,0.06); border:1px solid var(--border);
+    border-radius:10px; color:var(--text);
+    font-family:'Noto Sans KR',sans-serif; font-size:14px; outline:none;
+    transition:border-color 0.2s;
+  }
+  .inp:focus { border-color:var(--purple2); }
+  .btn-primary {
+    width:100%; padding:14px;
+    background:linear-gradient(135deg,var(--purple),#9b6ee0);
+    border:none; border-radius:12px; color:white;
+    font-family:'Noto Sans KR',sans-serif; font-size:15px; font-weight:700;
+    cursor:pointer; margin-top:4px; transition:opacity 0.15s;
+  }
+  .btn-primary:active { opacity:0.85; }
+  .btn-ghost {
+    width:100%; padding:12px;
+    background:rgba(255,255,255,0.05); border:1px solid var(--border);
+    border-radius:12px; color:var(--muted);
+    font-family:'Noto Sans KR',sans-serif; font-size:14px; cursor:pointer;
+  }
+  .divider { text-align:center; color:var(--muted); font-size:12px; margin:14px 0; }
+
+  /* 메인 앱 */
+  .app-screen { flex-direction:column; }
+  header { display:flex; align-items:center; justify-content:space-between; padding:20px 0 12px; }
+  .logo { font-family:'Black Han Sans',sans-serif; font-size:18px; color:var(--gold); }
+  .btn-logout { font-size:12px; color:var(--muted); background:none; border:none; cursor:pointer; font-family:'Noto Sans KR',sans-serif; }
+
+  .hero-card {
+    background:linear-gradient(135deg,#1a1a35,#2a1a4a);
+    border:1px solid rgba(124,92,191,0.4); border-radius:20px;
+    padding:20px; margin-bottom:20px; position:relative; overflow:hidden;
+  }
+  .hero-card::before {
+    content:''; position:absolute; top:-40px; right:-40px;
+    width:140px; height:140px; border-radius:50%;
+    background:radial-gradient(circle,rgba(124,92,191,0.3) 0%,transparent 70%);
+  }
+  .hero-top { display:flex; align-items:center; gap:16px; margin-bottom:16px; }
+  .avatar {
+    width:72px; height:72px; border-radius:16px;
+    background:linear-gradient(135deg,#2a1a4a,#4a2a7a);
+    border:2px solid var(--purple2);
+    display:flex; align-items:center; justify-content:center;
+    font-size:36px; position:relative; flex-shrink:0;
+  }
+  .lv-badge {
+    position:absolute; bottom:-6px; right:-6px;
+    background:var(--gold); color:#1a1a00;
+    font-size:10px; font-weight:900; padding:2px 6px; border-radius:6px;
+  }
+  .hero-name { font-size:20px; font-weight:900; margin-bottom:2px; }
+  .hero-title { font-size:12px; color:var(--purple2); margin-bottom:8px; }
+  .rank-badge {
+    display:inline-flex; align-items:center; gap:4px;
+    background:rgba(245,200,66,0.15); border:1px solid rgba(245,200,66,0.4);
+    color:var(--gold); font-size:11px; font-weight:700; padding:3px 8px; border-radius:20px;
+  }
+  .xp-label { display:flex; justify-content:space-between; font-size:11px; color:var(--muted); margin-bottom:6px; }
+  .xp-bar { height:8px; background:rgba(255,255,255,0.08); border-radius:4px; overflow:hidden; }
+  .xp-fill { height:100%; border-radius:4px; background:linear-gradient(90deg,var(--purple),var(--purple2)); transition:width 1s ease-out; }
+  .stats { display:flex; gap:10px; margin-top:14px; }
+  .stat { flex:1; background:rgba(255,255,255,0.05); border-radius:10px; padding:10px 8px; text-align:center; }
+  .stat-val { font-size:20px; font-weight:900; color:var(--gold); }
+  .stat-lbl { font-size:10px; color:var(--muted); margin-top:2px; }
+
+  .sec-title { font-size:13px; font-weight:700; color:var(--muted); letter-spacing:1px; margin-bottom:12px; display:flex; align-items:center; gap:8px; }
+  .sec-title::after { content:''; flex:1; height:1px; background:var(--border); }
+
+  .add-book-btn {
+    width:100%; padding:14px;
+    background:linear-gradient(135deg,var(--purple),#9b6ee0);
+    border:none; border-radius:14px; color:white;
+    font-family:'Noto Sans KR',sans-serif; font-size:15px; font-weight:700;
+    cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;
+    margin-bottom:20px; transition:transform 0.15s,opacity 0.15s;
+  }
+  .add-book-btn:active { transform:scale(0.97); opacity:0.9; }
+
+  .book-list { display:flex; flex-direction:column; gap:10px; margin-bottom:20px; }
+  .book-item { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:14px; display:flex; align-items:center; gap:12px; animation:fadeIn 0.3s ease; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(6px)} }
+  .book-cover { width:44px; height:58px; border-radius:6px; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:22px; }
+  .c1{background:linear-gradient(135deg,#3b1f6a,#6b3fa0)} .c2{background:linear-gradient(135deg,#1a3a4a,#2a6a7a)} .c3{background:linear-gradient(135deg,#3a1a1a,#7a3a2a)} .c4{background:linear-gradient(135deg,#1a3a1a,#2a7a3a)}
+  .book-meta { flex:1; }
+  .book-title-text { font-size:14px; font-weight:700; margin-bottom:3px; }
+  .book-author { font-size:11px; color:var(--muted); margin-bottom:6px; }
+  .book-pts { display:inline-flex; align-items:center; gap:4px; font-size:12px; font-weight:700; color:var(--gold); }
+  .book-status { font-size:11px; font-weight:700; padding:3px 8px; border-radius:20px; white-space:nowrap; }
+  .s-ok{background:rgba(74,222,128,0.15);color:var(--green)} .s-wait{background:rgba(248,180,113,0.15);color:#f8b471}
+
+  .ranking-list { display:flex; flex-direction:column; gap:8px; margin-bottom:20px; }
+  .rank-item { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:12px 14px; display:flex; align-items:center; gap:12px; }
+  .rank-item.me { border-color:rgba(124,92,191,0.5); background:rgba(124,92,191,0.1); }
+  .rank-num { width:28px; text-align:center; font-size:16px; font-weight:900; flex-shrink:0; }
+  .r1{color:var(--gold)} .r2{color:#c0c0c0} .r3{color:#cd7f32} .r-etc{color:var(--muted);font-size:13px}
+  .rank-avatar { width:36px; height:36px; border-radius:10px; font-size:20px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .rank-score { font-size:16px; font-weight:900; color:var(--gold); }
+
+  /* 사이드바 오버레이 */
+  .sidebar-overlay {
+    display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6);
+    z-index:150; backdrop-filter:blur(2px);
+  }
+  .sidebar-overlay.open { display:block; }
+
+  /* 사이드바 */
+  .sidebar {
+    position:fixed; top:0; left:-260px; width:260px; height:100vh;
+    background:#12122a; border-right:1px solid var(--border);
+    z-index:200; transition:left 0.3s cubic-bezier(0.4,0,0.2,1);
+    display:flex; flex-direction:column; overflow:hidden;
+  }
+  .sidebar.open { left:0; }
+
+  /* 데스크탑: 항상 열림 */
+  @media(min-width:768px) {
+    .sidebar { left:0 !important; }
+    .sidebar-overlay { display:none !important; }
+    .app-screen .wrap { margin-left:260px; max-width:calc(480px + 260px); padding-left:276px; }
+    .btn-hamburger { display:none !important; }
+  }
+
+  .sidebar-header {
+    padding:24px 20px 16px;
+    border-bottom:1px solid var(--border);
+  }
+  .sidebar-logo { font-family:'Black Han Sans',sans-serif; font-size:20px; color:var(--purple2); margin-bottom:4px; }
+  .sidebar-user { font-size:12px; color:var(--muted); }
+
+  .sidebar-nav { flex:1; overflow-y:auto; padding:12px 10px; }
+  .nav-section-label { font-size:10px; font-weight:700; color:var(--muted); letter-spacing:0.05em; padding:10px 10px 4px; text-transform:uppercase; }
+  .nav-item {
+    display:flex; align-items:center; gap:12px;
+    padding:11px 12px; border-radius:12px; cursor:pointer;
+    font-size:14px; font-weight:700; color:var(--muted);
+    border:none; background:none; width:100%;
+    font-family:'Noto Sans KR',sans-serif;
+    transition:all 0.15s; margin-bottom:2px;
+    text-align:left;
+  }
+  .nav-item:hover { background:rgba(255,255,255,0.05); color:var(--text); }
+  .nav-item.active { background:rgba(124,92,191,0.2); color:var(--purple2); }
+  .nav-icon { font-size:18px; width:24px; text-align:center; flex-shrink:0; }
+  .nav-badge { margin-left:auto; background:var(--red); color:white; font-size:9px; font-weight:900; padding:2px 6px; border-radius:10px; }
+
+  .sidebar-footer { padding:16px; border-top:1px solid var(--border); }
+  .btn-logout-side { width:100%; padding:10px; background:rgba(255,255,255,0.05); border:1px solid var(--border); border-radius:10px; color:var(--muted); font-family:'Noto Sans KR',sans-serif; font-size:13px; font-weight:700; cursor:pointer; }
+
+  /* 상단 헤더 (모바일) */
+  .app-header {
+    position:sticky; top:0; z-index:100;
+    background:rgba(13,13,26,0.95); border-bottom:1px solid var(--border);
+    backdrop-filter:blur(12px);
+    display:flex; align-items:center; gap:12px; padding:12px 16px;
+  }
+  .btn-hamburger {
+    background:none; border:none; cursor:pointer;
+    font-size:22px; color:var(--text); padding:2px; line-height:1;
+  }
+  .app-header-title { font-family:'Black Han Sans',sans-serif; font-size:16px; color:var(--purple2); flex:1; }
+  .app-header-badge { font-size:12px; }
+
+  .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:200; align-items:flex-end; justify-content:center; backdrop-filter:blur(4px); overflow:hidden; }
+  .modal-overlay.open { display:flex; }
+  .modal { background:var(--surface2); border:1px solid var(--border); border-radius:24px 24px 0 0; padding:24px 20px 40px; width:100%; max-width:480px; animation:slideUp 0.3s ease; max-height:90vh; overflow-y:auto; }
+  @keyframes slideUp { from{transform:translateY(100%)} }
+  .modal-handle { width:40px; height:4px; background:var(--border); border-radius:2px; margin:0 auto 20px; }
+  .modal-title { font-size:18px; font-weight:900; margin-bottom:20px; }
+  .star-group { display:flex; gap:6px; margin:8px 0 14px; }
+  .star-btn { font-size:24px; background:none; border:none; cursor:pointer; transition:transform 0.1s; padding:0; line-height:1; filter:grayscale(1); opacity:0.4; }
+  .star-btn.on { filter:none; opacity:1; transform:scale(1.1); }
+
+  .btn-cancel { width:100%; padding:12px; background:none; border:none; color:var(--muted); font-family:'Noto Sans KR',sans-serif; font-size:14px; cursor:pointer; margin-top:8px; }
+
+  /* 승인 알림 팝업 */
+  .approval-popup {
+    display:none; position:fixed; inset:0; z-index:300;
+    background:rgba(0,0,0,0.75); backdrop-filter:blur(6px);
+    align-items:center; justify-content:center;
+  }
+  .approval-popup.show { display:flex; }
+  .approval-box {
+    background:var(--surface2); border:1px solid var(--border);
+    border-radius:24px; padding:32px 28px; text-align:center;
+    max-width:320px; width:90%; animation:popIn 0.4s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  @keyframes popIn { from { transform:scale(0.7); opacity:0; } to { transform:scale(1); opacity:1; } }
+  .popup-emoji { font-size:56px; margin-bottom:12px; }
+  .popup-title { font-size:20px; font-weight:900; color:var(--gold); margin-bottom:8px; }
+  .popup-book { font-size:15px; font-weight:700; margin-bottom:4px; }
+  .popup-pts { font-size:24px; font-weight:900; color:var(--green); margin-bottom:20px; }
+  .popup-btn { width:100%; padding:13px; background:var(--purple); color:white; border:none; border-radius:12px; font-family:'Noto Sans KR',sans-serif; font-size:15px; font-weight:700; cursor:pointer; }
+
+  .toast { position:fixed; top:20px; left:50%; transform:translateX(-50%) translateY(-80px); background:linear-gradient(135deg,var(--gold2),var(--gold)); color:#1a1a00; font-weight:900; font-size:14px; padding:12px 24px; border-radius:30px; z-index:300; transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1); white-space:nowrap; }
+  .toast.show { transform:translateX(-50%) translateY(0); }
+  .loading { text-align:center; padding:30px; color:var(--muted); font-size:14px; }
+  /* 빙고 */
+  .bingo-cell {
+    aspect-ratio:1; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; text-align:center;
+    font-size:11px; font-weight:700; padding:6px; border-radius:12px;
+    border:1px solid var(--border); cursor:pointer;
+    background:rgba(255,255,255,0.04); color:var(--muted);
+    transition:all 0.2s; line-height:1.4; position:relative;
+    user-select:none;
+  }
+  .bingo-cell.done {
+    background:linear-gradient(135deg,rgba(124,92,191,0.3),rgba(160,126,224,0.3));
+    border-color:var(--purple2); color:var(--text);
+  }
+  .bingo-cell.free {
+    background:linear-gradient(135deg,rgba(245,200,66,0.2),rgba(230,168,32,0.2));
+    border-color:var(--gold); color:var(--gold);
+  }
+  .bingo-cell.line-complete {
+    background:linear-gradient(135deg,rgba(74,222,128,0.2),rgba(22,163,74,0.2));
+    border-color:var(--green); color:var(--green);
+  }
+  .bingo-cell.pending {
+    background:rgba(248,180,113,0.15); border-color:#f8b471; color:#f8b471;
+  }
+  .bingo-check { position:absolute; top:3px; right:4px; font-size:10px; }
+  .book-type-btn {
+    padding:10px 8px; border-radius:10px; border:1px solid var(--border);
+    background:rgba(255,255,255,0.04); color:var(--muted);
+    font-family:'Noto Sans KR',sans-serif; font-size:13px;
+    cursor:pointer; transition:all 0.15s; line-height:1.6;
+  }
+  .book-type-btn.active-type {
+    border-color:var(--purple2); background:rgba(124,92,191,0.2); color:var(--text);
+  }
+  .btn-delete {
+    background:none; border:none; color:rgba(248,113,113,0.5);
+    font-size:16px; cursor:pointer; padding:4px; line-height:1;
+    transition:color 0.15s; flex-shrink:0;
+  }
+  .btn-delete:hover { color:var(--red); }
+  .empty-state { text-align:center; padding:30px; color:var(--muted); font-size:14px; line-height:1.8; }
+
+  /* 기숙사 - 오방색 */
+  :root {
+    --cheong:#1a3a6b; --cheong2:#60a5fa;   /* 청(靑) - 파랑 */
+    --jeok:#6b1a1a;   --jeok2:#f87171;     /* 적(赤) - 빨강 */
+    --hwang:#5a4200;  --hwang2:#fbbf24;    /* 황(黃) - 노랑 */
+    --baek:#3a3a4a;   --baek2:#e2e8f0;     /* 백(白) - 흰/은 */
+    --heuk:#1a1a2e;   --heuk2:#a78bfa;     /* 흑(黑) - 보라/흑 */
+  }
+  .house-badge {
+    display:inline-flex; align-items:center; gap:4px;
+    font-size:11px; font-weight:900; padding:3px 8px; border-radius:20px;
+  }
+  .house-cheong  { background:rgba(96,165,250,0.15);  color:var(--cheong2); border:1px solid rgba(96,165,250,0.3); }
+  .house-jeok    { background:rgba(248,113,113,0.15); color:var(--jeok2);   border:1px solid rgba(248,113,113,0.3); }
+  .house-hwang   { background:rgba(251,191,36,0.15);  color:var(--hwang2);  border:1px solid rgba(251,191,36,0.3); }
+  .house-baek    { background:rgba(226,232,240,0.15); color:var(--baek2);   border:1px solid rgba(226,232,240,0.3); }
+  .house-heuk    { background:rgba(167,139,250,0.15); color:var(--heuk2);   border:1px solid rgba(167,139,250,0.3); }
+
+  /* 스트릭 */
+  .streak-fire { font-size:28px; animation:flicker 1.2s ease-in-out infinite alternate; }
+  @keyframes flicker { from{transform:scale(1)} to{transform:scale(1.15)} }
+
+  /* 뱃지 그리드 */
+  .badge-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
+  .badge-item { aspect-ratio:1; border-radius:14px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; font-size:24px; border:1px solid var(--border); background:rgba(255,255,255,0.04); }
+  .badge-item.earned { background:rgba(124,92,191,0.2); border-color:var(--purple2); }
+  .badge-item.locked { opacity:0.3; filter:grayscale(1); }
+  .badge-lbl { font-size:9px; color:var(--muted); text-align:center; line-height:1.3; }
+  .badge-item.earned .badge-lbl { color:var(--purple2); }
+
+  /* 탭 프로필 */
+</style>
+</head>
+<body>
+<div class="stars"></div>
+
+<!-- 로그인 -->
+<div class="screen auth-screen on" id="loginScreen">
+  <div class="login-logo">📚 글모락</div>
+  <div class="login-sub">글모락 독서 RPG</div>
+  <div class="login-card">
+    <div class="login-title">로그인</div>
+    <div class="inp-group"><div class="inp-label">이메일</div><input class="inp" type="email" id="loginEmail" placeholder="example@email.com"></div>
+    <div class="inp-group"><div class="inp-label">비밀번호</div><input class="inp" type="password" id="loginPw" placeholder="비밀번호 입력"></div>
+    <button class="btn-primary" id="btnLogin">로그인</button>
+    <div class="divider">또는</div>
+    <button class="btn-ghost" id="btnGoSignup">처음 오셨나요? 회원가입</button>
+  </div>
+</div>
+
+<!-- 회원가입 -->
+<div class="screen auth-screen" id="signupScreen">
+  <div class="login-logo">📚 글모락</div>
+  <div class="login-sub">회원가입</div>
+  <div class="login-card">
+    <div class="login-title">새 계정 만들기</div>
+    <div class="inp-group"><div class="inp-label">이름 (닉네임)</div><input class="inp" type="text" id="signupName" placeholder="예: 김민준"></div>
+    <div class="inp-group"><div class="inp-label">이메일</div><input class="inp" type="email" id="signupEmail" placeholder="example@email.com"></div>
+    <div class="inp-group"><div class="inp-label">비밀번호</div><input class="inp" type="password" id="signupPw" placeholder="6자 이상"></div>
+    <button class="btn-primary" id="btnSignup">회원가입</button>
+    <div class="divider"></div>
+    <button class="btn-ghost" id="btnGoLogin">이미 계정이 있어요</button>
+  </div>
+</div>
+
+<!-- 메인 앱 -->
+<div class="screen app-screen" id="appScreen">
+
+  <!-- 사이드바 오버레이 -->
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <!-- 사이드바 -->
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">📚 글모락</div>
+      <div class="sidebar-user" id="sidebarUser">불러오는 중...</div>
+      <div id="sidebarHouseBadge" style="margin-top:6px;"></div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">메인</div>
+      <button class="nav-item active" id="navHome"><span class="nav-icon">🏠</span>홈</button>
+      <button class="nav-item" id="navHw"><span class="nav-icon">📝</span>이번 주 숙제</button>
+      <button class="nav-item" id="navBingo"><span class="nav-icon">🎯</span>독서 빙고</button>
+
+      <div class="nav-section-label" style="margin-top:8px;">독서</div>
+      <button class="nav-item" id="navBooks"><span class="nav-icon">📚</span>내 책장</button>
+      <button class="nav-item" id="navLibrary"><span class="nav-icon">🗂️</span>나의 서재</button>
+      <button class="nav-item" id="navList"><span class="nav-icon">📋</span>추천도서</button>
+      <button class="nav-item" id="navRank"><span class="nav-icon">🏆</span>전체 랭킹</button>
+
+      <div class="nav-section-label" style="margin-top:8px;">나의 성장</div>
+      <button class="nav-item" id="navReport"><span class="nav-icon">📊</span>독서 리포트</button>
+      <button class="nav-item" id="navHouse"><span class="nav-icon">🏰</span>기숙사</button>
+
+      <div class="nav-section-label" style="margin-top:8px;">이벤트</div>
+      <button class="nav-item" id="navRaid"><span class="nav-icon">⚔️</span>보스 레이드</button>
+      <button class="nav-item" id="navHwStats"><span class="nav-icon">📈</span>숙제 달성률</button>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="btn-logout-side" id="btnLogout">🚪 로그아웃</button>
+    </div>
+  </div>
+
+  <!-- 모바일 상단 헤더 -->
+  <div class="app-header">
+    <button class="btn-hamburger" id="btnHamburger">☰</button>
+    <div class="app-header-title">📚 글모락</div>
+    <span class="app-header-badge" id="headerHouseBadge"></span>
+  </div>
+
+  <div class="wrap">
+    <div class="hero-card">
+      <div class="hero-top">
+        <div class="avatar" id="myAvatar">🧙<div class="lv-badge" id="myLevel">Lv.1</div></div>
+        <div>
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+            <div class="hero-name" id="myName">불러오는 중...</div>
+            <span id="myStreakBadge" style="display:none;font-size:13px;"></span>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;flex-wrap:wrap;">
+            <div class="hero-title" id="myTitle">📖 독서 시작</div>
+            <span id="myHouseBadge" style="display:none;" class="house-badge"></span>
+          </div>
+          <div class="rank-badge" id="myRank">🏆 순위 계산 중</div>
+        </div>
+      </div>
+      <div>
+        <div class="xp-label"><span>다음 레벨까지</span><span style="color:var(--purple2);font-weight:700" id="xpText">0 / 500 XP</span></div>
+        <div class="xp-bar"><div class="xp-fill" id="xpFill" style="width:0%"></div></div>
+      </div>
+      <div class="stats">
+        <div class="stat"><div class="stat-val" id="statBooks">0</div><div class="stat-lbl">읽은 책</div></div>
+        <div class="stat"><div class="stat-val" style="color:var(--teal)" id="statPts">0</div><div class="stat-lbl">총 포인트</div></div>
+        <div class="stat"><div class="stat-val" style="color:var(--gold)" id="statTeam">-</div><div class="stat-lbl">팀 점수</div></div>
+      </div>
+    </div>
+    <button class="add-book-btn" id="btnAddBook">✨ 읽은 책 등록하기</button>
+    <div class="sec-title" style="display:flex;align-items:center;justify-content:space-between;">
+      <span>최근 읽은 책</span>
+      <button id="btnGoLibrary" style="font-size:11px;color:var(--purple2);background:none;border:none;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:700;">전체 보기 →</button>
+    </div>
+    <div class="book-list" id="bookList"><div class="loading">불러오는 중...</div></div>
+    <div class="sec-title">전체 랭킹</div>
+    <div class="ranking-list" id="rankingList"><div class="loading">불러오는 중...</div></div>
+    <!-- 빙고 섹션 -->
+    <div id="secBingo" style="display:none">
+      <div style="margin-bottom:16px;">
+        <div style="font-size:18px;font-weight:900;margin-bottom:4px;">🎯 이달의 독서 빙고</div>
+        <div style="font-size:13px;color:var(--muted)" id="bingoSubtitle">한 줄을 완성하면 보너스 포인트! 🌟</div>
+      </div>
+      <div id="bingoProgress" style="margin-bottom:16px;"></div>
+      <div id="bingoBoard" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px;"></div>
+      <div id="bingoLines" style="margin-bottom:8px;"></div>
+    </div>
+    <!-- 기숙사 섹션 -->
+    <div id="secHouse" style="display:none;"></div>
+    <!-- 리포트 섹션 -->
+    <div id="secReport" style="display:none;"></div>
+    <!-- 레이드 섹션 -->
+    <div id="secRaid" style="display:none;"></div>
+    <!-- 숙제 달성률 섹션 -->
+    <div id="secHwStats" style="display:none;"></div>
+    <!-- 나의 서재 섹션 -->
+    <div id="secLibrary" style="display:none;"></div>
+    <!-- 숙제 섹션 -->
+    <div id="secHw" style="display:none;">
+      <div style="margin-bottom:16px;">
+        <div style="font-size:18px;font-weight:900;margin-bottom:4px;">📝 이번 주 숙제</div>
+        <div style="font-size:13px;color:var(--muted)" id="hwWeekLabel">불러오는 중...</div>
+      </div>
+      <div id="hwChecklist"></div>
+      <!-- 추천도서 접기 버튼 -->
+      <div style="margin-top:20px;">
+        <button id="btnShowList" style="width:100%;padding:12px;background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:12px;color:var(--muted);font-family:'Noto Sans KR',sans-serif;font-size:13px;cursor:pointer;">📋 글모락 추천도서 보기</button>
+      </div>
+      <div id="secListInner" style="display:none;margin-top:12px;"></div>
+    </div>
+    <!-- 추천도서 섹션 -->
+    <div id="secList" style="display:none">
+      <div style="margin-bottom:16px;">
+        <div style="font-size:18px;font-weight:900;margin-bottom:4px;">📋 글모락 추천 도서</div>
+        <div style="font-size:13px;color:var(--muted)">추천 목록 책은 승인 시 +50pt 보너스! 🌟</div>
+      </div>
+      <div id="listProgress" style="margin-bottom:20px;"></div>
+      <div id="listContent"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- 책 등록 모달 - STEP 1 -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div id="modalStep1">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+      <div class="modal-title" style="margin-bottom:0;">📖 읽은 책 등록</div>
+      <button id="btnClearDraft" style="font-size:11px;color:var(--muted);background:none;border:1px solid var(--border);border-radius:6px;padding:4px 8px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;">🗑 초기화</button>
+    </div>
+      <div class="inp-group" style="position:relative">
+        <div class="inp-label">책 제목</div>
+        <input class="inp" type="text" id="bookTitle" placeholder="예: 소나기" autocomplete="off">
+        <div id="bookSuggest" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--surface2);border:1px solid var(--border);border-radius:12px;z-index:100;max-height:240px;overflow-y:auto;box-shadow:0 4px 20px rgba(0,0,0,0.15);"></div>
+      </div>
+      <div class="inp-group"><div class="inp-label">지은이</div><input class="inp" type="text" id="bookAuthor" placeholder="예: 황순원"></div>
+      <input type="hidden" id="bookThumbUrl" value="">
+      <!-- 줄거리 자동 표시 -->
+      <div id="bookSynopsisWrap" style="display:none;margin-bottom:14px;">
+        <div class="inp-label">📖 줄거리 (자동)</div>
+        <div id="bookSynopsis" style="font-size:12px;color:var(--muted);background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:10px 12px;line-height:1.7;max-height:80px;overflow-y:auto;"></div>
+      </div>
+      <div class="inp-group"><div class="inp-label">💬 한 줄 감상 <span style="color:var(--red);font-size:11px">*필수</span></div><input class="inp" type="text" id="bookReview" placeholder="책을 읽고 느낀 점을 써보세요"></div>
+      <div class="inp-group"><div class="inp-label">✍️ 인상 깊었던 문장 <span style="color:var(--red);font-size:11px">*필수</span></div><input class="inp" type="text" id="bookQuote" placeholder="책에서 가장 기억에 남는 문장을 써주세요"></div>
+      <div class="inp-group">
+        <div class="inp-label">📚 책 종류 <span style="color:var(--muted);font-size:11px">(포인트 자동 결정)</span></div>
+        <div id="bookTypeGroup" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px;">
+          <button class="book-type-btn" data-type="comic" data-pts="30">🖼️ 만화책<br><span style="font-size:11px;color:var(--gold)">30pt</span></button>
+          <button class="book-type-btn" data-type="thin" data-pts="50">📗 얇은 책<br><span style="font-size:11px;color:var(--gold)">50pt</span></button>
+          <button class="book-type-btn active-type" data-type="normal" data-pts="100">📘 보통 책<br><span style="font-size:11px;color:var(--gold)">100pt</span></button>
+          <button class="book-type-btn" data-type="thick" data-pts="150">📙 두꺼운 책<br><span style="font-size:11px;color:var(--gold)">150pt</span></button>
+        </div>
+      </div>
+      <div class="inp-group">
+        <div class="inp-label">⭐ 나의 별점</div>
+        <div class="star-group" id="starGroup">
+          <button class="star-btn" data-v="1">⭐</button>
+          <button class="star-btn" data-v="2">⭐</button>
+          <button class="star-btn" data-v="3">⭐</button>
+          <button class="star-btn" data-v="4">⭐</button>
+          <button class="star-btn" data-v="5">⭐</button>
+        </div>
+      </div>
+      <button class="btn-primary" id="btnNextStep">🤔 진짜 읽었는지 확인하기</button>
+      <button class="btn-cancel" id="btnCancelModal">✖ 닫기 (임시저장됨)</button>
+    </div>
+
+    <!-- STEP 2: AI 검증 질문 -->
+    <div id="modalStep2" style="display:none;">
+      <div class="modal-title">🤔 책 확인 퀴즈!</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.6;">정말 읽었는지 확인하는 질문이에요.<br>성실하게 답하면 제출할 수 있어요 😊</div>
+      <div id="quizQuestion" style="background:rgba(124,92,191,0.15);border:1px solid var(--purple2);border-radius:12px;padding:14px;font-size:14px;font-weight:700;margin-bottom:14px;line-height:1.6;"></div>
+      <div class="inp-group">
+        <div class="inp-label">내 답변 <span style="color:var(--red);font-size:11px">*필수</span></div>
+        <textarea class="inp" id="quizAnswer" rows="3" placeholder="자유롭게 답변해주세요" style="resize:none;line-height:1.6;"></textarea>
+      </div>
+      <div id="quizResult" style="display:none;border-radius:10px;padding:10px 12px;margin-bottom:12px;font-size:13px;line-height:1.6;"></div>
+      <button class="btn-primary" id="btnVerifySubmit">✨ 제출하기</button>
+      <button class="btn-cancel" id="btnBackStep">← 뒤로가기</button>
+    </div>
+  </div>
+</div>
+
+<div class="approval-popup" id="approvalPopup">
+  <div class="approval-box">
+    <div class="popup-emoji">🎉</div>
+    <div class="popup-title">책 승인됐어요!</div>
+    <div class="popup-book" id="popupBook"></div>
+    <div class="popup-pts" id="popupPts"></div>
+    <button class="popup-btn" onclick="document.getElementById('approvalPopup').classList.remove('show')">확인!</button>
+  </div>
+</div>
+
+<!-- 빙고 인증 모달 -->
+<div id="bingoProofModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:210;align-items:flex-end;justify-content:center;backdrop-filter:blur(4px);">
+  <div style="background:var(--surface2);border:1px solid var(--border);border-radius:24px 24px 0 0;padding:24px 20px 40px;width:100%;max-width:480px;animation:slideUp 0.3s ease;">
+    <div style="width:40px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 20px;"></div>
+    <div style="font-size:18px;font-weight:900;margin-bottom:6px;">🎯 미션 인증</div>
+    <div id="bingoProofMission" style="font-size:14px;font-weight:700;color:var(--purple2);background:rgba(124,92,191,0.15);border-radius:10px;padding:10px 14px;margin-bottom:6px;"></div>
+    <div id="bingoProofQuestion" style="font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.6;"></div>
+    <div style="margin-bottom:14px;">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:6px;">✍️ 인증 내용 <span style="color:var(--red)">*필수</span></div>
+      <textarea id="bingoProofText" rows="4" placeholder="미션을 어떻게 달성했는지 구체적으로 써주세요!" class="inp" style="resize:none;line-height:1.6;"></textarea>
+    </div>
+    <div style="background:rgba(245,200,66,0.1);border:1px solid rgba(245,200,66,0.3);border-radius:10px;padding:10px 14px;margin-bottom:16px;font-size:12px;color:var(--gold);line-height:1.6;">
+      📸 인증 후 선생님 카톡 <strong>@geulmorak</strong> 으로 사진도 보내주세요!
+    </div>
+    <button id="bingoProofSubmit" class="btn-primary">📤 인증 제출하기</button>
+    <button id="bingoProofCancel" class="btn-cancel">취소</button>
+  </div>
+</div>
+
+<!-- 기숙사 배정 테스트 모달 -->
+<div class="modal-overlay" id="houseModal" style="z-index:250;display:none;">
+  <div class="modal" style="max-height:85vh;overflow-y:auto;">
+    <div class="modal-handle"></div>
+    <div id="houseTestSection">
+      <div class="modal-title">🏰 기숙사 배정 테스트</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:20px;">5개 질문으로 당신의 기숙사를 찾아드릴게요!</div>
+      <div id="houseQuestions"></div>
+      <button class="btn-primary" id="btnHouseResult" style="display:none;">✨ 나의 기숙사 보기</button>
+    </div>
+    <div id="houseResultSection" style="display:none;text-align:center;">
+      <div style="font-size:64px;margin-bottom:12px;" id="houseResultEmoji"></div>
+      <div style="font-size:22px;font-weight:900;margin-bottom:6px;" id="houseResultName"></div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.7;" id="houseResultDesc"></div>
+      <button class="btn-primary" id="btnJoinHouse">🏰 이 기숙사 입단!</button>
+      <button class="btn-cancel" id="btnRedoHouse">다시 테스트</button>
+    </div>
+  </div>
+</div>
+
+<!-- 기숙사 랭킹 팝업 -->
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
+import { getFirestore, doc, setDoc, getDoc, deleteDoc, updateDoc, collection, addDoc, query, where, orderBy, onSnapshot, getDocs, increment } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyB_f-U4h2PMzDv2zHhH0AEtffr3XfGYxsQ",
+  authDomain: "chaek-mabeopsa.firebaseapp.com",
+  projectId: "chaek-mabeopsa",
+  storageBucket: "chaek-mabeopsa.firebasestorage.app",
+  messagingSenderId: "957424809777",
+  appId: "1:957424809777:web:7a67c94015066703d32210"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+const TITLES = [[0,'📖 독서 시작'],[100,'🌱 새싹 독자'],[300,'📚 책 애호가'],[600,'🔮 현자 견습'],[1000,'✨ 책의 현자'],[1500,'🧙 책의 마법사'],[2200,'🧝 대마법사'],[3000,'👑 책의 왕']];
+const EMOJIS = ['📖','🌱','📚','🔮','✨','🧙','🧝','👑'];
+const COVERS = ['c1','c2','c3','c4'];
+const BG = ['linear-gradient(135deg,#3b1f6a,#6b3fa0)','linear-gradient(135deg,#1a3a4a,#2a6a7a)','linear-gradient(135deg,#3a1a1a,#7a3a2a)','linear-gradient(135deg,#1a3a1a,#2a7a3a)'];
+
+const GEULMOAK_BOOKS = {
+  '물음표로 따라가는 인문고전': ['박씨전','흥부전','운영전','허생전','심청전','토끼전','홍길동전','금오신화','구운몽','춘향전','장화홍련전','최척전','이춘풍전','홍계월전','한중록','전우치전','삼국유사','바리데기','사씨남정기','임진록'],
+  '온고지신 우리고전문학': ['용궁부연록','만복사저포기','이생규장전','어유야담','이향견문록','최고운전','춘향전','임진록','장화 홍련전','이춘풍전','장끼전','옥루몽','옹고집전','홍길동전','박문수전','구운몽','금방울전','조웅전','인현 왕후전','주생전','배비장전','전우치전','열하일기','박씨전','한중록','콩쥐 팥쥐전','숙영낭자전','최척전','채봉 감별곡','숙향전','사씨 남정기','화사','운영전','매화전','임경업전','계축일기','창선 감의록','이해룡전','옥단춘전','수이전','양반전','광문자전','원생몽유록','심청전','별주부전','숙녀지기','흥부전','낙성비룡','난중일기','심생전','김씨 열행록','유충렬전','홍계월전','서동지전','윤지경전','금수회의록','가전체 소설','우리 옛 수필','우리 옛 노래 1','우리 옛 노래 2'],
+  '논술대비 세계문학': ['그리스 신화','일리아드, 오디세이','이솝 이야기','안티고네, 메데이아 외','플루타르크 영웅전','아이네이스','신곡','데카메론','젊은 베르테르의 슬픔','빌헬름 텔','도적 떼','푸른 꽃','파우스트','수레바퀴 아래서','변신','데미안','말테의 수기','마의 산','성(城)','서푼짜리 오페라','안네의 일기','가르강튀아와 팡타그뤼엘','수상록','타르튀프','페드르','캉디드','적과 흑','잃어버린 환상','노트르담의 꼽추','고리오 영감']
+};
+const ALL_GEULMOAK = Object.values(GEULMOAK_BOOKS).flat();
+const BONUS_PTS = 50;
+
+function isGeulmoak(title) {
+  return ALL_GEULMOAK.some(b => title.includes(b) || b.includes(title));
+}
+function getGeulmoakSeries(title) {
+  for(const [series, books] of Object.entries(GEULMOAK_BOOKS)) {
+    if(books.some(b => title.includes(b) || b.includes(title))) return series;
+  }
+  return null;
+}
+function getLv(pts) { let l=0; for(const [t] of TITLES){if(pts>=t)l++;} return Math.min(Math.max(l,1),8); }
+function getTitle(pts) { let r=TITLES[0][1]; for(const [t,title] of TITLES){if(pts>=t)r=title;} return r; }
+function getXP(pts) {
+  const th=TITLES.map(t=>t[0]);
+  let cur=0,next=200;
+  for(let i=0;i<th.length-1;i++){if(pts>=th[i]&&pts<th[i+1]){cur=th[i];next=th[i+1];break;}}
+  return {cur:pts-cur, max:next-cur};
+}
+
+function showToast(msg) {
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
+function showScreen(id) {
+  ['loginScreen','signupScreen','appScreen'].forEach(s=>{
+    const el=document.getElementById(s);
+    el.classList.remove('on');
+  });
+  const target=document.getElementById(id==='app'?'appScreen':id);
+  target.classList.add('on');
+}
+
+let currentUser=null, userData=null;
+
+onAuthStateChanged(auth, async user=>{
+  if(user){
+    currentUser=user;
+    showScreen('app');
+    await loadUser(user.uid);
+    loadBooks(user.uid);
+    loadRanking(user.uid);
+  } else {
+    currentUser=null;
+    showScreen('loginScreen');
+  }
+});
+
+async function loadUser(uid){
+  const snap=await getDoc(doc(db,'users',uid));
+  if(!snap.exists()) return;
+  userData=snap.data();
+  // 마이너스 방어
+  const pts=Math.max(userData.points||0, 0), lv=getLv(pts), xp=getXP(pts);
+  const booksRead=Math.max(userData.booksRead||0, 0);
+  document.getElementById('myAvatar').innerHTML=EMOJIS[lv-1]+`<div class="lv-badge">Lv.${lv}</div>`;
+  document.getElementById('myName').textContent=userData.name||'학생';
+  // 사이드바 유저 정보
+  const sidebarUser = document.getElementById('sidebarUser');
+  if(sidebarUser) sidebarUser.textContent = (userData.name||'학생') + ' · ' + getTitle(pts);
+  document.getElementById('myTitle').textContent=getTitle(pts);
+  document.getElementById('statBooks').textContent=booksRead;
+  document.getElementById('statPts').textContent=pts.toLocaleString();
+  // 팀 점수 표시 (기숙사 포인트 합산)
+  const teamStat = document.getElementById('statTeam');
+  if(teamStat && userData.house) {
+    try {
+      const usersSnap2 = await getDocs(collection(db,'users'));
+      const teamPts = usersSnap2.docs.reduce((sum,d)=>{
+        const ud = d.data();
+        return ud.house===userData.house ? sum+(Math.max(ud.points||0,0)) : sum;
+      }, 0);
+      teamStat.textContent = teamPts.toLocaleString();
+    } catch(e) { teamStat.textContent = '-'; }
+  } else if(teamStat) { teamStat.textContent = '-'; }
+  document.getElementById('xpText').textContent=xp.cur+' / '+xp.max+' XP';
+  setTimeout(()=>{ document.getElementById('xpFill').style.width=Math.round((xp.cur/xp.max)*100)+'%'; },100);
+  // 기숙사 뱃지 (HOUSES 정의 후 실행 보장)
+  setTimeout(()=>updateHouseBadge(normalizeHouseKey(userData.house)), 0);
+}
+
+// ===== 기숙사 데이터 =====
+const HOUSES = {
+  hyunmu:      { name:'현무단', emoji:'🐢', color:'hyunmu',      hex:'#a78bfa', bg:'rgba(167,139,250,0.15)', border:'rgba(167,139,250,0.4)', desc:'북방의 수호신, 신중하고 깊이 있는 독서가. 한 권을 천천히 음미하며 본질을 꿰뚫어요. 고전, 철학, 역사를 즐겨요.' },
+  cheongryong: { name:'청룡단', emoji:'🐉', color:'cheongryong', hex:'#60a5fa', bg:'rgba(96,165,250,0.15)',  border:'rgba(96,165,250,0.4)',  desc:'동방의 수호신, 용기 있고 모험을 사랑하는 독서가. 새로운 세계로 뛰어들기를 두려워하지 않아요. 판타지, 모험, SF를 즐겨요.' },
+  jujak:       { name:'주작단', emoji:'🦅', color:'jujak',       hex:'#f87171', bg:'rgba(248,113,113,0.15)', border:'rgba(248,113,113,0.4)', desc:'남방의 수호신, 열정적이고 감성이 풍부한 독서가. 책 속 감동을 온몸으로 느끼는 타입이에요. 시, 소설, 에세이를 좋아해요.' },
+  baekho:      { name:'백호단', emoji:'🐯', color:'baekho',      hex:'#fbbf24', bg:'rgba(251,191,36,0.15)',  border:'rgba(251,191,36,0.4)',  desc:'서방의 수호신, 도전적이고 행동하는 독서가. 독서를 통해 성장하고 싶은 에너지 넘치는 타입이에요. 역사, 자기계발을 즐겨요.' }
+};
+
+// 옛날 키(오방색) → 새 키(사방신) 매핑
+const HOUSE_KEY_MAP = {
+  cheong: 'cheongryong',
+  jeok: 'jujak',
+  hwang: 'baekho',
+  baek: 'hyunmu',
+  heuk: 'hyunmu',
+};
+function normalizeHouseKey(key) {
+  if(!key) return key;
+  return HOUSE_KEY_MAP[key] || key;
+}
+
+const HOUSE_QUESTIONS = [
+  { q:'주말 오후, 나는?', opts:[
+    ['조용히 깊이 생각하기','hyunmu'],
+    ['새로운 곳 탐험하기','cheongryong'],
+    ['친구들과 감성 충전','jujak'],
+    ['운동이나 활동하기','baekho']
+  ]},
+  { q:'가장 끌리는 책은?', opts:[
+    ['고전문학/심리/철학','hyunmu'],
+    ['판타지/모험/SF','cheongryong'],
+    ['감동적인 소설/시','jujak'],
+    ['역사/자기계발/위인전','baekho']
+  ]},
+  { q:'책을 읽을 때 나는?', opts:[
+    ['꼼꼼히 밑줄 치며 읽어요','hyunmu'],
+    ['두근두근 빠져들어요','cheongryong'],
+    ['감동받으면 눈물도 흘려요','jujak'],
+    ['빠르게 핵심만 파악해요','baekho']
+  ]},
+  { q:'나의 독서 목표는?', opts:[
+    ['세상의 본질을 이해하고 싶어요','hyunmu'],
+    ['용기와 도전 정신을 얻고 싶어요','cheongryong'],
+    ['감동과 위로를 받고 싶어요','jujak'],
+    ['성공에 도움이 되고 싶어요','baekho']
+  ]},
+  { q:'나와 가장 닮은 자연은?', opts:[
+    ['깊은 밤하늘 — 고요하고 신비롭게','hyunmu'],
+    ['파도치는 바다 — 역동적이고 자유롭게','cheongryong'],
+    ['활활 타는 불꽃 — 뜨겁고 열정적으로','jujak'],
+    ['빛나는 태양 — 따뜻하고 힘차게','baekho']
+  ]},
+  { q:'친구가 고민을 털어놓으면?', opts:[
+    ['적게 말하고 묵묵히 옆에 있어줘요','hyunmu'],
+    ['같이 해결책 찾아보자고 해요','cheongryong'],
+    ['공감하며 열심히 들어줘요','jujak'],
+    ['분석해서 조언을 해줘요','baekho']
+  ]},
+  { q:'가장 흥미로운 학문 분야는?', opts:[
+    ['수학/과학/철학 — 논리와 원리','hyunmu'],
+    ['문학/예술/SF — 상상과 창의','cheongryong'],
+    ['심리/음악/미술 — 감성과 표현','jujak'],
+    ['역사/사회/체육 — 행동과 도전','baekho']
+  ]},
+  { q:'미래에 하고 싶은 일은?', opts:[
+    ['연구원/철학자/과학자 — 진리를 찾는 삶','hyunmu'],
+    ['탐험가/작가/발명가 — 도전하는 삶','cheongryong'],
+    ['예술가/상담사/교사 — 감동을 주는 삶','jujak'],
+    ['CEO/운동선수/군인 — 이끄는 삶','baekho']
+  ]},
+  { q:'화가 날 때 나는?', opts:[
+    ['혼자 조용히 가라앉을 때까지 기다려요','hyunmu'],
+    ['바로 행동으로 풀어요 (산책, 운동)','cheongryong'],
+    ['음악 듣거나 감정을 표현해요','jujak'],
+    ['왜 화났는지 차분히 분석해요','baekho']
+  ]},
+  { q:'나와 가장 닮은 동물은?', opts:[
+    ['거북이 — 느리지만 꾸준하고 신중해요','hyunmu'],
+    ['용 — 거침없이 하늘을 나는 자유로운 존재','cheongryong'],
+    ['불사조 — 열정적이고 강렬한 존재','jujak'],
+    ['호랑이 — 강하고 당당하게 앞서가요','baekho']
+  ]}
+];
+
+let houseAnswers = [];
+
+function renderHouseTest() {
+  houseAnswers = [];
+  const el = document.getElementById('houseQuestions');
+  el.innerHTML = HOUSE_QUESTIONS.map((q,qi) => `
+    <div style="margin-bottom:18px;">
+      <div style="font-size:14px;font-weight:700;margin-bottom:10px;">${qi+1}. ${q.q}</div>
+      <div style="display:flex;flex-direction:column;gap:7px;">
+        ${q.opts.map((o,oi) => `
+          <button class="house-opt-btn" data-q="${qi}" data-house="${o[1]}"
+            style="padding:10px 14px;border-radius:10px;border:1px solid var(--border);
+                   background:rgba(255,255,255,0.04);color:var(--text);
+                   font-family:'Noto Sans KR',sans-serif;font-size:13px;
+                   text-align:left;cursor:pointer;transition:all 0.15s;">
+            ${o[0]}
+          </button>`).join('')}
+      </div>
+    </div>`).join('');
+  document.getElementById('btnHouseResult').style.display='none';
+  document.getElementById('houseTestSection').style.display='block';
+  document.getElementById('houseResultSection').style.display='none';
+
+  el.querySelectorAll('.house-opt-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const qi = parseInt(btn.dataset.q);
+      houseAnswers[qi] = btn.dataset.house;
+      el.querySelectorAll(`[data-q="${qi}"]`).forEach(b => {
+        b.style.background='rgba(255,255,255,0.04)';
+        b.style.borderColor='var(--border)';
+        b.style.color='var(--muted)';
+      });
+      btn.style.background='rgba(124,92,191,0.25)';
+      btn.style.borderColor='var(--purple2)';
+      btn.style.color='var(--text)';
+      if(houseAnswers.filter(Boolean).length === HOUSE_QUESTIONS.length)
+        document.getElementById('btnHouseResult').style.display='block';
+    });
+  });
+}
+
+document.getElementById('btnHouseResult').addEventListener('click', () => {
+  const count = {};
+  houseAnswers.forEach(h => { count[h]=(count[h]||0)+1; });
+  const sorted = Object.entries(count).sort((a,b)=>b[1]-a[1]);
+  const topScore = sorted[0][1];
+  const topHouses = sorted.filter(([,v])=>v===topScore).map(([k])=>k);
+  // 동점이면 랜덤 배정
+  const winner = topHouses[Math.floor(Math.random()*topHouses.length)];
+  const h = HOUSES[winner];
+  document.getElementById('houseResultEmoji').textContent = h.emoji;
+  document.getElementById('houseResultName').textContent = h.name;
+  document.getElementById('houseResultName').style.color = h.hex;
+  document.getElementById('houseResultDesc').textContent = h.desc;
+  document.getElementById('btnJoinHouse').dataset.house = winner;
+  document.getElementById('houseTestSection').style.display='none';
+  document.getElementById('houseResultSection').style.display='block';
+  // 다른 기숙사 소개
+  const otherEl = document.getElementById('otherHouses');
+  otherEl.innerHTML = Object.entries(HOUSES).filter(([k])=>k!==winner).map(([k,hh])=>`
+    <div style="display:flex;align-items:flex-start;gap:12px;padding:10px 12px;border-radius:12px;border:1px solid ${hh.border};background:${hh.bg};margin-bottom:8px;">
+      <div style="font-size:28px;flex-shrink:0;">${hh.emoji}</div>
+      <div>
+        <div style="font-size:13px;font-weight:900;color:${hh.hex};margin-bottom:3px;">${hh.emoji} ${hh.name}</div>
+        <div style="font-size:11px;color:var(--muted);line-height:1.6;">${hh.desc}</div>
+      </div>
+    </div>`).join('');
+});
+
+document.getElementById('btnJoinHouse').addEventListener('click', async () => {
+  const house = document.getElementById('btnJoinHouse').dataset.house;
+  try {
+    const normalizedHouse = normalizeHouseKey(house) || house;
+    await updateDoc(doc(db,'users',currentUser.uid), { house: normalizedHouse });
+    userData.house = house;
+    updateHouseBadge(house);
+    document.getElementById('houseModal').style.display='none';
+    showToast(HOUSES[house].emoji + ' ' + HOUSES[house].name + ' 입단을 축하해요!');
+    renderHouseSection();
+  } catch(e) { showToast('오류가 발생했어요.'); }
+});
+
+document.getElementById('btnRedoHouse').addEventListener('click', renderHouseTest);
+
+function updateHouseBadge(house) {
+  const badge = document.getElementById('myHouseBadge');
+  if(!badge) return;
+  house = normalizeHouseKey(house);
+  if(!house || typeof HOUSES === 'undefined' || !HOUSES[house]) {
+    badge.style.display='none'; return;
+  }
+  const h = HOUSES[house];
+  badge.style.cssText = `display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:900;padding:3px 8px;border-radius:20px;background:${h.bg};color:${h.hex};border:1px solid ${h.border};flex-shrink:0;`;
+  badge.textContent = h.emoji + ' ' + h.name;
+  // 사이드바 뱃지
+  const sidebarBadge = document.getElementById('sidebarHouseBadge');
+  const headerBadge = document.getElementById('headerHouseBadge');
+  const badgeHtml = `<span style="display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:900;padding:3px 8px;border-radius:20px;background:${h.bg};color:${h.hex};border:1px solid ${h.border};">${h.emoji} ${h.name}</span>`;
+  if(sidebarBadge) sidebarBadge.innerHTML = badgeHtml;
+  if(headerBadge) headerBadge.innerHTML = badgeHtml;
+}
+
+// ===== 스트릭 =====
+function calcStreak(books) {
+  // 주 단위 스트릭: 최근 연속으로 책 제출(승인)한 주 수
+  const approved = books.filter(b=>b.status==='approved' && b.approvedAt);
+  if(!approved.length) return 0;
+  const weeks = new Set(approved.map(b => {
+    const d = b.approvedAt?.toDate ? b.approvedAt.toDate() : new Date(b.approvedAt);
+    const jan1 = new Date(d.getFullYear(),0,1);
+    return d.getFullYear()+'W'+Math.ceil(((d-jan1)/86400000+jan1.getDay()+1)/7);
+  }));
+  // 이번 주 포함 연속 주 수
+  const now = new Date();
+  const jan1 = new Date(now.getFullYear(),0,1);
+  let streak = 0;
+  let checkWeek = now.getFullYear()+'W'+Math.ceil(((now-jan1)/86400000+jan1.getDay()+1)/7);
+  while(weeks.has(checkWeek)) {
+    streak++;
+    const parts = checkWeek.split('W');
+    let w = parseInt(parts[1])-1;
+    let y = parseInt(parts[0]);
+    if(w<1){y--;w=52;}
+    checkWeek = y+'W'+w;
+  }
+  return streak;
+}
+
+function updateStreakBadge(streak) {
+  const el = document.getElementById('myStreakBadge');
+  if(streak < 1) { el.style.display='none'; return; }
+  el.style.display='inline';
+  el.textContent = '🔥'.repeat(Math.min(streak,3)) + ' ' + streak + '주 연속!';
+}
+
+// ===== 뱃지 정의 =====
+const ALL_BADGES = [
+  { id:'first', emoji:'📖', name:'첫 독서', desc:'첫 책 승인', check: (u,books)=>books.length>=1 },
+  { id:'books5', emoji:'📚', name:'책벌레', desc:'5권 승인', check:(u,books)=>books.length>=5 },
+  { id:'books10', emoji:'🔮', name:'독서왕', desc:'10권 승인', check:(u,books)=>books.length>=10 },
+  { id:'books30', emoji:'👑', name:'전설', desc:'30권 승인', check:(u,books)=>books.length>=30 },
+  { id:'comic', emoji:'🖼️', name:'만화 마니아', desc:'만화책 3권', check:(u,books)=>books.filter(b=>b.bookType==='comic').length>=3 },
+  { id:'thick', emoji:'🏔️', name:'대작 완독', desc:'두꺼운책 2권', check:(u,books)=>books.filter(b=>b.bookType==='thick').length>=2 },
+  { id:'geulmoak', emoji:'🌟', name:'추천도서 완독', desc:'추천도서 3권', check:(u,books)=>books.filter(b=>b.isGeulmoak).length>=3 },
+  { id:'streak2', emoji:'🔥', name:'2주 연속', desc:'2주 연속 독서', check:(u,books)=>calcStreak(books)>=2 },
+  { id:'streak4', emoji:'⚡', name:'한 달 연속', desc:'4주 연속 독서', check:(u,books)=>calcStreak(books)>=4 },
+  { id:'pts500', emoji:'💎', name:'500pt 달성', desc:'500pt 이상', check:(u,books)=>(u.points||0)>=500 },
+  { id:'pts1000', emoji:'🏆', name:'1000pt 달성', desc:'1000pt 이상', check:(u,books)=>(u.points||0)>=1000 },
+  { id:'quote', emoji:'✍️', name:'명문장 수집가', desc:'인상문장 5개', check:(u,books)=>books.filter(b=>b.quote).length>=5 },
+  { id:'star5', emoji:'⭐', name:'별점왕', desc:'별점5점 3회', check:(u,books)=>books.filter(b=>b.starRating===5).length>=3 },
+  { id:'house', emoji:'🏰', name:'기숙사 입단', desc:'기숙사 배정', check:(u,books)=>!!u.house },
+  { id:'bingo', emoji:'🎯', name:'빙고 달인', desc:'빙고 2줄 완성', check:(u,books)=>false }, // 빙고는 별도
+  { id:'all_type', emoji:'🌈', name:'잡식 독서가', desc:'4종류 책 모두', check:(u,books)=>new Set(books.map(b=>b.bookType).filter(Boolean)).size>=4 },
+];
+
+
+// ===== 숙제 달성률 =====
+async function renderHwStats() {
+  if(!currentUser) return;
+  const sec = document.getElementById('secHwStats');
+  sec.innerHTML = '<div class="loading">불러오는 중...</div>';
+
+  try {
+    // 모든 내 studentHw 문서 로드
+    const snap = await getDocs(query(
+      collection(db,'studentHw'),
+      where('userId','==',currentUser.uid)
+    ));
+
+    const allDocs = snap.docs.map(d=>({id:d.id,...d.data()})).filter(d=>d.weekStart);
+
+    // 날짜별 달성률 계산
+    // weekStart(YYYY-MM-DD, 월요일) 기준으로 요일별 데이터 추출
+    const dayRates = {}; // { 'YYYY-MM-DD': 달성률(0~100) }
+
+    allDocs.forEach(doc => {
+      const dayChecks = doc.dayChecks || {};
+      const items = Object.keys(dayChecks);
+      if(items.length === 0) return;
+
+      const monDate = new Date(doc.weekStart);
+      for(let di=0; di<5; di++) {
+        const d = new Date(monDate);
+        d.setDate(monDate.getDate() + di);
+        const key = d.toISOString().slice(0,10);
+        let done=0, total=items.length;
+        items.forEach(item => {
+          if(dayChecks[item]?.[di]) done++;
+        });
+        dayRates[key] = Math.round((done/total)*100);
+      }
+    });
+
+    // 이번 주 데이터
+    const todayDate = new Date();
+    const todayKey = todayDate.toISOString().slice(0,10);
+    const todayRate = dayRates[todayKey] ?? null;
+
+    // 이번 주 달성률
+    const weekStart = getThisWeek();
+    const weekMon = new Date(weekStart);
+    let weekDone=0, weekTotal=0;
+    for(let di=0; di<5; di++) {
+      const d = new Date(weekMon); d.setDate(weekMon.getDate()+di);
+      const k = d.toISOString().slice(0,10);
+      if(dayRates[k]!==undefined) { weekDone+=dayRates[k]; weekTotal++; }
+    }
+    const weekRate = weekTotal>0 ? Math.round(weekDone/weekTotal) : null;
+
+    // 이번 달 달성률
+    const thisMonth = todayDate.getMonth();
+    const thisYear = todayDate.getFullYear();
+    const monthKeys = Object.keys(dayRates).filter(k => {
+      const d = new Date(k);
+      return d.getMonth()===thisMonth && d.getFullYear()===thisYear;
+    });
+    const monthRate = monthKeys.length>0 ? Math.round(monthKeys.reduce((s,k)=>s+dayRates[k],0)/monthKeys.length) : null;
+
+    // 올해 달성률
+    const yearKeys = Object.keys(dayRates).filter(k=>k.startsWith(String(thisYear)));
+    const yearRate = yearKeys.length>0 ? Math.round(yearKeys.reduce((s,k)=>s+dayRates[k],0)/yearKeys.length) : null;
+
+    // 최근 12주 잔디 데이터
+    const last12Weeks = [];
+    for(let w=11; w>=0; w--) {
+      const mon = new Date(weekMon);
+      mon.setDate(weekMon.getDate() - w*7);
+      const weekDays = [];
+      for(let di=0; di<5; di++) {
+        const d = new Date(mon); d.setDate(mon.getDate()+di);
+        const k = d.toISOString().slice(0,10);
+        weekDays.push({ date:k, rate: dayRates[k]??null, isFuture: d>todayDate });
+      }
+      last12Weeks.push({ weekStart: mon.toISOString().slice(0,10), days: weekDays });
+    }
+
+    // 월별 달성률 (최근 12개월)
+    const monthlyRates = [];
+    for(let m=11; m>=0; m--) {
+      const d = new Date(thisYear, thisMonth-m, 1);
+      const mLabel = `${d.getMonth()+1}월`;
+      const mKeys = Object.keys(dayRates).filter(k => {
+        const dd = new Date(k);
+        return dd.getMonth()===d.getMonth() && dd.getFullYear()===d.getFullYear();
+      });
+      const mRate = mKeys.length>0 ? Math.round(mKeys.reduce((s,k)=>s+dayRates[k],0)/mKeys.length) : null;
+      monthlyRates.push({ label: mLabel, rate: mRate });
+    }
+
+    const rateColor = (r) => r===null?'#e5e7eb':r>=80?'#16a34a':r>=50?'#fbbf24':r>=20?'#f87171':'#fecaca';
+    const rateText = (r) => r===null?'-':r+'%';
+
+    sec.innerHTML = `
+      <div style="margin-bottom:16px;">
+        <div style="font-size:18px;font-weight:900;margin-bottom:4px;">📈 숙제 달성률</div>
+        <div style="font-size:13px;color:var(--muted);">내 숙제 완료 현황을 한눈에!</div>
+      </div>
+
+      <!-- 요약 카드 4개 -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">
+        ${[
+          {label:'오늘', rate:todayRate, icon:'📅'},
+          {label:'이번 주', rate:weekRate, icon:'📆'},
+          {label:'이번 달', rate:monthRate, icon:'🗓️'},
+          {label:'올해', rate:yearRate, icon:'🎯'},
+        ].map(({label,rate,icon})=>`
+          <div style="background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:14px;padding:14px;text-align:center;">
+            <div style="font-size:20px;margin-bottom:4px;">${icon}</div>
+            <div style="font-size:22px;font-weight:900;color:${rate===null?'var(--muted)':rate>=80?'var(--green)':rate>=50?'var(--gold)':'var(--red)'};">
+              ${rate===null?'-':rate+'%'}
+            </div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px;">${label}</div>
+          </div>`).join('')}
+      </div>
+
+      <!-- 잔디 (최근 12주) -->
+      <div style="background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:14px;">
+        <div style="font-size:14px;font-weight:900;margin-bottom:10px;">🌱 최근 12주 달성 현황</div>
+        <div style="display:flex;gap:4px;overflow-x:auto;padding-bottom:4px;">
+          ${last12Weeks.map(wk=>`
+            <div style="display:flex;flex-direction:column;gap:3px;flex-shrink:0;">
+              ${wk.days.map(day=>`
+                <div title="${day.date}: ${rateText(day.rate)}"
+                  style="width:14px;height:14px;border-radius:3px;background:${day.isFuture?'rgba(255,255,255,0.03)':rateColor(day.rate)};cursor:default;"></div>
+              `).join('')}
+            </div>`).join('')}
+        </div>
+        <div style="display:flex;gap:6px;align-items:center;margin-top:8px;font-size:10px;color:var(--muted);">
+          <span>적음</span>
+          ${['#fecaca','#f87171','#fbbf24','#16a34a'].map(c=>`<div style="width:12px;height:12px;border-radius:2px;background:${c};"></div>`).join('')}
+          <span>많음</span>
+          <span style="margin-left:4px;">(월~금 기준)</span>
+        </div>
+      </div>
+
+      <!-- 월별 달성률 바 그래프 -->
+      <div style="background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:14px;">
+        <div style="font-size:14px;font-weight:900;margin-bottom:14px;">📊 월별 달성률</div>
+        <div style="display:flex;align-items:flex-end;gap:6px;height:100px;">
+          ${monthlyRates.map(({label,rate})=>{
+            const h = rate!==null ? Math.max(Math.round((rate/100)*80),3) : 3;
+            const color = rate===null?'rgba(255,255,255,0.06)':rate>=80?'#16a34a':rate>=50?'#fbbf24':'#f87171';
+            return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;">
+              <div style="font-size:9px;font-weight:700;color:${color};">${rate!==null?rate+'%':''}</div>
+              <div style="width:100%;background:${color};border-radius:3px 3px 0 0;height:${h}px;"></div>
+              <div style="font-size:9px;color:var(--muted);">${label}</div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>`;
+
+  } catch(e) {
+    sec.innerHTML = `<div style="text-align:center;padding:40px;color:var(--muted);">불러오기 실패: ${e.message}</div>`;
+  }
+}
+
+// ===== 보스 레이드 =====
+const BOSS_EMOJIS = ['🐉','👹','🦹','🧟','👺','🦑','🐲','💀'];
+const ATTACK_MSGS = [
+  '책 한 권으로 강타했어요!','독서의 힘으로 공격!','지식의 검으로 베었어요!',
+  '마법서로 주문을 시전했어요!','독서 에너지 폭발!','지혜의 화살을 쏘았어요!'
+];
+
+async function renderRaid() {
+  if(!currentUser) return;
+  const sec = document.getElementById('secRaid');
+  sec.innerHTML = '<div class="loading">레이드 정보 불러오는 중...</div>';
+
+  try {
+    // 보스 설정 로드
+    const bossSnap = await getDoc(doc(db,'settings','boss'));
+    if(!bossSnap.exists() || !bossSnap.data().active) {
+      sec.innerHTML = `
+        <div style="text-align:center;padding:60px 20px;">
+          <div style="font-size:64px;margin-bottom:16px;">😴</div>
+          <div style="font-size:18px;font-weight:900;margin-bottom:8px;">지금은 레이드가 없어요!</div>
+          <div style="font-size:13px;color:var(--muted)">선생님이 새 보스를 소환하면 알려드릴게요 👑</div>
+        </div>`;
+      return;
+    }
+
+    const boss = bossSnap.data();
+    const maxHp = boss.maxHp || 1000;
+    const currentHp = Math.max(boss.currentHp || maxHp, 0);
+    const hpPct = Math.round((currentHp / maxHp) * 100);
+    const isDead = currentHp <= 0;
+
+    // 내 공격 기록 로드
+    const myAttackSnap = await getDoc(doc(db,'raidAttacks', currentUser.uid));
+    const myAttacks = myAttackSnap.exists() ? myAttackSnap.data().count || 0 : 0;
+    const myDamage = myAttackSnap.exists() ? myAttackSnap.data().damage || 0 : 0;
+
+    // 기숙사별 데미지 랭킹
+    const attacksSnap = await getDocs(collection(db,'raidAttacks'));
+    const houseDmg = {cheong:0, jeok:0, hwang:0, baek:0, heuk:0};
+    const playerRanks = [];
+    attacksSnap.docs.forEach(d => {
+      const a = d.data();
+      if(a.house && houseDmg[a.house] !== undefined) houseDmg[a.house] += (a.damage||0);
+      playerRanks.push({name:a.name||'학생', damage:a.damage||0, house:a.house||''});
+    });
+    playerRanks.sort((a,b)=>b.damage-a.damage);
+    const sortedHouses = Object.entries(houseDmg).sort((a,b)=>b[1]-a[1]);
+
+    // HP 색상
+    const hpColor = hpPct > 60 ? '#4ade80' : hpPct > 30 ? '#fbbf24' : '#f87171';
+
+    sec.innerHTML = `
+      <div style="margin-bottom:16px;">
+        <div style="font-size:18px;font-weight:900;margin-bottom:4px;">⚔️ 보스 레이드</div>
+        <div style="font-size:13px;color:var(--muted)">${isDead?'🎉 보스를 처치했어요!':'모두 힘을 합쳐 보스를 처치하세요!'}</div>
+      </div>
+
+      <!-- 보스 카드 -->
+      <div style="background:linear-gradient(135deg,rgba(248,113,113,0.1),rgba(124,92,191,0.1));border:1px solid rgba(248,113,113,0.3);border-radius:20px;padding:24px;margin-bottom:16px;text-align:center;">
+        <div style="font-size:${isDead?'48':'80'}px;margin-bottom:8px;${isDead?'filter:grayscale(1);opacity:0.5':''}animation:${isDead?'none':'bossFloat 3s ease-in-out infinite'}">${boss.emoji||'🐉'}</div>
+        <div style="font-size:20px;font-weight:900;margin-bottom:4px;color:${isDead?'var(--muted)':'var(--text)'};">${boss.name||'어둠의 용'}</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:16px;">${boss.desc||'독서를 두려워하는 무지의 화신'}</div>
+        ${isDead ? `
+          <div style="font-size:24px;font-weight:900;color:var(--green);">💀 처치 완료!</div>
+          <div style="font-size:13px;color:var(--muted);margin-top:4px;">모두 보너스 포인트를 받았어요 🎉</div>
+        ` : `
+          <!-- HP 바 -->
+          <div style="margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;">
+            <div style="font-size:12px;font-weight:700;color:${hpColor}">HP</div>
+            <div style="font-size:13px;font-weight:900;color:${hpColor}">${currentHp.toLocaleString()} / ${maxHp.toLocaleString()}</div>
+          </div>
+          <div style="height:16px;background:rgba(255,255,255,0.08);border-radius:8px;overflow:hidden;margin-bottom:16px;">
+            <div style="height:16px;background:linear-gradient(90deg,${hpColor},${hpColor}88);border-radius:8px;width:${hpPct}%;transition:width 1s;position:relative;">
+              <div style="position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent,transparent 20px,rgba(255,255,255,0.1) 20px,rgba(255,255,255,0.1) 21px);"></div>
+            </div>
+          </div>
+          <div style="font-size:11px;color:var(--muted)">공격력 = 승인된 책 1권당 ${boss.dmgPerBook||10}pt 데미지</div>
+        `}
+      </div>
+
+      <!-- 내 전투 기록 -->
+      <div style="background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:14px;display:flex;gap:16px;">
+        <div style="flex:1;text-align:center;">
+          <div style="font-size:22px;font-weight:900;color:var(--purple2)">${myAttacks}</div>
+          <div style="font-size:11px;color:var(--muted)">내 공격 횟수</div>
+        </div>
+        <div style="width:1px;background:var(--border);"></div>
+        <div style="flex:1;text-align:center;">
+          <div style="font-size:22px;font-weight:900;color:var(--red)">${myDamage.toLocaleString()}</div>
+          <div style="font-size:11px;color:var(--muted)">내 총 데미지</div>
+        </div>
+        <div style="width:1px;background:var(--border);"></div>
+        <div style="flex:1;text-align:center;">
+          <div style="font-size:22px;font-weight:900;color:var(--gold)">${playerRanks.findIndex(p=>p.name===userData?.name)+1 || '-'}</div>
+          <div style="font-size:11px;color:var(--muted)">전체 순위</div>
+        </div>
+      </div>
+
+      <!-- 기숙사별 데미지 -->
+      <div style="background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:14px;">
+        <div style="font-size:14px;font-weight:900;margin-bottom:12px;">🏰 기숙사별 데미지</div>
+        ${sortedHouses.map(([hk,dmg],i) => {
+          const h = HOUSES[hk];
+          if(!h) return '';
+          const maxDmg = sortedHouses[0][1] || 1;
+          const pct = Math.round((dmg/maxDmg)*100);
+          const medals = ['🥇','🥈','🥉','4️⃣','5️⃣'];
+          return `<div style="margin-bottom:10px;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+              <span>${medals[i]}</span>
+              <span style="font-size:16px;">${h.emoji}</span>
+              <span style="font-weight:700;flex:1;color:${h.hex}">${h.emoji} ${h.name}</span>
+              <span style="font-weight:900;color:var(--red);font-size:13px;">${dmg.toLocaleString()} dmg</span>
+            </div>
+            <div style="height:6px;background:rgba(255,255,255,0.06);border-radius:3px;">
+              <div style="height:6px;border-radius:3px;width:${pct}%;background:${h.hex};transition:width 0.5s;"></div>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+
+      <!-- 용사 랭킹 Top5 -->
+      <div style="background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:14px;padding:14px;">
+        <div style="font-size:14px;font-weight:900;margin-bottom:12px;">🗡️ 용사 랭킹</div>
+        ${playerRanks.slice(0,5).map((p,i) => {
+          const h = HOUSES[p.house];
+          const medals = ['🥇','🥈','🥉','4️⃣','5️⃣'];
+          return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);">
+            <span style="font-size:16px;width:24px;">${medals[i]}</span>
+            <div style="flex:1;">
+              <div style="font-size:13px;font-weight:700;">${p.name}</div>
+              ${h ? `<div style="font-size:11px;color:${h.hex}">${h.emoji} ${h.name}</div>` : ''}
+            </div>
+            <div style="font-weight:900;color:var(--red);font-size:13px;">${p.damage.toLocaleString()} dmg</div>
+          </div>`;
+        }).join('')}
+      </div>`;
+
+    // 보스 애니메이션
+    if(!document.getElementById('raidStyle')) {
+      const style = document.createElement('style');
+      style.id = 'raidStyle';
+      style.textContent = '@keyframes bossFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}} @keyframes attackShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}';
+      document.head.appendChild(style);
+    }
+
+  } catch(e) {
+    sec.innerHTML = `<div style="text-align:center;padding:40px;color:var(--muted);">불러오기 실패: ${e.message}</div>`;
+  }
+}
+
+async function renderBadgeSection() {
+  const sec = document.getElementById('secReport');
+  const booksSnap = await getDocs(query(collection(db,'books'),where('userId','==',currentUser.uid),where('status','==','approved')));
+  const books = booksSnap.docs.map(d=>d.data());
+  const streak = calcStreak(books);
+  updateStreakBadge(streak);
+
+  // 월별 독서 통계
+  const monthCount = {};
+  const typeCount = {};
+  books.forEach(b => {
+    const d = b.approvedAt?.toDate ? b.approvedAt.toDate() : (b.createdAt?.toDate ? b.createdAt.toDate() : new Date());
+    const key = (d.getMonth()+1)+'월';
+    monthCount[key] = (monthCount[key]||0)+1;
+    if(b.bookType) typeCount[b.bookType] = (typeCount[b.bookType]||0)+1;
+  });
+
+  const typeLabels = {comic:'만화',thin:'얇은책',normal:'보통책',thick:'두꺼운책'};
+  const typeEmoji = {comic:'🖼️',thin:'📗',normal:'📘',thick:'📙'};
+
+  const last6 = [];
+  const now = new Date();
+  for(let i=5;i>=0;i--) {
+    const d = new Date(now.getFullYear(), now.getMonth()-i, 1);
+    last6.push((d.getMonth()+1)+'월');
+  }
+  const maxMonth = Math.max(...last6.map(m=>monthCount[m]||0), 1);
+
+  sec.innerHTML = `
+    <div style="margin-bottom:16px;">
+      <div style="font-size:18px;font-weight:900;margin-bottom:4px;">📊 나의 독서 리포트</div>
+      <div style="font-size:13px;color:var(--muted)">지금까지의 독서 여정이에요 🌱</div>
+    </div>
+
+    <!-- 스트릭 카드 -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:14px;display:flex;align-items:center;gap:16px;">
+      <div class="streak-fire">🔥</div>
+      <div>
+        <div style="font-size:22px;font-weight:900;color:var(--gold)">${streak}주 연속 독서 중!</div>
+        <div style="font-size:12px;color:var(--muted)">매주 책을 읽으면 스트릭이 쌓여요</div>
+      </div>
+    </div>
+
+    <!-- 월별 그래프 -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:14px;">
+      <div style="font-size:14px;font-weight:700;margin-bottom:14px;">📅 최근 6개월 독서량</div>
+      <div style="display:flex;align-items:flex-end;gap:8px;height:80px;">
+        ${last6.map(m => {
+          const cnt = monthCount[m]||0;
+          const h = maxMonth>0 ? Math.round((cnt/maxMonth)*70) : 0;
+          return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;">
+            <div style="font-size:10px;color:var(--gold);font-weight:700">${cnt||''}</div>
+            <div style="width:100%;height:${Math.max(h,4)}px;background:${cnt>0?'linear-gradient(180deg,var(--purple2),var(--purple))':'rgba(255,255,255,0.06)'};border-radius:4px 4px 0 0;transition:height 0.5s;"></div>
+            <div style="font-size:10px;color:var(--muted)">${m}</div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+
+    <!-- 장르 분포 -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:14px;">
+      <div style="font-size:14px;font-weight:700;margin-bottom:12px;">📚 책 종류 분포</div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        ${Object.entries(typeLabels).map(([k,v]) => {
+          const cnt = typeCount[k]||0;
+          const total = books.length||1;
+          const pct = Math.round((cnt/total)*100);
+          return `<div>
+            <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;">
+              <span>${typeEmoji[k]} ${v}</span><span style="color:var(--muted)">${cnt}권 (${pct}%)</span>
+            </div>
+            <div style="height:6px;background:rgba(255,255,255,0.06);border-radius:3px;">
+              <div style="height:6px;background:linear-gradient(90deg,var(--purple),var(--purple2));border-radius:3px;width:${pct}%;transition:width 0.5s;"></div>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+
+    <!-- 뱃지 컬렉션 -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:14px;">
+      <div style="font-size:14px;font-weight:700;margin-bottom:12px;">🏅 뱃지 컬렉션</div>
+      <div class="badge-grid">
+        ${ALL_BADGES.map(badge => {
+          const earned = badge.check(userData, books);
+          return `<div class="badge-item ${earned?'earned':'locked'}" title="${badge.desc}">
+            <span>${badge.emoji}</span>
+            <span class="badge-lbl">${badge.name}</span>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+}
+
+// ===== 기숙사 팀전 섹션 =====
+async function renderHouseSection() {
+  const sec = document.getElementById('secHouse');
+  const myHouse = normalizeHouseKey(userData?.house);
+
+  // 기숙사 없으면 테스트 유도
+  if(!myHouse) {
+    sec.innerHTML = `
+      <div style="text-align:center;padding:40px 20px;">
+        <div style="font-size:64px;margin-bottom:16px;">🏰</div>
+        <div style="font-size:18px;font-weight:900;margin-bottom:8px;">아직 기숙사가 없어요!</div>
+        <div style="font-size:13px;color:var(--muted);margin-bottom:24px;">테스트로 나의 기숙사를 찾아보세요</div>
+        <button class="btn-primary" id="btnStartHouseTest" style="max-width:240px;">🐢 기숙사 배정 테스트</button>
+      </div>`;
+    document.getElementById('btnStartHouseTest').addEventListener('click', ()=>{
+      renderHouseTest();
+      document.getElementById('houseModal').style.display='flex';
+    });
+    return;
+  }
+
+  // 기숙사별 포인트 합산
+  const usersSnap = await getDocs(collection(db,'users'));
+  const housePoints = {hyunmu:0,cheongryong:0,jujak:0,baekho:0};
+  const houseCount = {hyunmu:0,cheongryong:0,jujak:0,baekho:0};
+  usersSnap.docs.forEach(d => {
+    const u = d.data();
+    const hk = normalizeHouseKey(u.house);
+    if(hk && housePoints[hk]!==undefined) {
+      housePoints[hk] += (Math.max(u.points||0, 0));
+      houseCount[hk]++;
+    }
+  });
+
+  const sorted = Object.entries(housePoints).sort((a,b)=>b[1]-a[1]);
+  const maxPts = Math.max(...Object.values(housePoints), 1);
+  const h = HOUSES[myHouse];
+  const myRankInHouse = sorted.findIndex(([k])=>k===myHouse)+1;
+
+  sec.innerHTML = `
+    <div style="margin-bottom:16px;">
+      <div style="font-size:18px;font-weight:900;margin-bottom:4px;">🏰 기숙사 팀전</div>
+      <div style="font-size:13px;color:var(--muted)">독서 포인트로 기숙사 명예를 높여요!</div>
+    </div>
+
+    <!-- 내 기숙사 카드 -->
+    <div style="background:linear-gradient(135deg,${h.bg},transparent);border:1px solid ${h.border};border-radius:16px;padding:18px;margin-bottom:16px;text-align:center;">
+      <div style="font-size:48px;margin-bottom:8px;">${h.emoji}</div>
+      <div style="font-size:20px;font-weight:900;color:${h.hex};margin-bottom:4px;">${h.emoji} ${h.name}</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">${h.desc}</div>
+      <div style="font-size:13px;color:var(--muted)">현재 <span style="color:${h.hex};font-weight:700">${myRankInHouse}위</span> · ${houseCount[myHouse]}명 · ${housePoints[myHouse].toLocaleString()}pt</div>
+      <button style="margin-top:12px;padding:8px 16px;background:none;border:1px solid ${h.border};border-radius:10px;color:${h.hex};font-family:'Noto Sans KR',sans-serif;font-size:12px;cursor:pointer;" id="btnChangeHouse">다른 기숙사 테스트</button>
+    </div>
+
+    <!-- 기숙사 랭킹 -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:14px;">
+      <div style="font-size:14px;font-weight:700;margin-bottom:14px;">🏆 기숙사 순위</div>
+      ${sorted.map(([hk,pts],i) => {
+        const hd = HOUSES[hk];
+        const pct = Math.round((pts/maxPts)*100);
+        const medals = ['🥇','🥈','🥉','4️⃣'];
+        return `<div style="margin-bottom:12px;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;">
+            <span style="font-size:18px;">${medals[i]}</span>
+            <span style="font-size:18px;">${hd.emoji}</span>
+            <span style="font-weight:700;flex:1;color:${hd.hex}">${hd.emoji} ${hd.name}</span>
+            <span style="font-weight:900;color:var(--gold)">${pts.toLocaleString()}pt</span>
+          </div>
+          <div style="height:8px;background:rgba(255,255,255,0.06);border-radius:4px;">
+            <div style="height:8px;border-radius:4px;width:${pct}%;background:${hd.hex};transition:width 0.5s;"></div>
+          </div>
+          <div style="font-size:11px;color:var(--muted);margin-top:3px;">${houseCount[hk]}명 참여</div>
+        </div>`;
+      }).join('')}
+    </div>`;
+
+  document.getElementById('btnChangeHouse')?.addEventListener('click', ()=>{
+    renderHouseTest();
+    document.getElementById('houseModal').style.display='flex';
+  });
+}
+
+function loadBooks(uid){
+  let firstLoad=true;
+  const seenApproved=new Set();
+  const q=query(collection(db,'books'),where('userId','==',uid));
+  onSnapshot(q,snap=>{
+    const el=document.getElementById('bookList');
+    if(snap.empty){el.innerHTML='<div class="empty-state">📚 아직 등록한 책이 없어요!<br>첫 번째 책을 등록해보세요.</div>';firstLoad=false;return;}
+    const docs=snap.docs.sort((a,b)=>{
+      const ta=a.data().createdAt?.toDate?.()??new Date(0);
+      const tb=b.data().createdAt?.toDate?.()??new Date(0);
+      return tb-ta;
+    });
+    el.innerHTML='';
+    docs.slice(0,5).forEach((d,i)=>{
+      const b=d.data();
+      // 승인 알림: 첫 로드 후 새로 approved 된 것만
+      if(!firstLoad && b.status==='approved' && !seenApproved.has(d.id)){
+        document.getElementById('popupBook').textContent='《'+b.title+'》';
+        document.getElementById('popupPts').textContent='+'+(b.pointsAwarded||b.points||100)+' pt 획득! ⭐';
+        document.getElementById('approvalPopup').classList.add('show');
+        loadUser(uid);
+      }
+      if(b.status==='approved') seenApproved.add(d.id);
+      const div=document.createElement('div');
+      div.className='book-item';
+      const coverHtml = b.coverUrl
+        ? `<img src="${b.coverUrl}" style="width:44px;height:58px;object-fit:cover;border-radius:6px;flex-shrink:0;" onerror="this.style.display='none';this.parentNode.innerHTML='📖'">`
+        : `<div class="book-cover ${COVERS[i%4]}">📖</div>`;
+      const starDisplay = b.starRating ? '⭐'.repeat(b.starRating) : '';
+      div.innerHTML=`${coverHtml}
+        <div class="book-meta" style="flex:1;min-width:0;">
+          <div class="book-title-text">${b.title}</div>
+          <div class="book-author">${b.author||''}</div>
+          <div class="book-pts">⭐ ${b.pointsAwarded?'+'+b.pointsAwarded+' 포인트':b.points?'+'+b.points+' 포인트':'승인 대기 중'}</div>
+          ${starDisplay ? `<div style="font-size:12px;margin-top:2px;">${starDisplay}</div>` : ''}
+          ${b.review ? `<div style="font-size:11px;color:var(--muted);margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">💬 ${b.review}</div>` : ''}
+          ${b.teacherComment ? `<div style="font-size:11px;color:#a07ee0;margin-top:3px;">✨ "${b.teacherComment}"</div>` : ''}
+          ${b.quote ? `<div style="font-size:11px;color:var(--teal);margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">✍️ "${b.quote}"</div>` : ''}
+          ${b.status==='pending' ? `
+            <button class="btn-edit-book" data-id="${d.id}"
+              data-star="${b.starRating||0}"
+              data-review="${(b.review||'').replace(/"/g,'&quot;')}"
+              data-quote="${(b.quote||'').replace(/"/g,'&quot;')}"
+              style="margin-top:7px;font-size:11px;color:var(--purple2);background:rgba(124,92,191,0.1);border:1px solid rgba(124,92,191,0.3);border-radius:6px;padding:4px 10px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:700;">
+              ✏️ 수정하기
+            </button>` : ''}
+        </div>
+        <div class="book-status ${b.status==='approved'?'s-ok':'s-wait'}" style="flex-shrink:0;">${b.status==='approved'?'승인완료':'승인대기'}</div>`;
+      el.appendChild(div);
+    });
+
+    // 수정하기 버튼 이벤트
+    el.querySelectorAll('.btn-edit-book').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.dataset.id;
+        let curStar = parseInt(btn.dataset.star)||0;
+        // 이미 열려있으면 닫기
+        const existing = document.getElementById('editWrap-'+id);
+        if(existing) { existing.remove(); return; }
+
+        const wrap = document.createElement('div');
+        wrap.id = 'editWrap-'+id;
+        wrap.style.cssText = 'margin-top:10px;background:rgba(124,92,191,0.08);border:1px solid rgba(124,92,191,0.2);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:8px;';
+        wrap.innerHTML = `
+          <div style="font-size:12px;font-weight:700;color:var(--purple2);">✏️ 내용 수정</div>
+          <div>
+            <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">⭐ 별점</div>
+            <div class="star-edit-row" style="display:flex;gap:6px;">
+              ${[1,2,3,4,5].map(v=>`<button class="star-edit-btn" data-v="${v}" style="font-size:20px;background:none;border:none;cursor:pointer;">${v<=curStar?'⭐':'☆'}</button>`).join('')}
+            </div>
+          </div>
+          <div>
+            <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">💬 한 줄 감상</div>
+            <input type="text" class="edit-review-inp" value="${btn.dataset.review}"
+              style="width:100%;padding:8px 10px;background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Noto Sans KR',sans-serif;font-size:12px;outline:none;">
+          </div>
+          <div>
+            <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">✍️ 인상깊은 문장</div>
+            <input type="text" class="edit-quote-inp" value="${btn.dataset.quote}"
+              style="width:100%;padding:8px 10px;background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Noto Sans KR',sans-serif;font-size:12px;outline:none;">
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button class="edit-save-btn" style="flex:1;padding:9px;background:var(--purple);color:white;border:none;border-radius:8px;font-family:'Noto Sans KR',sans-serif;font-size:13px;font-weight:700;cursor:pointer;">💾 저장</button>
+            <button class="edit-cancel-btn" style="padding:9px 14px;background:rgba(255,255,255,0.06);color:var(--muted);border:1px solid var(--border);border-radius:8px;font-family:'Noto Sans KR',sans-serif;font-size:13px;cursor:pointer;">취소</button>
+          </div>`;
+
+        btn.closest('.book-meta').appendChild(wrap);
+
+        // 별점 클릭
+        wrap.querySelectorAll('.star-edit-btn').forEach(sb => {
+          sb.addEventListener('click', () => {
+            curStar = parseInt(sb.dataset.v);
+            wrap.querySelectorAll('.star-edit-btn').forEach((b,i)=>{
+              b.textContent = i<curStar?'⭐':'☆';
+            });
+          });
+        });
+
+        // 취소
+        wrap.querySelector('.edit-cancel-btn').addEventListener('click', ()=>wrap.remove());
+
+        // 저장
+        wrap.querySelector('.edit-save-btn').addEventListener('click', async () => {
+          const newReview = wrap.querySelector('.edit-review-inp').value.trim();
+          const newQuote = wrap.querySelector('.edit-quote-inp').value.trim();
+          if(!newReview) { showToast('감상을 입력해주세요!'); return; }
+          if(!newQuote) { showToast('인상깊은 문장을 입력해주세요!'); return; }
+          try {
+            await updateDoc(doc(db,'books',id), {
+              starRating: curStar,
+              review: newReview,
+              quote: newQuote
+            });
+            showToast('✅ 수정됐어요!');
+            wrap.remove();
+          } catch(e) { showToast('저장 실패! 다시 시도해주세요.'); }
+        });
+      });
+    });
+
+    // 스트릭 업데이트
+    const allBooks = docs.map(d=>d.data());
+    const streak = calcStreak(allBooks);
+    updateStreakBadge(streak);
+    firstLoad=false;
+  });
+}
+
+async function loadRanking(myUid){
+  const snap=await getDocs(collection(db,'users'));
+  const el=document.getElementById('rankingList');
+  if(snap.empty){el.innerHTML='<div class="empty-state">아직 등록된 학생이 없어요!</div>';return;}
+  el.innerHTML='';
+  const medals=['🥇','🥈','🥉'];
+  const cls=['r1','r2','r3'];
+  const sorted=snap.docs.sort((a,b)=>(b.data().points||0)-(a.data().points||0));
+  sorted.forEach((d,i)=>{
+    const u=d.data(), isMe=d.id===myUid, lv=getLv(u.points||0);
+    const div=document.createElement('div');
+    div.className='rank-item'+(isMe?' me':'');
+    const rn=i<3?`<div class="rank-num ${cls[i]}">${medals[i]}</div>`:`<div class="rank-num r-etc">${i+1}</div>`;
+    // 기숙사 뱃지
+    const houseKey = normalizeHouseKey(u.house);
+    const h = houseKey && HOUSES[houseKey] ? HOUSES[houseKey] : null;
+    const houseBadge = h
+      ? `<span style="display:inline-flex;align-items:center;gap:2px;font-size:10px;font-weight:700;padding:2px 6px;border-radius:8px;background:${h.bg};color:${h.hex};border:1px solid ${h.border};margin-left:4px;">${h.emoji} ${h.name}</span>`
+      : '';
+    div.innerHTML=`${rn}
+      <div class="rank-avatar" style="background:${BG[i%4]}">${EMOJIS[lv-1]}</div>
+      <div style="flex:1">
+        <div style="font-size:14px;font-weight:700;display:flex;align-items:center;flex-wrap:wrap;gap:4px;">${u.name||'학생'}${isMe?' <span style="font-size:11px;color:var(--purple2)">(나)</span>':''}${houseBadge}</div>
+        <div style="font-size:11px;color:var(--muted)">Lv.${lv} · ${getTitle(u.points||0)}</div>
+      </div>
+      <div class="rank-score">${(u.points||0).toLocaleString()}</div>`;
+    el.appendChild(div);
+    if(isMe) document.getElementById('myRank').textContent='🏆 전체 '+(i+1)+'위';
+  });
+}
+
+// 버튼 이벤트 연결
+document.getElementById('btnLogin').addEventListener('click', async()=>{
+  const email=document.getElementById('loginEmail').value.trim();
+  const pw=document.getElementById('loginPw').value;
+  if(!email||!pw){showToast('이메일과 비밀번호를 입력해주세요!');return;}
+  try{ await signInWithEmailAndPassword(auth,email,pw); }
+  catch(e){ showToast('로그인 실패! 이메일/비밀번호를 확인해주세요.'); }
+});
+
+document.getElementById('btnSignup').addEventListener('click', async()=>{
+  const name=document.getElementById('signupName').value.trim();
+  const email=document.getElementById('signupEmail').value.trim();
+  const pw=document.getElementById('signupPw').value;
+  if(!name||!email||!pw){showToast('모든 항목을 입력해주세요!');return;}
+  try{
+    const cred=await createUserWithEmailAndPassword(auth,email,pw);
+    await setDoc(doc(db,'users',cred.user.uid),{name,email,points:0,booksRead:0,booksRemaining:0,createdAt:new Date()});
+    showToast('🎉 환영해요, '+name+'님!');
+  } catch(e){ showToast('가입 실패! 이미 사용 중인 이메일일 수 있어요.'); }
+});
+
+document.getElementById('btnLogout').addEventListener('click', async()=>{
+  await signOut(auth); showToast('로그아웃 됐어요!');
+});
+
+document.getElementById('btnGoSignup').addEventListener('click',()=>showScreen('signupScreen'));
+document.getElementById('btnGoLogin').addEventListener('click',()=>showScreen('loginScreen'));
+
+// 전체 보기 버튼
+document.getElementById('btnGoLibrary')?.addEventListener('click', () => {
+  showSection('library');
+  document.getElementById('secLibrary').style.display = 'block';
+  document.querySelector('#navLibrary')?.classList.add('active');
+  renderLibrary();
+});
+
+document.getElementById('btnAddBook').addEventListener('click', () => {
+  document.getElementById('modal').classList.add('open');
+  const hasDraft = loadBookDraft();
+  if(hasDraft) {
+    // 임시저장 있으면 안내 토스트
+    showToast('📝 작성 중이던 내용을 불러왔어요!');
+  }
+});
+document.getElementById('btnCancelModal').addEventListener('click',()=>{
+  document.getElementById('modal').classList.remove('open');
+  // 취소 시 임시저장 유지 (다음에 다시 열면 복원됨)
+  // resetModal은 호출하지 않음
+});
+document.getElementById('modal').addEventListener('click',e=>{
+  if(e.target===document.getElementById('modal')) {
+    document.getElementById('modal').classList.remove('open');
+    // 바깥 클릭도 임시저장 유지
+  }
+});
+
+const KAKAO_KEY = 'e47f4fe1adaafe2c946d161b6f49d107';
+let searchTimer = null;
+
+document.getElementById('bookTitle').addEventListener('input', e => {
+  clearTimeout(searchTimer);
+  const q = e.target.value.trim();
+  const suggest = document.getElementById('bookSuggest');
+  if(q.length < 2) { suggest.style.display='none'; return; }
+  searchTimer = setTimeout(async () => {
+    try {
+      const res = await fetch(`https://dapi.kakao.com/v3/search/book?query=${encodeURIComponent(q)}&size=5`, {
+        headers: { 'Authorization': `KakaoAK ${KAKAO_KEY}` }
+      });
+      const data = await res.json();
+      if(!data.documents?.length) { suggest.style.display='none'; return; }
+      suggest.style.display='block';
+      suggest.innerHTML = data.documents.map(b => `
+        <div class="book-suggest-item" style="display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--border);"
+          data-title="${b.title}" data-author="${b.authors?.[0]||''}" data-thumb="${b.thumbnail||''}" data-contents="${(b.contents||'').replace(/"/g,'&quot;')}">
+          ${b.thumbnail ? `<img src="${b.thumbnail}" style="width:36px;height:50px;object-fit:cover;border-radius:4px;flex-shrink:0">` : '<div style="width:36px;height:50px;background:var(--border);border-radius:4px;flex-shrink:0"></div>'}
+          <div>
+            <div style="font-size:13px;font-weight:700;margin-bottom:2px">${b.title}</div>
+            <div style="font-size:11px;color:var(--muted)">${b.authors?.[0]||''}</div>
+          </div>
+        </div>`).join('');
+      suggest.querySelectorAll('.book-suggest-item').forEach(item => {
+        item.addEventListener('click', () => {
+          document.getElementById('bookTitle').value = item.dataset.title;
+          document.getElementById('bookAuthor').value = item.dataset.author;
+          document.getElementById('bookThumbUrl').value = item.dataset.thumb || '';
+          suggest.style.display='none';
+          // 줄거리 표시
+          const synopsis = item.dataset.contents;
+          const wrap = document.getElementById('bookSynopsisWrap');
+          const el = document.getElementById('bookSynopsis');
+          if(synopsis && synopsis.trim()) {
+            el.textContent = synopsis;
+            wrap.style.display='block';
+          } else {
+            wrap.style.display='none';
+          }
+        });
+        item.addEventListener('mouseover', () => item.style.background='var(--purple-light)');
+        item.addEventListener('mouseout', () => item.style.background='');
+      });
+    } catch(e) { suggest.style.display='none'; }
+  }, 300);
+});
+document.addEventListener('click', e => {
+  if(!e.target.closest('#bookTitle') && !e.target.closest('#bookSuggest'))
+    document.getElementById('bookSuggest').style.display='none';
+});
+
+let selectedStar = 0;
+let selectedBookType = { type:'normal', pts:150 };
+
+document.getElementById('bookTypeGroup').addEventListener('click', e => {
+  const btn = e.target.closest('.book-type-btn');
+  if(!btn) return;
+  document.querySelectorAll('.book-type-btn').forEach(b => b.classList.remove('active-type'));
+  btn.classList.add('active-type');
+  selectedBookType = { type: btn.dataset.type, pts: parseInt(btn.dataset.pts) };
+});
+document.getElementById('starGroup').addEventListener('click', e => {
+  const btn = e.target.closest('.star-btn');
+  if(!btn) return;
+  selectedStar = parseInt(btn.dataset.v);
+  document.querySelectorAll('.star-btn').forEach(b => {
+    b.classList.toggle('on', parseInt(b.dataset.v) <= selectedStar);
+  });
+});
+
+function saveBookDraft() {
+  const draft = {
+    title: document.getElementById('bookTitle').value,
+    author: document.getElementById('bookAuthor').value,
+    review: document.getElementById('bookReview').value,
+    quote: document.getElementById('bookQuote').value,
+    thumbUrl: document.getElementById('bookThumbUrl').value,
+    synopsis: document.getElementById('bookSynopsis')?.textContent || '',
+    bookType: selectedBookType,
+    star: selectedStar,
+  };
+  localStorage.setItem('geulmorak_book_draft', JSON.stringify(draft));
+}
+
+function loadBookDraft() {
+  try {
+    const raw = localStorage.getItem('geulmorak_book_draft');
+    if(!raw) return false;
+    const d = JSON.parse(raw);
+    if(!d.title && !d.review) return false;
+    document.getElementById('bookTitle').value = d.title || '';
+    document.getElementById('bookAuthor').value = d.author || '';
+    document.getElementById('bookReview').value = d.review || '';
+    document.getElementById('bookQuote').value = d.quote || '';
+    document.getElementById('bookThumbUrl').value = d.thumbUrl || '';
+    if(d.synopsis) {
+      document.getElementById('bookSynopsis').textContent = d.synopsis;
+      document.getElementById('bookSynopsisWrap').style.display = 'block';
+    }
+    if(d.bookType) {
+      selectedBookType = d.bookType;
+      document.querySelectorAll('.book-type-btn').forEach(b=>b.classList.remove('active-type'));
+      document.querySelector(`.book-type-btn[data-type="${d.bookType.type}"]`)?.classList.add('active-type');
+    }
+    if(d.star) {
+      selectedStar = d.star;
+      document.querySelectorAll('.star-btn').forEach(b=>{
+        b.classList.toggle('on', parseInt(b.dataset.v) <= d.star);
+      });
+    }
+    return true;
+  } catch(e) { return false; }
+}
+
+function clearBookDraft() {
+  localStorage.removeItem('geulmorak_book_draft');
+}
+
+function resetModal() {
+  document.getElementById('bookTitle').value='';
+  document.getElementById('bookAuthor').value='';
+  document.getElementById('bookReview').value='';
+  document.getElementById('bookQuote').value='';
+  document.getElementById('bookSynopsisWrap').style.display='none';
+  document.getElementById('bookThumbUrl').value='';
+  document.getElementById('quizAnswer').value='';
+  document.getElementById('quizResult').style.display='none';
+  document.getElementById('modalStep1').style.display='block';
+  document.getElementById('modalStep2').style.display='none';
+  selectedStar=0;
+  document.querySelectorAll('.star-btn').forEach(b=>b.classList.remove('on'));
+  selectedBookType = { type:'normal', pts:150 };
+  document.querySelectorAll('.book-type-btn').forEach(b=>b.classList.remove('active-type'));
+  document.querySelector('.book-type-btn[data-type="normal"]').classList.add('active-type');
+  clearBookDraft();
+}
+
+let currentQuizQuestion = '';
+
+// 초기화 버튼
+document.getElementById('btnClearDraft')?.addEventListener('click', () => {
+  if(confirm('작성 중인 내용을 모두 지울까요?')) {
+    resetModal();
+    showToast('🗑 초기화됐어요!');
+  }
+});
+
+// 모달 입력 자동 임시저장
+['bookTitle','bookAuthor','bookReview','bookQuote'].forEach(id => {
+  document.getElementById(id)?.addEventListener('input', saveBookDraft);
+});
+// 별점/책종류 변경 시도 임시저장 (기존 이벤트 뒤에 추가되도록 setTimeout)
+document.getElementById('starGroup')?.addEventListener('click', ()=>setTimeout(saveBookDraft, 50));
+document.getElementById('bookTypeGroup')?.addEventListener('click', ()=>setTimeout(saveBookDraft, 50));
+
+// STEP1: 검증 단계로 넘어가기
+document.getElementById('btnNextStep').addEventListener('click', async () => {
+  const title = document.getElementById('bookTitle').value.trim();
+  const review = document.getElementById('bookReview').value.trim();
+  const quote = document.getElementById('bookQuote').value.trim();
+  if(!title) { showToast('📖 책 제목을 입력해주세요!'); return; }
+  if(!review) { showToast('💬 한 줄 감상을 입력해주세요!'); return; }
+  if(!quote) { showToast('✍️ 인상 깊었던 문장은 필수예요!'); return; }
+
+  const btn = document.getElementById('btnNextStep');
+  btn.textContent = '⏳ 질문 생성 중...';
+  btn.disabled = true;
+
+  const synopsis = document.getElementById('bookSynopsis').textContent || '';
+
+  // 유형을 직접 골라서 AI에게 명시 → 매번 확실히 다른 질문
+  const QUIZ_TYPES = [
+    { type:'감정형', prompt:'등장인물이 한 행동이나 말 중 하나를 직접 언급하며, 왜 그랬을지 학생의 생각을 묻는 질문' },
+    { type:'장면형', prompt:'책 속 특정 장면(갈등, 반전, 감동 순간 등)을 구체적으로 언급하며 그 장면에서 느낀 점을 묻는 질문' },
+    { type:'변화형', prompt:'이 책을 읽고 나서 학생 자신의 생각, 가치관, 행동이 어떻게 바뀌었는지 묻는 질문' },
+    { type:'연결형', prompt:'책 속 상황이나 감정을 학생 자신의 실제 경험이나 주변 사람과 연결지어 묻는 질문' },
+    { type:'편지형', prompt:'책 속 주인공이나 인상 깊은 인물에게 직접 말을 건네는 형식의 질문' },
+    { type:'상상형', prompt:'만약 학생이 주인공이었다면 어떻게 행동했을지, 또는 결말을 다르게 바꾼다면 어떻게 할지 묻는 질문' },
+    { type:'추천형', prompt:'이 책을 어떤 친구에게 추천하고 싶은지, 그 이유는 무엇인지 묻는 질문' },
+  ];
+  const picked = QUIZ_TYPES[Math.floor(Math.random() * QUIZ_TYPES.length)];
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 150,
+        system: `당신은 독서 지도 선생님입니다. 반드시 한국어 질문 1문장만 출력하세요. 다른 말은 절대 쓰지 마세요. 질문 유형: ${picked.prompt}`,
+        messages: [{ role: 'user', content: `책 제목: ${title}
+줄거리: ${synopsis}
+학생 감상: ${review}
+인용 문장: ${quote}
+
+위 유형(${picked.type})으로 질문 1문장만 만들어주세요.` }]
+      })
+    });
+    const data = await res.json();
+    currentQuizQuestion = data.content?.[0]?.text?.trim() || '';
+    if(!currentQuizQuestion) throw new Error('empty');
+  } catch(e) {
+    const fallbackQs = [
+      `《${title}》에서 주인공이 한 행동 중 가장 이해가 안 됐던 건 뭐예요?`,
+      `《${title}》을 읽고 나서 생각이나 마음이 바뀐 게 있나요?`,
+      `《${title}》의 주인공에게 한마디 해준다면 뭐라고 할 것 같아요?`,
+      `《${title}》에서 가장 긴장되거나 두근거렸던 순간은 언제인가요?`,
+      `《${title}》의 내용 중 나의 경험과 비슷하다고 느낀 부분이 있나요?`,
+      `만약 내가 《${title}》의 주인공이었다면 어떻게 행동했을 것 같아요?`,
+      `《${title}》을 어떤 친구에게 추천하고 싶고, 그 이유는 뭔가요?`,
+    ];
+    currentQuizQuestion = fallbackQs[Math.floor(Math.random()*fallbackQs.length)];
+  }
+
+  document.getElementById('quizQuestion').textContent = currentQuizQuestion;
+  document.getElementById('quizResult').style.display='none';
+  document.getElementById('modalStep1').style.display='none';
+  document.getElementById('modalStep2').style.display='block';
+
+  btn.textContent = '🤔 진짜 읽었는지 확인하기';
+  btn.disabled = false;
+});
+
+// 뒤로가기
+document.getElementById('btnBackStep').addEventListener('click', () => {
+  document.getElementById('modalStep1').style.display='block';
+  document.getElementById('modalStep2').style.display='none';
+});
+
+// STEP2: AI 검증 후 최종 제출
+document.getElementById('btnVerifySubmit').addEventListener('click', async () => {
+  const answer = document.getElementById('quizAnswer').value.trim();
+  if(!answer) { showToast('답변을 입력해주세요!'); return; }
+
+  const title = document.getElementById('bookTitle').value.trim();
+  const author = document.getElementById('bookAuthor').value.trim();
+  const review = document.getElementById('bookReview').value.trim();
+  const quote = document.getElementById('bookQuote').value.trim();
+  const synopsis = document.getElementById('bookSynopsis').textContent || '';
+
+  const btn = document.getElementById('btnVerifySubmit');
+  btn.textContent = '⏳ 확인 중...';
+  btn.disabled = true;
+
+  const resultEl = document.getElementById('quizResult');
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 300,
+        system: '당신은 독서 지도 선생님입니다. 학생의 답변이 책을 실제로 읽은 사람의 답변인지 평가하세요. 반드시 JSON만 반환하세요: {"score":0~100, "pass":true/false, "feedback":"한국어 피드백 1문장"}. pass는 score가 40 이상일 때 true. 너무 짧거나 관계없는 답변은 낮은 점수.',
+        messages: [{ role: 'user', content: `책: ${title}
+줄거리: ${synopsis}
+감상문: ${review}
+인용 문장: ${quote}
+질문: ${currentQuizQuestion}
+학생 답변: ${answer}` }]
+      })
+    });
+    const data = await res.json();
+    const text = data.content?.[0]?.text?.trim() || '';
+    const clean = text.replace(/```json|```/g,'').trim();
+    const parsed = JSON.parse(clean);
+
+    if(!parsed.pass) {
+      resultEl.style.cssText = 'display:block;background:rgba(248,113,113,0.15);border:1px solid var(--red);border-radius:10px;padding:10px 12px;margin-bottom:12px;font-size:13px;line-height:1.6;color:var(--red);';
+      resultEl.innerHTML = `😅 <strong>조금 더 성실하게 답변해주세요!</strong><br>${parsed.feedback}`;
+      btn.textContent = '✨ 제출하기';
+      btn.disabled = false;
+      return;
+    }
+
+    resultEl.style.cssText = 'display:block;background:rgba(74,222,128,0.15);border:1px solid var(--green);border-radius:10px;padding:10px 12px;margin-bottom:12px;font-size:13px;line-height:1.6;color:var(--green);';
+    resultEl.innerHTML = `✅ <strong>훌륭해요!</strong> ${parsed.feedback}`;
+
+  } catch(e) {
+    // API 실패 시 통과 (서비스 장애 대비)
+  }
+
+  // 맞춤법 자동 교정
+  let correctedReview = review;
+  let correctedQuote = quote;
+  try {
+    const spellRes = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        model:'claude-sonnet-4-20250514', max_tokens:300,
+        system:'맞춤법과 띄어쓰기만 교정해주세요. 내용과 문체는 절대 바꾸지 마세요. JSON만 반환: {"review":"교정된 감상","quote":"교정된 문장"}',
+        messages:[{role:'user', content:`감상: ${review}
+문장: ${quote}`}]
+      })
+    });
+    const spellData = await spellRes.json();
+    const spellText = spellData.content?.[0]?.text?.trim().replace(/```json|```/g,'').trim();
+    const spellParsed = JSON.parse(spellText);
+    if(spellParsed.review) correctedReview = spellParsed.review;
+    if(spellParsed.quote) correctedQuote = spellParsed.quote;
+  } catch(e) { /* 실패 시 원본 사용 */ }
+
+  // 최종 제출
+  const geulmoak = isGeulmoak(title);
+  const series = getGeulmoakSeries(title);
+  try {
+    await addDoc(collection(db,'books'), {
+      userId:currentUser.uid, userName:userData?.name||'학생',
+      title, author, review:correctedReview, quote:correctedQuote,
+      coverUrl: document.getElementById('bookThumbUrl').value || '',
+      starRating: selectedStar||0,
+      bookType: selectedBookType.type,
+      basePoints: selectedBookType.pts,
+      status:'pending', points:0,
+      isGeulmoak: geulmoak, series: series||'',
+      createdAt: new Date()
+    });
+    document.getElementById('modal').classList.remove('open');
+    resetModal(); // resetModal 안에서 clearBookDraft 호출
+    if(geulmoak) showToast('🌟 추천 도서 제출! 승인 시 +50pt 보너스!');
+    else showToast('🎉 선생님께 제출했어요! 승인을 기다려요~');
+  } catch(e) { showToast('오류가 발생했어요. 다시 시도해주세요.'); }
+
+  btn.textContent = '✨ 제출하기';
+  btn.disabled = false;
+});
+
+// ===== 빙고 미션별 질문 =====
+const BINGO_QUESTIONS = {
+  '도서관 탐험하기': '어느 도서관에 갔나요? 가서 어떤 걸 했는지 알려주세요!',
+  '바다가 보이는 카페': '어느 카페였나요? 어떤 책을 읽었나요? 분위기는 어땠나요?',
+  '책 속 음식 찾기': '어떤 책의 어떤 음식인가요? 실제로 먹어봤나요?',
+  '맛집 찾아가기': '책에서 영감을 받은 음식점인가요? 어디 갔는지 알려주세요!',
+  '새로운 운동 도전': '어떤 운동을 처음 해봤나요? 느낌이 어땠나요?',
+  '행으로 시작하는 책': '어떤 책을 읽었나요? 제목과 간단한 감상을 알려주세요!',
+  '산책하며 오디오북': '어디서 산책했나요? 어떤 책을 들었나요?',
+  '책 속 장소 방문': '책 어디에 나온 장소인가요? 실제로 어땠나요?',
+  '독서 카페 방문': '어떤 독서 카페에 갔나요? 어떤 책을 읽었나요?',
+  '가족에게 책 읽어주기': '누구에게 어떤 책을 읽어줬나요? 반응이 어땠나요?',
+  '책 속 명언 써보기': '어떤 책의 어떤 명언인가요? 왜 마음에 들었나요?',
+  '밤 10시 이후 독서': '어떤 책을 읽었나요? 어떤 느낌이었나요?',
+  '자연 속에서 독서': '어디서 읽었나요? (공원, 산, 바닷가 등) 어떤 책이었나요?',
+  '책 주인공처럼 하루': '어떤 캐릭터를 흉내 냈나요? 어떻게 보냈는지 알려주세요!',
+  '모르는 단어 10개 찾기': '어떤 책에서 찾았나요? 인상 깊었던 단어 1-2개만 알려주세요!',
+  'FREE ⭐': 'FREE 칸이에요! 자동 완성!',
+};
+
+function getBingoQuestion(mission) {
+  // 정확히 일치하는 질문 먼저 찾기
+  if(BINGO_QUESTIONS[mission]) return BINGO_QUESTIONS[mission];
+  // 키워드로 매칭
+  const keywords = {
+    '도서관': '어느 도서관에 갔나요? 가서 어떤 책을 봤는지 알려주세요!',
+    '카페': '어느 카페였나요? 어떤 책을 읽었나요?',
+    '음식': '어떤 책의 어떤 음식인가요? 찾아서 먹어봤나요?',
+    '운동': '어떤 운동을 해봤나요? 처음 해본 느낌이 어땠나요?',
+    '산책': '어디서 산책했나요? 책과 함께였나요?',
+    '방문': '어디를 방문했나요? 책과 어떤 연관이 있나요?',
+    '읽기': '어떤 책을 읽었나요? 짧은 감상도 함께 알려주세요!',
+    '쓰기': '어떻게 썼나요? 어떤 내용을 담았나요?',
+    '가족': '가족과 어떻게 함께했나요?',
+    '친구': '친구와 어떻게 함께했나요?',
+  };
+  for(const [key, q] of Object.entries(keywords)) {
+    if(mission.includes(key)) return q;
+  }
+  return `"${mission}" 미션을 어떻게 달성했는지 구체적으로 써주세요!`;
+}
+
+// 빙고 인증 모달
+let currentBingoMissionIdx = -1;
+let currentBingoMissions = [];
+let currentBingoCallback = null;
+
+document.getElementById('bingoProofCancel').addEventListener('click', () => {
+  document.getElementById('bingoProofModal').style.display = 'none';
+  document.getElementById('bingoProofText').value = '';
+});
+
+document.getElementById('bingoProofSubmit').addEventListener('click', async () => {
+  const text = document.getElementById('bingoProofText').value.trim();
+  if(!text) { showToast('인증 내용을 입력해주세요!'); return; }
+
+  const btn = document.getElementById('bingoProofSubmit');
+  btn.textContent = '⏳ 제출 중...';
+  btn.disabled = true;
+
+  try {
+    await addDoc(collection(db,'bingoProofs'), {
+      userId: currentUser.uid,
+      userName: userData?.name || '학생',
+      missionIdx: currentBingoMissionIdx,
+      mission: currentBingoMissions[currentBingoMissionIdx],
+      proofText: text,
+      status: 'pending',
+      createdAt: new Date()
+    });
+    document.getElementById('bingoProofModal').style.display = 'none';
+    document.getElementById('bingoProofText').value = '';
+    showToast('📤 인증 제출 완료! 선생님 카톡(@geulmorak)으로 사진도 보내주세요 😊');
+    if(currentBingoCallback) await currentBingoCallback();
+  } catch(e) {
+    showToast('제출 실패! 다시 시도해주세요.');
+  }
+  btn.textContent = '📤 인증 제출하기';
+  btn.disabled = false;
+});
+
+// ===== 빙고 =====
+async function renderBingo() {
+  if(!currentUser) return;
+  const board = document.getElementById('bingoBoard');
+  const progressEl = document.getElementById('bingoProgress');
+  const linesEl = document.getElementById('bingoLines');
+  const subtitleEl = document.getElementById('bingoSubtitle');
+  board.innerHTML = '<div class="loading">빙고판 불러오는 중...</div>';
+
+  // 빙고 미션 설정 로드
+  let missions = [];
+  let lineBonus = 30;
+  try {
+    const settingSnap = await getDoc(doc(db,'settings','bingo'));
+    if(settingSnap.exists()) {
+      missions = settingSnap.data().missions || [];
+      lineBonus = settingSnap.data().lineBonus || 30;
+    }
+  } catch(e) {}
+  if(missions.length < 16) {
+    board.innerHTML = '<div class="empty-state">📋 아직 선생님이 빙고를 준비 중이에요!<br>조금만 기다려주세요 😊</div>';
+    return;
+  }
+  subtitleEl.textContent = `한 줄 완성마다 +${lineBonus}pt 보너스! 🌟`;
+
+  // 내 빙고 현황 로드
+  let myChecked = [];
+  let myBingoDocId = null;
+  let myPending = []; // 승인 대기 중인 미션 인덱스
+  try {
+    const bingoSnap = await getDocs(query(collection(db,'bingo'), where('userId','==',currentUser.uid)));
+    if(!bingoSnap.empty) {
+      const d = bingoSnap.docs[0];
+      myBingoDocId = d.id;
+      myChecked = d.data().checked || [];
+    }
+  } catch(e) {}
+  // 승인 대기 중인 인증 로드
+  try {
+    const proofSnap = await getDocs(query(collection(db,'bingoProofs'),
+      where('userId','==',currentUser.uid), where('status','==','pending')));
+    myPending = proofSnap.docs.map(d=>d.data().missionIdx);
+  } catch(e) {}
+
+  // FREE 칸 자동 체크
+  const freeIdx = missions.findIndex(m=>m.includes('FREE'));
+  if(freeIdx>=0 && !myChecked.includes(freeIdx)) myChecked.push(freeIdx);
+
+  function getLines() {
+    const lines = [];
+    for(let r=0;r<4;r++) lines.push([r*4,r*4+1,r*4+2,r*4+3]);
+    for(let c=0;c<4;c++) lines.push([c,c+4,c+8,c+12]);
+    lines.push([0,5,10,15]); lines.push([3,6,9,12]);
+    return lines;
+  }
+  function completedLines() {
+    return getLines().filter(line=>line.every(i=>myChecked.includes(i)));
+  }
+
+  async function saveAndRender() {
+    try {
+      if(myBingoDocId) {
+        await updateDoc(doc(db,'bingo',myBingoDocId), {checked:myChecked, updatedAt:new Date()});
+      } else {
+        const newDoc = await addDoc(collection(db,'bingo'), {userId:currentUser.uid, checked:myChecked, awardedLines:[], createdAt:new Date()});
+        myBingoDocId = newDoc.id;
+      }
+    } catch(e) {}
+    renderBoard();
+  }
+
+  async function checkLineBonus() {
+    let awardedLines = [];
+    try {
+      if(myBingoDocId) {
+        const snap = await getDoc(doc(db,'bingo',myBingoDocId));
+        awardedLines = snap.data()?.awardedLines || [];
+      }
+    } catch(e) {}
+    const done = completedLines();
+    let newLines = 0;
+    done.forEach(line => {
+      const key = line.join('-');
+      if(!awardedLines.includes(key)) { newLines++; awardedLines.push(key); }
+    });
+    if(newLines > 0) {
+      const pts = newLines * lineBonus;
+      try {
+        await updateDoc(doc(db,'bingo',myBingoDocId), {awardedLines});
+        await updateDoc(doc(db,'users',currentUser.uid), {points: increment(pts)});
+        showToast('🎯 빙고 ' + newLines + '줄 완성! +' + pts + 'pt 획득!');
+        loadUser(currentUser.uid);
+      } catch(e) {}
+    }
+  }
+
+  function renderBoard() {
+    const doneLines = completedLines();
+    const doneLineIdxs = new Set(doneLines.flat());
+    board.innerHTML = '';
+    missions.forEach((m,i) => {
+      const isFree = m.includes('FREE');
+      const isDone = myChecked.includes(i);
+      const isPending = myPending.includes(i);
+      const isLine = doneLineIdxs.has(i) && isDone;
+      const cell = document.createElement('div');
+      cell.className = 'bingo-cell' + (isFree?' free':isLine?' line-complete':isDone?' done':isPending?' pending':'');
+      cell.innerHTML = (isDone?'<span class="bingo-check">✅</span>':isPending?'<span class="bingo-check">⏳</span>':'') + m;
+      if(!isFree && !isDone) {
+        cell.style.cursor = 'pointer';
+        cell.addEventListener('click', () => {
+          // 인증 모달 띄우기
+          currentBingoMissionIdx = i;
+          currentBingoMissions = missions;
+          currentBingoCallback = async () => {
+            // 제출 후 pending 표시
+            renderBoard();
+          };
+          document.getElementById('bingoProofMission').textContent = missions[i];
+          document.getElementById('bingoProofQuestion').textContent = getBingoQuestion(missions[i]);
+          document.getElementById('bingoProofText').value = '';
+          document.getElementById('bingoProofModal').style.display = 'flex';
+        });
+      } else if(!isFree && isDone) {
+        cell.style.cursor = 'default';
+      }
+      board.appendChild(cell);
+    });
+
+    // 진행률
+    const total = missions.filter(m=>!m.includes('FREE')).length;
+    const done = myChecked.filter(i=>!missions[i]?.includes('FREE')).length;
+    const pct = Math.round((done/total)*100);
+    progressEl.innerHTML = `
+      <div style="background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:14px;padding:12px 16px;">
+        <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+          <div style="font-weight:700;font-size:13px;">이번 달 진행률</div>
+          <div style="color:var(--gold);font-weight:900">${done}/${total} (${pct}%)</div>
+        </div>
+        <div style="height:8px;background:rgba(255,255,255,0.08);border-radius:4px;">
+          <div style="height:8px;background:linear-gradient(90deg,var(--purple),var(--purple2));border-radius:4px;width:${pct}%;transition:width 0.5s"></div>
+        </div>
+      </div>`;
+
+    // 완성 줄 표시
+    const lineCount = doneLines.length;
+    linesEl.innerHTML = lineCount > 0
+      ? `<div style="text-align:center;padding:10px;background:rgba(74,222,128,0.1);border:1px solid var(--green);border-radius:12px;font-size:13px;font-weight:700;color:var(--green)">🎯 ${lineCount}줄 완성! (+${lineCount*lineBonus}pt 획득)</div>`
+      : '';
+  }
+
+  renderBoard();
+}
+
+// ===== 숙제 체크리스트 =====
+function getThisWeek() {
+  const now = new Date();
+  const day = now.getDay(); // 0=일, 1=월 ...
+  const monday = new Date(now);
+  monday.setDate(now.getDate() - (day === 0 ? 6 : day - 1));
+  const y = monday.getFullYear();
+  const m = String(monday.getMonth()+1).padStart(2,'0');
+  const d = String(monday.getDate()).padStart(2,'0');
+  return `${y}-${m}-${d}`; // YYYY-MM-DD (월요일 기준)
+}
+
+function getWeekLabel(weekStart) {
+  const d = new Date(weekStart);
+  const end = new Date(d); end.setDate(d.getDate()+6);
+  const fmt = (dt) => `${dt.getMonth()+1}/${dt.getDate()}`;
+  return `${d.getFullYear()}년 ${fmt(d)} ~ ${fmt(end)} 주차`;
+}
+
+async function renderHomework() {
+  if(!currentUser) return;
+  const sec = document.getElementById('hwChecklist');
+  const label = document.getElementById('hwWeekLabel');
+  sec.innerHTML = '<div class="loading">불러오는 중...</div>';
+
+  const weekStart = getThisWeek();
+  label.textContent = getWeekLabel(weekStart);
+
+  const DAYS = ['월','화','수','목','금'];
+  const today = new Date();
+  const todayDay = today.getDay(); // 0=일,1=월...5=금,6=토
+  // 오늘 요일 인덱스 (월=0 ~ 금=4)
+  const todayIdx = todayDay === 0 ? 4 : todayDay === 6 ? 4 : todayDay - 1;
+
+  // 반 정보로 숙제표 로드
+  let sheetData = null;
+  let hwItems = ['책', '녹음', '독서평설', '서체교정', '한자공부', 'EBS문법'];
+  try {
+    // 학생 반 정보
+    const userClass = userData?.className || userData?.class || '';
+    if(userClass) {
+      const sheetSnap = await getDoc(doc(db,'sheets', userClass));
+      if(sheetSnap.exists()) {
+        sheetData = sheetSnap.data();
+        // 숙제표 항목 사용
+        if(sheetData.items && sheetData.items.length > 0) {
+          hwItems = sheetData.items.map(i => i.title).filter(Boolean);
+        }
+      }
+    }
+    // 없으면 기본 항목
+    const settingSnap = await getDoc(doc(db,'settings','homework'));
+    if(settingSnap.exists() && settingSnap.data().hwItems && !sheetData) {
+      hwItems = settingSnap.data().hwItems;
+    }
+  } catch(e) {}
+
+  // 내 체크 현황 로드 (요일별)
+  // dayChecks: { '책': [true,false,true,false,false], '녹음': [...] }
+  const hwDocId = `student_${currentUser.uid}_${weekStart}`;
+  let dayChecks = {};
+  let teacherComment = '';
+  try {
+    const snap = await getDoc(doc(db,'studentHw', hwDocId));
+    if(snap.exists()) {
+      dayChecks = snap.data().dayChecks || {};
+      teacherComment = snap.data().teacherComment || '';
+    }
+  } catch(e) {}
+
+  // 초기화
+  hwItems.forEach(item => {
+    if(!dayChecks[item]) dayChecks[item] = [false,false,false,false,false];
+  });
+
+  // 완료 계산 (항목별로 1개 이상 체크면 완료)
+  const doneItems = hwItems.filter(item => (dayChecks[item]||[]).some(v=>v===true)).length;
+  const pct = Math.round((doneItems/hwItems.length)*100);
+
+  sec.innerHTML = `
+    <!-- 숙제표 책/명언 -->
+    ${sheetData ? `
+    <div style="background:linear-gradient(135deg,rgba(124,92,191,0.15),rgba(160,126,224,0.1));border:1px solid var(--purple2);border-radius:14px;padding:14px 16px;margin-bottom:14px;">
+      ${sheetData.book ? `<div style="font-size:13px;font-weight:700;margin-bottom:4px;">📖 이번 주 읽을 책</div>
+      <div style="font-size:14px;font-weight:900;margin-bottom:8px;">${sheetData.book}</div>` : ''}
+      ${sheetData.quote ? `<div style="font-size:11px;color:var(--muted);font-style:italic;line-height:1.6;">"${sheetData.quote}"</div>` : ''}
+    </div>` : ''}
+
+    <!-- 진행률 -->
+    <div style="background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin-bottom:14px;">
+      <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+        <div style="font-size:13px;font-weight:700;">이번 주 완료율</div>
+        <div style="color:var(--gold);font-weight:900">${doneItems}/${hwItems.length} 항목</div>
+      </div>
+      <div style="height:8px;background:rgba(255,255,255,0.08);border-radius:4px;">
+        <div style="height:8px;background:linear-gradient(90deg,var(--purple),var(--purple2));border-radius:4px;width:${pct}%;transition:width 0.5s"></div>
+      </div>
+    </div>
+
+    <!-- 요일별 체크리스트 -->
+    <div style="background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:14px;">
+      <!-- 요일 헤더 -->
+      <div style="display:grid;grid-template-columns:1fr repeat(5,36px);gap:4px;padding:10px 12px;border-bottom:1px solid var(--border);background:rgba(255,255,255,0.03);">
+        <div style="font-size:11px;font-weight:700;color:var(--muted);">숙제 항목</div>
+        ${DAYS.map((d,i) => `<div style="font-size:11px;font-weight:900;text-align:center;color:${i===todayIdx?'var(--purple2)':'var(--muted)'};">${d}</div>`).join('')}
+      </div>
+      <!-- 항목별 행 -->
+      <div id="hwDayRows"></div>
+    </div>
+
+    <!-- 다음 주 읽을 책 -->
+    ${sheetData?.nextBook ? `
+    <div style="background:rgba(22,163,74,0.08);border:1px solid rgba(22,163,74,0.3);border-radius:12px;padding:12px 14px;margin-bottom:14px;">
+      <div style="font-size:11px;font-weight:700;color:var(--green);margin-bottom:3px;">📖 다음 주까지 읽을 책</div>
+      <div style="font-size:13px;font-weight:700;">${sheetData.nextBook}</div>
+    </div>` : ''}
+
+    <!-- 승인 현황 -->
+    ${snap.exists() && snap.data().hwApproved ? `
+    <div style="background:rgba(22,163,74,0.1);border:1px solid var(--green);border-radius:16px;padding:16px;margin-bottom:14px;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:${snap.data().aiFeedback?'12':'0'}px;">
+        <div style="font-size:24px;">✅</div>
+        <div>
+          <div style="font-size:13px;font-weight:900;color:var(--green);">선생님이 숙제를 확인했어요!</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px;">+${snap.data().hwPtsAwarded||0}pt 지급 완료 🎉</div>
+        </div>
+      </div>
+      ${snap.data().aiFeedback ? `
+      <div style="background:white;border-radius:10px;padding:12px 14px;font-size:13px;line-height:1.8;color:#1a1a2e;border-left:3px solid var(--green);">
+        ${snap.data().aiFeedback}
+      </div>` : ''}
+    </div>` : snap.exists() && snap.data().hwApproved === false ? `
+    <div style="background:rgba(248,113,113,0.1);border:1px solid var(--red);border-radius:12px;padding:12px 14px;margin-bottom:14px;">
+      <div style="font-size:13px;font-weight:900;color:var(--red);">❌ 선생님이 확인 중이에요</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:2px;">더 성실하게 숙제해봐요!</div>
+    </div>` : ''}
+
+    <!-- 선생님 코멘트 -->
+    ${teacherComment ? `
+    <div style="background:rgba(124,92,191,0.1);border:1px solid var(--purple2);border-radius:12px;padding:12px 14px;margin-bottom:14px;">
+      <div style="font-size:11px;font-weight:700;color:var(--purple2);margin-bottom:4px;">👑 글모락의 교장 코멘트</div>
+      <div style="font-size:13px;line-height:1.6;">${teacherComment}</div>
+    </div>` : ''}
+  `;
+
+  // 행 렌더링
+  const rowsEl = document.getElementById('hwDayRows');
+
+  async function saveAndRender() {
+    try {
+      await setDoc(doc(db,'studentHw', hwDocId), {
+        userId: currentUser.uid,
+        userName: userData?.name || '학생',
+        weekStart,
+        dayChecks,
+        // 하위 호환: checks도 같이 저장
+        checks: Object.fromEntries(hwItems.map(item => [item, (dayChecks[item]||[]).some(v=>v)])),
+        updatedAt: new Date()
+      }, {merge: true});
+    } catch(e) {}
+    renderRows();
+  }
+
+  function renderRows() {
+    rowsEl.innerHTML = '';
+    hwItems.forEach((item, ri) => {
+      const days = dayChecks[item] || [false,false,false,false,false];
+      const allDone = days.every(v=>v===true);
+      const anyDone = days.some(v=>v===true);
+      const row = document.createElement('div');
+      row.style.cssText = `display:grid;grid-template-columns:1fr repeat(5,36px);gap:4px;padding:10px 12px;border-bottom:1px solid rgba(255,255,255,0.04);align-items:center;background:${allDone?'rgba(22,163,74,0.06)':'transparent'};transition:background 0.2s;`;
+      row.innerHTML = `
+        <div style="font-size:13px;font-weight:700;color:${allDone?'var(--green)':anyDone?'var(--text)':'var(--muted)'};">
+          ${allDone?'✅ ':''}${item}
+        </div>
+        ${days.map((checked, di) => `
+          <div style="display:flex;justify-content:center;">
+            <button class="day-check-btn" data-item="${item}" data-day="${di}"
+              style="width:28px;height:28px;border-radius:8px;border:2px solid ${checked?'var(--green)':di===todayIdx?'var(--purple2)':'var(--border)'};
+                     background:${checked?'var(--green)':di===todayIdx?'rgba(124,92,191,0.1)':'transparent'};
+                     display:flex;align-items:center;justify-content:center;font-size:12px;cursor:pointer;transition:all 0.15s;">
+              ${checked?'✓':''}
+            </button>
+          </div>`).join('')}`;
+      rowsEl.appendChild(row);
+    });
+
+    // 체크 이벤트
+    rowsEl.querySelectorAll('.day-check-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const item = btn.dataset.item;
+        const di = parseInt(btn.dataset.day);
+        if(!dayChecks[item]) dayChecks[item] = [false,false,false,false,false];
+        dayChecks[item][di] = !dayChecks[item][di];
+        await saveAndRender();
+      });
+    });
+  }
+
+  renderRows();
+}
+
+async function renderChecklistInto(targetId) {
+  if(!currentUser) return;
+  const targetEl = document.getElementById(targetId);
+  if(!targetEl) return;
+  // renderChecklist 로직 재사용
+  const snap = await getDocs(query(collection(db,'books'), where('userId','==',currentUser.uid), where('status','==','approved')));
+  const readTitles = new Set(snap.docs.map(d=>d.data().title));
+  let html='';
+  for(const [series, books] of Object.entries(GEULMOAK_BOOKS)) {
+    const readCount = books.filter(b => [...readTitles].some(r=>r.includes(b)||b.includes(r))).length;
+    const pct = Math.round((readCount/books.length)*100);
+    html+=`<div style="margin-bottom:16px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+        <div style="font-size:13px;font-weight:700">${series}</div>
+        <div style="font-size:11px;color:var(--purple2)">${readCount}/${books.length}권</div>
+      </div>
+      <div style="height:5px;background:var(--border);border-radius:10px;margin-bottom:8px;">
+        <div style="height:5px;background:linear-gradient(90deg,var(--purple),var(--purple2));border-radius:10px;width:${pct}%"></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:5px;">
+        ${books.map(b=>{
+          const done=[...readTitles].some(r=>r.includes(b)||b.includes(r));
+          return `<div style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:${done?'rgba(124,92,191,0.1)':'var(--surface)'};border:1px solid ${done?'var(--purple2)':'var(--border)'};border-radius:8px;font-size:12px;font-weight:${done?700:400}">${done?'✅':'⬜'} ${b}</div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  }
+  targetEl.innerHTML = `<div style="background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:14px;padding:14px;">${html}</div>`;
+}
+
+async function renderChecklist() {
+  if(!currentUser) return;
+  const snap = await getDocs(query(collection(db,'books'), where('userId','==',currentUser.uid), where('status','==','approved')));
+  const readTitles = new Set(snap.docs.map(d=>d.data().title));
+
+  let totalRead=0, totalAll=0;
+  let html='';
+  for(const [series, books] of Object.entries(GEULMOAK_BOOKS)) {
+    const readCount = books.filter(b => [...readTitles].some(r=>r.includes(b)||b.includes(r))).length;
+    totalRead+=readCount; totalAll+=books.length;
+    const pct = Math.round((readCount/books.length)*100);
+    html+=`<div style="margin-bottom:20px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <div style="font-size:14px;font-weight:700">${series}</div>
+        <div style="font-size:12px;color:var(--purple2)">${readCount}/${books.length}권</div>
+      </div>
+      <div style="height:6px;background:var(--border);border-radius:10px;margin-bottom:10px;">
+        <div style="height:6px;background:linear-gradient(90deg,var(--purple),var(--purple2));border-radius:10px;width:${pct}%;transition:width 0.5s"></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        ${books.map(b=>{
+          const done=[...readTitles].some(r=>r.includes(b)||b.includes(r));
+          return `<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:${done?'rgba(124,92,191,0.15)':'var(--surface)'};border:1px solid ${done?'var(--purple2)':'var(--border)'};border-radius:10px;">
+            <div style="font-size:16px">${done?'✅':'⬜'}</div>
+            <div style="font-size:13px;font-weight:${done?700:400};color:${done?'var(--text)':'var(--muted)'}">${b}</div>
+            ${done?'<div style="margin-left:auto;font-size:11px;color:var(--purple2)">완독!</div>':''}
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  }
+
+  // 진행률
+  const pct = Math.round((totalRead/totalAll)*100);
+  const badge = totalRead>=10?'🎖️ 고전 입문':totalRead>=30?'📜 고전 탐험가':totalRead>=60?'👑 고전 마스터':'';
+  document.getElementById('listProgress').innerHTML=`
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px 16px;">
+      <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+        <div style="font-weight:700">전체 진행률</div>
+        <div style="color:var(--gold);font-weight:900">${totalRead}/${totalAll}권 (${pct}%)</div>
+      </div>
+      <div style="height:8px;background:var(--border);border-radius:10px;">
+        <div style="height:8px;background:linear-gradient(90deg,var(--gold),var(--purple2));border-radius:10px;width:${pct}%"></div>
+      </div>
+      ${badge?`<div style="margin-top:10px;font-size:13px;color:var(--gold)">🏅 뱃지: ${badge}</div>`:''}
+    </div>`;
+  document.getElementById('listContent').innerHTML=html;
+}
+
+
+
+// ===== 사이드바 네비게이션 =====
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('open');
+}
+function openSidebar() {
+  document.getElementById('sidebar').classList.add('open');
+  document.getElementById('sidebarOverlay').classList.add('open');
+}
+
+document.getElementById('btnHamburger')?.addEventListener('click', openSidebar);
+document.getElementById('sidebarOverlay')?.addEventListener('click', closeSidebar);
+
+function showSection(sectionName) {
+  // 모든 섹션 숨기기
+  const isHome = sectionName === 'home';
+  const isBooks = sectionName === 'books';
+  const isRank = sectionName === 'rank';
+
+  document.querySelector('.hero-card').style.display = isHome ? '' : 'none';
+  document.getElementById('btnAddBook').style.display = isHome ? '' : 'none';
+  document.querySelectorAll('.sec-title').forEach(s => {
+    s.style.display = (isHome || isBooks || isRank) ? '' : 'none';
+  });
+  document.getElementById('bookList').style.display = (isHome || isBooks) ? '' : 'none';
+  document.getElementById('rankingList').style.display = (isHome || isRank) ? '' : 'none';
+  document.getElementById('secBingo').style.display = 'none';
+  document.getElementById('secHouse').style.display = 'none';
+  document.getElementById('secReport').style.display = 'none';
+  document.getElementById('secHw').style.display = 'none';
+  document.getElementById('secList').style.display = 'none';
+  document.getElementById('secRaid').style.display = 'none';
+  document.getElementById('secHwStats').style.display = 'none';
+  document.getElementById('secLibrary').style.display = 'none';
+
+  // 활성 nav 표시
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+  const navMap = {
+    home:'navHome', hw:'navHw', bingo:'navBingo',
+    books:'navBooks', list:'navList', rank:'navRank',
+    report:'navReport', house:'navHouse', raid:'navRaid', hwstats:'navHwStats', library:'navLibrary'
+  };
+  document.getElementById(navMap[sectionName])?.classList.add('active');
+
+  // 모바일 사이드바 닫기
+  closeSidebar();
+}
+
+// 네비게이션 이벤트
+document.getElementById('navHome')?.addEventListener('click', () => {
+  showSection('home');
+});
+
+document.getElementById('navHw')?.addEventListener('click', async () => {
+  showSection('hw');
+  document.getElementById('secHw').style.display = 'block';
+  await renderHomework();
+});
+
+document.getElementById('navBingo')?.addEventListener('click', async () => {
+  showSection('bingo');
+  document.getElementById('secBingo').style.display = 'block';
+  await renderBingo();
+});
+
+document.getElementById('navBooks')?.addEventListener('click', () => {
+  showSection('books');
+});
+
+document.getElementById('navList')?.addEventListener('click', async () => {
+  showSection('list');
+  document.getElementById('secList').style.display = 'block';
+  await renderChecklist();
+});
+
+document.getElementById('navRank')?.addEventListener('click', () => {
+  showSection('rank');
+});
+
+document.getElementById('navReport')?.addEventListener('click', async () => {
+  showSection('report');
+  document.getElementById('secReport').style.display = 'block';
+  await renderBadgeSection();
+});
+
+document.getElementById('navHouse')?.addEventListener('click', async () => {
+  showSection('house');
+  document.getElementById('secHouse').style.display = 'block';
+  await renderHouseSection();
+});
+
+document.getElementById('navRaid')?.addEventListener('click', async () => {
+  showSection('raid');
+  document.getElementById('secRaid').style.display = 'block';
+  await renderRaid();
+});
+
+// 나의 서재
+async function renderLibrary() {
+  if(!currentUser) return;
+  const sec = document.getElementById('secLibrary');
+  sec.innerHTML = '<div class="loading">서재 불러오는 중...</div>';
+
+  try {
+    const snap = await getDocs(query(collection(db,'books'), where('userId','==',currentUser.uid)));
+    const books = snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>{
+      const ta=a.approvedAt?.toDate?.()??a.createdAt?.toDate?.()??new Date(0);
+      const tb=b.approvedAt?.toDate?.()??b.createdAt?.toDate?.()??new Date(0);
+      return tb-ta;
+    });
+
+    const approved = books.filter(b=>b.status==='approved');
+    const pending = books.filter(b=>b.status==='pending');
+
+    // 장르별 분류
+    const typeLabel = {comic:'🖼️ 만화책', thin:'📗 얇은 책', normal:'📘 보통 책', thick:'📙 두꺼운 책'};
+    const typeCount = {};
+    approved.forEach(b=>{ if(b.bookType) typeCount[b.bookType]=(typeCount[b.bookType]||0)+1; });
+    const totalPts = approved.reduce((s,b)=>s+(b.pointsAwarded||0),0);
+    const avgStar = approved.filter(b=>b.starRating).length>0
+      ? (approved.reduce((s,b)=>s+(b.starRating||0),0)/approved.filter(b=>b.starRating).length).toFixed(1)
+      : '-';
+
+    sec.innerHTML = `
+      <div style="margin-bottom:16px;">
+        <div style="font-size:18px;font-weight:900;margin-bottom:4px;">🗂️ 나의 서재</div>
+        <div style="font-size:13px;color:var(--muted);">지금까지 읽은 책 모음 📚</div>
+      </div>
+
+      <!-- 요약 -->
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;">
+        <div style="background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:12px;padding:12px;text-align:center;">
+          <div style="font-size:22px;font-weight:900;color:var(--purple2);">${approved.length}</div>
+          <div style="font-size:11px;color:var(--muted);">완독</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:12px;padding:12px;text-align:center;">
+          <div style="font-size:22px;font-weight:900;color:var(--gold);">${totalPts.toLocaleString()}</div>
+          <div style="font-size:11px;color:var(--muted);">획득 포인트</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:12px;padding:12px;text-align:center;">
+          <div style="font-size:22px;font-weight:900;color:var(--gold);">${avgStar==='--'?'-':avgStar}⭐</div>
+          <div style="font-size:11px;color:var(--muted);">평균 별점</div>
+        </div>
+      </div>
+
+      <!-- 종류별 분포 -->
+      ${Object.keys(typeCount).length>0?`
+      <div style="background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:14px;padding:12px 14px;margin-bottom:14px;display:flex;gap:8px;flex-wrap:wrap;">
+        ${Object.entries(typeCount).map(([k,v])=>`
+          <span style="font-size:12px;font-weight:700;background:rgba(124,92,191,0.15);color:var(--purple2);padding:4px 10px;border-radius:10px;">${typeLabel[k]||k} ${v}권</span>
+        `).join('')}
+      </div>`:''}
+
+      <!-- 승인 대기 -->
+      ${pending.length>0?`
+      <div style="background:rgba(248,180,113,0.1);border:1px solid #f8b471;border-radius:14px;padding:12px 14px;margin-bottom:14px;">
+        <div style="font-size:13px;font-weight:700;color:#f8b471;margin-bottom:8px;">⏳ 승인 대기 중 (${pending.length}권)</div>
+        ${pending.map(b=>`
+          <div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid rgba(248,180,113,0.2);">
+            <div style="font-size:12px;flex:1;">${b.title}</div>
+            <span style="font-size:10px;color:#f8b471;font-weight:700;">대기중</span>
+          </div>`).join('')}
+      </div>`:''}
+
+      <!-- 전체 책 목록 -->
+      <div style="background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:14px;overflow:hidden;">
+        <div style="padding:12px 14px;border-bottom:1px solid var(--border);font-size:13px;font-weight:900;">
+          📖 완독 목록 (${approved.length}권)
+        </div>
+        ${approved.length===0?'<div style="text-align:center;padding:30px;color:var(--muted);">아직 읽은 책이 없어요!</div>':
+          approved.map((b)=>`
+            <div style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid rgba(255,255,255,0.04);">
+              <div style="width:36px;height:48px;border-radius:6px;background:var(--purple-light);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;overflow:hidden;">
+                ${b.coverUrl?`<img src="${b.coverUrl}" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display='none'">`:'📖'}
+              </div>
+              <div style="flex:1;min-width:0;">
+                <div style="font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${b.title}</div>
+                <div style="font-size:11px;color:var(--muted);">${b.author||''}</div>
+                ${b.starRating?`<div style="font-size:11px;margin-top:2px;">${'⭐'.repeat(b.starRating)}</div>`:''}
+                ${b.quote?`<div style="font-size:10px;color:var(--teal);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">✍️ "${b.quote}"</div>`:''}
+                ${b.teacherComment?`<div style="font-size:10px;color:var(--purple2);margin-top:2px;">💬 ${b.teacherComment}</div>`:''}
+              </div>
+              <div style="text-align:right;flex-shrink:0;min-width:60px;">
+                <div style="font-size:12px;font-weight:700;color:var(--gold);">+${b.pointsAwarded||0}pt</div>
+                <div style="font-size:10px;color:var(--muted);">${typeLabel[b.bookType]||''}</div>
+              </div>
+            </div>`).join('')}
+      </div>`;
+
+  } catch(e) {
+    sec.innerHTML = `<div style="text-align:center;padding:40px;color:var(--muted);">불러오기 실패</div>`;
+  }
+}
+
+document.getElementById('navLibrary')?.addEventListener('click', async () => {
+  showSection('library');
+  document.getElementById('secLibrary').style.display = 'block';
+  await renderLibrary();
+});
+
+document.getElementById('navHwStats')?.addEventListener('click', async () => {
+  showSection('hwstats');
+  document.getElementById('secHwStats').style.display = 'block';
+  await renderHwStats();
+});
+// 추천도서 펼치기
+document.getElementById('btnShowList')?.addEventListener('click', async () => {
+  const inner = document.getElementById('secListInner');
+  const btn = document.getElementById('btnShowList');
+  if(inner.style.display==='none') {
+    inner.style.display='block';
+    btn.textContent='📋 추천도서 닫기';
+    if(!inner.innerHTML) {
+      inner.innerHTML = '<div class="loading">불러오는 중...</div>';
+      // renderChecklist 내용을 secListInner에
+      await renderChecklistInto('secListInner');
+    }
+  } else {
+    inner.style.display='none';
+    btn.textContent='📋 글모락 추천도서 보기';
+  }
+});
+</script>
+</body>
+</html>
