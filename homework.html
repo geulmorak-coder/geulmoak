@@ -169,7 +169,6 @@
       <button class="tab-btn" id="tabSheet" onclick="switchTab('sheet',this)">📄 숙제표</button>
       <button class="tab-btn" id="tabReview" onclick="switchTab('review',this)">📝 수업 후기</button>
       <button class="tab-btn" onclick="switchTab('students_all',this)">👥 학생 관리</button>
-      <button class="tab-btn" onclick="switchTab('progress_all',this)">📖 진도</button>
       <button class="tab-btn" onclick="switchTab('exam_all',this)">📋 시험/수능</button>
       <button class="tab-btn" id="tabDebate" onclick="switchTab('debate',this)">💬 토론 논제</button>
       <button class="tab-btn" onclick="switchTab('classnote',this)">📓 학습 진도</button>
@@ -690,7 +689,7 @@
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, doc, setDoc, updateDoc, getDoc, collection, getDocs, deleteDoc, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, doc, setDoc, updateDoc, getDoc, collection, getDocs, deleteDoc, addDoc, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const app = initializeApp({
   apiKey: "AIzaSyB_f-U4h2PMzDv2zHhH0AEtffr3XfGYxsQ",
@@ -2996,6 +2995,52 @@ function renderAllPeriods(wrap) {
   html += `</div></div>`;
   wrap.innerHTML = html;
 
+  // ── 문제집 진행률 섹션 (반 공통) ────────────────────────
+  const pgSection = document.createElement('div');
+  pgSection.id = 'pgSectionWrap';
+  pgSection.style.cssText = 'margin-top:20px;';
+  pgSection.innerHTML = `
+    <div style="background:white;border:1px solid var(--border);border-radius:16px;padding:16px;">
+      <div style="font-size:14px;font-weight:900;margin-bottom:4px;">📚 문제집 진행률 관리</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:14px;">${reviewCls} 반 공통 문제집 · 단원 체크 시 학생 앱에 자동 표시</div>
+      <div id="pgAddWrap">
+        <div style="background:#f9f8ff;border-radius:12px;padding:12px;margin-bottom:12px;border:1px solid var(--border);">
+          <div style="font-size:12px;font-weight:700;margin-bottom:8px;">➕ 새 문제집 추가</div>
+          <div style="display:grid;grid-template-columns:1fr 80px;gap:8px;margin-bottom:8px;">
+            <input type="text" id="pgBookNameInp" class="ctrl-input" placeholder="예: 글모락 국어 문법">
+            <input type="number" id="pgBookTotalInp" class="ctrl-input" value="12" min="1" placeholder="단원 수">
+          </div>
+          <textarea id="pgBookChapsInp" class="ctrl-input" placeholder="목차 (한 줄에 하나씩)&#10;예: I단어 - 품사의 개념&#10;I단어 - 명사" style="width:100%;min-height:80px;resize:vertical;margin-bottom:8px;"></textarea>
+          <button id="btnAddPgSection" style="width:100%;padding:9px;background:var(--purple);color:white;border:none;border-radius:10px;font-family:'Noto Sans KR',sans-serif;font-size:13px;font-weight:700;cursor:pointer;">📚 문제집 등록</button>
+        </div>
+        <div id="pgBookListSection"></div>
+      </div>
+    </div>`;
+  wrap.appendChild(pgSection);
+
+  // 반 공통 문제집 바로 로드
+  await loadPgBooksSection(reviewCls, pgSection);
+
+  // 문제집 등록
+  pgSection.querySelector('#btnAddPgSection').addEventListener('click', async () => {
+    const name = pgSection.querySelector('#pgBookNameInp').value.trim();
+    const chapText = pgSection.querySelector('#pgBookChapsInp').value.trim();
+    const total = parseInt(pgSection.querySelector('#pgBookTotalInp').value) || 1;
+    if(!name) { showToast('문제집 이름을 입력해주세요!'); return; }
+    const chapters = chapText ? chapText.split('\n').map(c=>c.trim()).filter(Boolean) : [];
+    try {
+      await addDoc(collection(db,'progress'), {
+        cls: reviewCls, bookName: name,
+        chapters, totalChapters: chapters.length || total,
+        checkedChapters: [], createdAt: new Date()
+      });
+      showToast('📚 등록 완료!');
+      pgSection.querySelector('#pgBookNameInp').value = '';
+      pgSection.querySelector('#pgBookChapsInp').value = '';
+      await loadPgBooksSection(reviewCls, pgSection);
+    } catch(e) { showToast('오류: '+e.message); }
+  });
+
   wrap.querySelector('#btnSaveReviewAll').addEventListener('click', async () => {
     const btn = wrap.querySelector('#btnSaveReviewAll');
     btn.textContent = '저장 중...'; btn.disabled = true;
@@ -3047,7 +3092,75 @@ function renderAllPeriods(wrap) {
 }
 
 
-function renderPeriodContent() {
+async function loadPgBooksSection(cls, container) {
+  const listEl = container.querySelector('#pgBookListSection');
+  listEl.innerHTML = '<div style="text-align:center;color:var(--muted);padding:12px;font-size:12px;">불러오는 중...</div>';
+  try {
+    const snap = await getDocs(query(collection(db,'progress'), where('cls','==',cls)));
+    const books = snap.docs.map(d=>({id:d.id,...d.data()}));
+    if(!books.length) {
+      listEl.innerHTML = '<div style="text-align:center;color:var(--muted);padding:16px;font-size:12px;">등록된 문제집이 없어요<br>위에서 추가해보세요!</div>';
+      return;
+    }
+    listEl.innerHTML = books.map(bk => {
+      const checked = bk.checkedChapters||[];
+      const total = bk.chapters?.length || bk.totalChapters || 1;
+      const pct = Math.min(Math.round(checked.length/total*100), 100);
+      const pctColor = pct>=80?'#22c55e':pct>=50?'#f59e0b':'var(--purple2)';
+      return `<div style="border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:10px;background:#fafafa;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+          <div style="font-size:14px;font-weight:900;">${bk.bookName||'문제집'}</div>
+          <div style="font-size:22px;font-weight:900;color:${pctColor};">${pct}%</div>
+        </div>
+        <div style="height:8px;background:rgba(0,0,0,0.06);border-radius:4px;margin-bottom:8px;overflow:hidden;">
+          <div style="height:8px;background:${pctColor};border-radius:4px;width:${pct}%;transition:width 0.5s;"></div>
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:10px;">${checked.length} / ${total} 단원 완료</div>
+        ${bk.chapters?.length ? `<div style="display:flex;flex-wrap:wrap;gap:4px;">
+          ${bk.chapters.map((ch,ci) => {
+            const done = checked.includes(ci);
+            return `<button class="pg-sec-ch-btn" data-book="${bk.id}" data-ci="${ci}" data-cls="${cls}"
+              style="padding:4px 8px;border-radius:6px;border:1px solid ${done?'var(--purple)':'#e5e7eb'};
+              background:${done?'rgba(124,92,191,0.1)':'white'};
+              font-size:11px;font-weight:700;color:${done?'var(--purple)':'#6b7280'};
+              cursor:pointer;font-family:'Noto Sans KR',sans-serif;">${done?'✅ ':'○ '}${ch}</button>`;
+          }).join('')}
+        </div>` : ''}
+        <button class="pg-sec-del-btn" data-id="${bk.id}"
+          style="margin-top:10px;padding:5px 12px;background:#fee2e2;color:#dc2626;border:none;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;">
+          🗑 삭제
+        </button>
+      </div>`;
+    }).join('');
+
+    // 단원 체크 이벤트
+    listEl.querySelectorAll('.pg-sec-ch-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const {book: bookId, ci: ciStr, cls: bCls} = btn.dataset;
+        const ci = parseInt(ciStr);
+        const snap2 = await getDoc(doc(db,'progress',bookId));
+        if(!snap2.exists()) return;
+        let checked2 = snap2.data().checkedChapters||[];
+        checked2 = checked2.includes(ci) ? checked2.filter(x=>x!==ci) : [...checked2, ci];
+        await updateDoc(doc(db,'progress',bookId), {checkedChapters: checked2, updatedAt: new Date()});
+        await loadPgBooksSection(bCls, container);
+      });
+    });
+
+    // 삭제 이벤트
+    listEl.querySelectorAll('.pg-sec-del-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        if(!confirm('이 문제집을 삭제할까요?')) return;
+        await deleteDoc(doc(db,'progress',btn.dataset.id));
+        await loadPgBooksSection(cls, container);
+      });
+    });
+  } catch(e) {
+    listEl.innerHTML = `<div style="color:#f87171;padding:12px;font-size:12px;">오류: ${e.message}</div>`;
+  }
+}
+
+
   const wrap = document.getElementById('reviewContent');
   if(currentPeriod === 'summary') {
     renderSummaryView(wrap);
