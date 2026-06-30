@@ -1,0 +1,2538 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>글모락 - 교장실</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=Black+Han+Sans&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#f4f3ff; --surface:#ffffff; --surface2:#f9f8ff;
+    --purple:#7c5cbf; --purple2:#a07ee0; --purple-light:#ede9fb;
+    --gold:#e6a820; --gold-light:#fef9ec;
+    --green:#16a34a; --green-light:#dcfce7;
+    --red:#dc2626; --red-light:#fee2e2;
+    --amber:#d97706; --amber-light:#fef3c7;
+    --text:#1a1a2e; --muted:#6b7280; --border:#e5e3f5;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--text);  min-height:100vh; }
+
+  .login-wrap { min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:24px; }
+  .login-logo { font-family:'Black Han Sans',sans-serif; font-size:28px; color:var(--purple); margin-bottom:4px; }
+  .login-sub { font-size:13px; color:var(--muted); margin-bottom:32px; }
+  .login-box { background:white; border-radius:20px; padding:28px 24px; width:100%; max-width:380px; border:1px solid var(--border); }
+  .login-box h2 { font-size:18px; font-weight:900; margin-bottom:20px; }
+  .field { margin-bottom:14px; }
+  .field label { font-size:12px; font-weight:700; color:var(--muted); display:block; margin-bottom:6px; }
+  .field input { width:100%; padding:12px 14px; border:1px solid var(--border); border-radius:10px;  font-size:14px; outline:none; }
+  .field input:focus { border-color:var(--purple); }
+  .btn-login { width:100%; padding:13px; background:var(--purple); color:white; border:none; border-radius:12px;  font-size:15px; font-weight:700; cursor:pointer; margin-top:4px; }
+  .login-err { color:var(--red); font-size:12px; margin-top:8px; text-align:center; min-height:18px; }
+
+  .app-wrap { display:none; }
+  header { background:var(--surface); border-bottom:1px solid var(--border); padding:16px 20px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:50; }
+  .logo { font-family:'Black Han Sans',sans-serif; font-size:18px; color:var(--purple); }
+  .teacher-badge { background:var(--purple-light); color:var(--purple); font-size:12px; font-weight:700; padding:4px 10px; border-radius:20px; }
+  .btn-logout { background:none; border:1px solid var(--border); border-radius:8px; padding:6px 12px; font-size:12px; color:var(--muted); cursor:pointer;  }
+
+  .wrap { max-width:640px; margin:0 auto; padding:20px 16px 40px; }
+  .summary { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:24px; }
+  .sum-card { background:var(--surface); border-radius:14px; border:1px solid var(--border); padding:14px 12px; text-align:center; }
+  .sum-val { font-size:24px; font-weight:900; margin-bottom:2px; }
+  .sum-lbl { font-size:11px; color:var(--muted); }
+
+  .tabs { display:flex; gap:6px; margin-bottom:16px; background:var(--surface); border-radius:12px; padding:5px; border:1px solid var(--border); }
+  .tab-btn { flex:1; padding:9px 6px; background:none; border:none; border-radius:8px; cursor:pointer;  font-size:13px; font-weight:700; color:var(--muted); transition:all 0.15s; position:relative; }
+  .tab-btn.active { background:var(--purple); color:white; }
+  .badge { position:absolute; top:4px; right:8px; background:var(--red); color:white; font-size:9px; font-weight:900; width:16px; height:16px; border-radius:50%; display:flex; align-items:center; justify-content:center; }
+
+  .section { display:none; }
+  .section.active { display:block; }
+
+  .pending-list { display:flex; flex-direction:column; gap:10px; }
+  .pending-card { background:var(--surface); border-radius:14px; border:1px solid var(--border); padding:16px; animation:fadeIn 0.3s ease; }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } }
+  .pending-top { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+  .student-avatar { width:40px; height:40px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0; background:var(--purple-light); }
+  .student-name { font-size:15px; font-weight:700; }
+  .student-level { font-size:11px; color:var(--muted); }
+  .submitted-time { margin-left:auto; font-size:11px; color:var(--muted); }
+  .book-info { background:var(--surface2); border-radius:10px; padding:12px; margin-bottom:12px; border:1px solid var(--border); }
+  .book-info-title { font-size:15px; font-weight:700; margin-bottom:2px; }
+  .book-info-author { font-size:12px; color:var(--muted); margin-bottom:8px; }
+  .book-review { font-size:13px; color:var(--text); background:white; border-radius:8px; padding:8px 10px; line-height:1.6; border-left:3px solid var(--purple-light); font-style:italic; }
+  .action-row { display:flex; gap:8px; align-items:center; }
+  .pts-input-wrap { display:flex; align-items:center; gap:6px; background:var(--gold-light); border-radius:8px; padding:6px 10px; border:1px solid #fde68a; }
+  .pts-label { font-size:12px; color:var(--amber); font-weight:700; }
+  .pts-input { width:52px; background:none; border:none; outline:none;  font-size:14px; font-weight:900; color:var(--amber); text-align:center; }
+  .btn-approve { flex:1; padding:10px; background:var(--green); color:white; border:none; border-radius:10px;  font-size:13px; font-weight:700; cursor:pointer; }
+  .btn-reject { padding:10px 14px; background:var(--red-light); color:var(--red); border:1px solid #fca5a5; border-radius:10px;  font-size:13px; font-weight:700; cursor:pointer; }
+
+  .student-list { display:flex; flex-direction:column; gap:10px; }
+  .student-card { background:var(--surface); border-radius:14px; border:1px solid var(--border); padding:14px 16px; display:flex; align-items:center; gap:12px; }
+  .stu-avatar { width:44px; height:44px; border-radius:12px; font-size:24px; display:flex; align-items:center; justify-content:center; flex-shrink:0; background:var(--purple-light); }
+  .stu-info { flex:1; }
+  .stu-name { font-size:15px; font-weight:700; margin-bottom:3px; }
+  .stu-sub { font-size:12px; color:var(--muted); }
+  .stu-pts { text-align:right; }
+  .stu-pts-val { font-size:18px; font-weight:900; color:var(--gold); }
+  .stu-pts-lbl { font-size:10px; color:var(--muted); }
+  .lv-badge { display:inline-block; background:var(--purple-light); color:var(--purple); font-size:10px; font-weight:700; padding:2px 7px; border-radius:10px; margin-left:4px; }
+
+  .ranking-table { background:var(--surface); border-radius:14px; border:1px solid var(--border); overflow:hidden; }
+  .rank-header { display:grid; grid-template-columns:40px 1fr 80px 80px; padding:10px 16px; background:var(--purple-light); font-size:11px; font-weight:700; color:var(--purple); }
+  .rank-row { display:grid; grid-template-columns:40px 1fr 80px 80px; padding:12px 16px; border-top:1px solid var(--border); align-items:center; }
+  .rk-num { font-size:15px; font-weight:900; }
+  .rk-1 { color:#f5c842; } .rk-2 { color:#9ca3af; } .rk-3 { color:#cd7f32; }
+  .rk-name { font-size:14px; font-weight:700; }
+  .rk-books { font-size:14px; font-weight:700; text-align:center; }
+  .rk-pts { font-size:14px; font-weight:900; color:var(--gold); text-align:right; }
+
+  .empty { text-align:center; padding:48px 20px; color:var(--muted); }
+  .empty-icon { font-size:48px; margin-bottom:12px; }
+  .empty-text { font-size:16px; font-weight:700; margin-bottom:4px; }
+  .empty-sub { font-size:13px; }
+  .loading { text-align:center; padding:32px; color:var(--muted); font-size:14px; }
+  .btn-proof-reject { padding:10px 14px; background:var(--red-light); color:var(--red); border:1px solid #fca5a5; border-radius:10px;  font-size:13px; font-weight:700; cursor:pointer; }
+
+  .toast { position:fixed; bottom:40px; left:50%; transform:translateX(-50%) translateY(60px); background:#1a1a2e; color:white; font-size:13px; font-weight:700; padding:12px 20px; border-radius:30px; transition:transform 0.3s,opacity 0.3s; opacity:0; pointer-events:none; white-space:nowrap; z-index:999; }
+  .toast.show { transform:translateX(-50%) translateY(0); opacity:1; }
+</style>
+</head>
+<body>
+
+<div class="login-wrap" id="loginWrap">
+  <div class="login-logo">📚 글모락</div>
+  <div class="login-sub">📚 글모락 교장실</div>
+  <div class="login-box">
+    <h2>🐲 황룡의 교장실</h2>
+    <div class="field">
+      <label>이메일</label>
+      <input type="email" id="loginEmail" placeholder="example@email.com">
+    </div>
+    <div class="field">
+      <label>비밀번호</label>
+      <input type="password" id="loginPw" placeholder="비밀번호 입력">
+    </div>
+    <button class="btn-login" id="loginBtn">로그인</button>
+    <div class="login-err" id="loginErr"></div>
+  </div>
+</div>
+
+<div class="app-wrap" id="appWrap">
+  <header>
+    <div class="logo">📚 글모락</div>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <span class="teacher-badge" style="background:rgba(251,191,36,0.2);color:#b45309;border:1px solid #fbbf24;">🐲 황룡 · 교장</span>
+      <button class="btn-logout" id="logoutBtn">로그아웃</button>
+    </div>
+  </header>
+  <div class="wrap">
+    <div class="summary">
+      <div class="sum-card">
+        <div class="sum-val" style="color:var(--red)" id="sumPending">-</div>
+        <div class="sum-lbl">승인 대기</div>
+      </div>
+      <div class="sum-card">
+        <div class="sum-val" style="color:var(--purple)" id="sumStudents">-</div>
+        <div class="sum-lbl">전체 학생</div>
+      </div>
+      <div class="sum-card">
+        <div class="sum-val" style="color:var(--green)" id="sumBooks">-</div>
+        <div class="sum-lbl">총 읽은 책</div>
+      </div>
+    </div>
+    <div class="tabs">
+      <button class="tab-btn" onclick="switchTab('newstudents',this)">🆕 신입생 승인</button>
+      <button class="tab-btn active" id="tabPending" onclick="switchTab('pending',this)">
+        📋 승인 대기 <span class="badge" id="pendingBadge" style="display:none">0</span>
+      </button>
+      <button class="tab-btn" onclick="switchTab('students',this)">👥 학생 관리</button>
+      <button class="tab-btn" onclick="switchTab('ranking',this)">🏆 랭킹</button>
+      <button class="tab-btn" onclick="switchTab('bingo',this)">🎯 빙고 관리</button>
+      <button class="tab-btn" onclick="switchTab('bingoproof',this)">📸 빙고 인증 <span class="badge" id="proofBadge" style="display:none">0</span></button>
+      <button class="tab-btn" onclick="switchTab('mailbox',this)">📮 우체통</button>
+      <button class="tab-btn" onclick="switchTab('writing',this)">✍️ 글쓰기</button>
+      <button class="tab-btn" onclick="switchTab('readlog',this)">📚 독서 기록</button>
+      <button class="tab-btn" onclick="switchTab('dashboard',this)">📊 학생 현황</button>
+      <button class="tab-btn" onclick="switchTab('adventure_stats',this)">🗺️ 모험 인기도</button>
+    </div>
+    <div class="section active" id="sec-pending">
+      <div class="pending-list" id="pendingList"><div class="loading">불러오는 중...</div></div>
+      <!-- 영화 승인 섹션 -->
+      <div style="margin-top:24px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
+          <div style="font-size:16px;font-weight:900;">🎬 영화 승인 대기</div>
+          <span id="moviePendingBadge" style="display:none;background:#f59e0b;color:white;font-size:11px;font-weight:900;padding:2px 8px;border-radius:10px;">0</span>
+        </div>
+        <div id="moviePendingList"><div class="loading">불러오는 중...</div></div>
+      </div>
+    </div>
+    <div class="section" id="sec-notifications" style="display:none">
+      <div style="margin-bottom:14px;">
+        <div class="section-title">🔔 벨 알림함</div>
+        <div style="font-size:13px;color:var(--muted);">학생들이 울린 벨 알림이에요 🔔</div>
+      </div>
+      <div id="notificationsContent"><div class="loading">불러오는 중...</div></div>
+    </div>
+
+    <div class="section" id="sec-writingstage" style="display:none">
+      <div style="margin-bottom:14px;">
+        <div class="section-title">📓 글쓰기 단계 현황</div>
+        <div style="font-size:13px;color:var(--muted);">제출→첨삭→완성 노트까지 단계별로 관리해요</div>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+        <select id="wsSelClass" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;background:var(--surface2);color:var(--text);font-size:13px;min-width:160px;"><option value="">-- 반 선택 --</option></select>
+        <button id="btnLoadWS" style="padding:8px 16px;background:var(--purple);color:white;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;">🔍 조회</button>
+      </div>
+      <div id="writingStageContent"><div class="loading">반을 선택하고 조회해주세요</div></div>
+    </div>
+
+    <div class="section" id="sec-feedback" style="display:none">
+      <div style="margin-bottom:16px;">
+        <div class="section-title">✏️ 글쓰기 첨삭</div>
+        <div style="font-size:13px;color:var(--muted);">학생들이 제출한 글에 첨삭을 달아주세요</div>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:12px;">
+        <select id="fbSelClass" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;background:var(--surface2);color:var(--text);font-size:13px;"><option value="">전체 반</option></select>
+        <select id="fbSelStatus" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;background:var(--surface2);color:var(--text);font-size:13px;">
+          <option value="pending">⏳ 첨삭 대기</option>
+          <option value="reviewed">✅ 완료</option>
+          <option value="all">전체</option>
+        </select>
+        <button id="btnLoadFeedback" style="padding:8px 16px;background:var(--purple);color:white;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;">🔍 조회</button>
+      </div>
+      <div id="feedbackList"><div class="loading">조회 버튼을 눌러주세요</div></div>
+    </div>
+
+    <div class="section" id="sec-adventure_stats" style="display:none">
+      <div class="section-title" style="margin-bottom:4px;">🗺️ 모험 장소 인기 순위</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:14px;">아이들이 가장 많이 선택한 장소예요!</div>
+      <div id="adventureStatsContent"><div class="loading">불러오는 중...</div></div>
+    </div>
+
+    <div class="section" id="sec-dashboard" style="display:none">
+      <div style="margin-bottom:16px;">
+        <div class="section-title">📊 학생 현황 대시보드</div>
+        <div style="font-size:13px;color:var(--muted);">모든 학생의 읽는 중 / 보는 중 / 문제집 현황</div>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+        <select id="dbSelClass" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;background:var(--surface2);color:var(--text);font-size:13px;"><option value="">전체 반</option></select>
+        <select id="dbSelType" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;background:var(--surface2);color:var(--text);font-size:13px;">
+          <option value="all">전체</option>
+          <option value="reading">📖 읽는 중</option>
+          <option value="watching">🎬 보는 중</option>
+          <option value="workbook">📝 문제집</option>
+        </select>
+        <button id="btnLoadDashboard" style="padding:8px 16px;background:var(--purple);color:white;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;">🔍 조회</button>
+      </div>
+      <div id="dashboardContent"><div class="loading">조회 버튼을 눌러주세요</div></div>
+    </div>
+
+    <div class="section" id="sec-newstudents" style="display:none">
+      <div style="margin-bottom:16px;">
+        <div class="section-title">🆕 신입생 승인 대기</div>
+        <div style="font-size:13px;color:var(--muted);">가입하고 승인을 기다리는 학생들이에요</div>
+      </div>
+      <div id="newStudentList"><div class="loading">불러오는 중...</div></div>
+
+    <!-- 직접 계정 생성 -->
+    <div style="background:rgba(251,191,36,0.06);border:1px solid rgba(251,191,36,0.3);border-radius:14px;padding:16px;margin-top:16px;">
+      <div style="font-size:13px;font-weight:900;color:#d97706;margin-bottom:12px;">⚡ 계정 직접 생성 / 수정</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+        <div>
+          <div style="font-size:11px;color:var(--muted);margin-bottom:3px;">이름</div>
+          <input type="text" id="manualName" placeholder="예: 권오현" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;background:transparent;color:var(--text);">
+        </div>
+        <div>
+          <div style="font-size:11px;color:var(--muted);margin-bottom:3px;">이메일</div>
+          <input type="text" id="manualEmail" placeholder="예: gwonohyun@geulmorak.com" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;background:transparent;color:var(--text);">
+        </div>
+        <div>
+          <div style="font-size:11px;color:var(--muted);margin-bottom:3px;">비밀번호 (신규)</div>
+          <input type="text" id="manualPw" placeholder="예: geulmorak1234" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;background:transparent;color:var(--text);">
+        </div>
+        <div>
+          <div style="font-size:11px;color:var(--muted);margin-bottom:3px;">반</div>
+          <input type="text" id="manualClass" placeholder="예: 달무리(초6, 토요일 10:00)" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;background:transparent;color:var(--text);">
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button id="btnCreateStudent" style="flex:1;padding:10px;background:#22c55e;color:white;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;">✅ 계정 생성 + 승인</button>
+        <button id="btnFixStudent" style="flex:1;padding:10px;background:#f59e0b;color:white;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;">🔧 기존 계정 승인 처리</button>
+      </div>
+      <div id="manualResult" style="margin-top:8px;font-size:12px;"></div>
+    </div>
+    </div>
+    <div class="section" id="sec-students">
+      <!-- 반별 필터 -->
+      <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center;">
+        <select id="filterClass" class="ctrl-select" style="min-width:160px;">
+          <option value="">전체 학생</option>
+        </select>
+        <button id="btnFilterStudents" style="padding:8px 14px;background:var(--purple);color:white;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;">🔍 조회</button>
+        <div id="classStudentCount" style="font-size:12px;color:var(--muted);"></div>
+      </div>
+      <!-- 개인 추가 숙제 모달 -->
+      <div id="extraHwModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:999;align-items:center;justify-content:center;padding:20px;">
+        <div style="background:white;border-radius:20px;width:100%;max-width:460px;max-height:85vh;overflow-y:auto;">
+          <div style="padding:18px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+            <div style="font-size:15px;font-weight:900;" id="extraHwModalTitle">개인 추가 숙제</div>
+            <button onclick="document.getElementById('extraHwModal').style.display='none'" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted);">✕</button>
+          </div>
+          <div style="padding:16px;">
+            <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">이 학생에게만 추가되는 숙제예요. 기존 반 숙제 외에 별도로 표시돼요.</div>
+            <div style="margin-bottom:10px;">
+              <div class="ctrl-label">숙제 제목</div>
+              <input type="text" id="extraHwTitle" class="ctrl-input" placeholder="예: 독후감 다시 써오기" style="width:100%;margin-top:4px;">
+            </div>
+            <div style="margin-bottom:10px;">
+              <div class="ctrl-label">상세 내용 (선택)</div>
+              <textarea id="extraHwDesc" class="ctrl-input" placeholder="예: 지난번 독후감 피드백 반영해서 다시 써오세요" style="width:100%;min-height:70px;resize:vertical;margin-top:4px;"></textarea>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;">
+              <div>
+                <div class="ctrl-label">마감일 (선택)</div>
+                <input type="date" id="extraHwDue" class="ctrl-input" style="width:100%;margin-top:4px;">
+              </div>
+              <div>
+                <div class="ctrl-label">🎁 완료 포인트</div>
+                <input type="number" id="extraHwPts" class="ctrl-input" value="10" min="0" max="200" style="width:100%;margin-top:4px;">
+              </div>
+            </div>
+            <button id="btnSaveExtraHw" style="width:100%;padding:12px;background:var(--purple);color:white;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;">📝 추가 숙제 저장</button>
+            <!-- 기존 추가 숙제 목록 -->
+            <div id="extraHwList" style="margin-top:14px;"></div>
+          </div>
+        </div>
+      </div>
+      <div class="student-list" id="studentList"><div class="loading">불러오는 중...</div></div>
+    </div>
+
+    <!-- 임시 비밀번호 모달 -->
+    <div id="pwResetModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:999;align-items:center;justify-content:center;padding:20px;">
+      <div style="background:white;border-radius:20px;width:100%;max-width:380px;padding:24px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+          <div style="font-size:16px;font-weight:900;">📧 비밀번호 재설정 메일</div>
+          <button onclick="document.getElementById('pwResetModal').style.display='none'" style="background:none;border:none;font-size:20px;cursor:pointer;color:#94a3b8;">✕</button>
+        </div>
+        <div id="pwResetStudentInfo" style="background:#f9f8ff;border-radius:12px;padding:12px;margin-bottom:16px;font-size:14px;font-weight:700;color:#6b21a8;"></div>
+        <div style="font-size:13px;color:#6b7280;line-height:1.7;margin-bottom:18px;">
+          이 학생의 이메일로 비밀번호 재설정 링크를 보내요.<br>
+          학생이 메일의 링크를 클릭해서 직접 새 비밀번호를 설정하면 끝이에요.
+        </div>
+        <button id="btnSendPwReset"
+          style="width:100%;padding:12px;background:#dc2626;color:white;border:none;border-radius:12px;font-size:15px;font-weight:900;cursor:pointer;">
+          📧 재설정 메일 보내기
+        </button>
+        <div style="font-size:11px;color:#9ca3af;margin-top:12px;line-height:1.6;text-align:center;">
+          메일이 안 보이면 스팸함도 확인해보라고 안내해주세요.
+        </div>
+      </div>
+    </div>
+    <div class="section" id="sec-ranking">
+      <div class="ranking-table" id="rankingTable"><div class="loading">불러오는 중...</div></div>
+    </div>
+    <div class="section" id="sec-bingoproof">
+      <div class="pending-list" id="proofList"><div class="loading">불러오는 중...</div></div>
+    </div>
+    <!-- 우체통 답장 -->
+    <div class="section" id="sec-mailbox" style="display:none">
+      <div style="margin-bottom:14px;">
+        <div class="section-title">📮 우체통 관리</div>
+        <div style="font-size:13px;color:var(--muted);">학생 편지 답장 · 보낸 편지 · 예약 편지</div>
+      </div>
+
+      <!-- 서브 탭 -->
+      <div style="display:flex;gap:6px;margin-bottom:16px;background:#f3f4f6;border-radius:12px;padding:4px;">
+        <button class="mb-sub-btn active" data-sub="question" style="flex:1;padding:8px;border:none;border-radius:9px;font-size:12px;font-weight:700;cursor:pointer;background:white;color:var(--purple);box-shadow:0 1px 4px rgba(0,0,0,0.08);">⚙️ 질문 설정</button>
+        <button class="mb-sub-btn" data-sub="pending" style="flex:1;padding:8px;border:none;border-radius:9px;font-size:12px;font-weight:700;cursor:pointer;background:transparent;color:var(--muted);">✉️ 받은 편지 <span id="mbPendingCnt" style="background:#f87171;color:white;border-radius:8px;padding:1px 5px;font-size:10px;"></span></button>
+        <button class="mb-sub-btn" data-sub="sent" style="flex:1;padding:8px;border:none;border-radius:9px;font-size:12px;font-weight:700;cursor:pointer;background:transparent;color:var(--muted);">📨 보낸 편지</button>
+        <button class="mb-sub-btn" data-sub="schedule" style="flex:1;padding:8px;border:none;border-radius:9px;font-size:12px;font-weight:700;cursor:pointer;background:transparent;color:var(--muted);">📅 예약 편지</button>
+      </div>
+
+      <!-- ① 질문 설정 -->
+      <div id="mb-sub-question">
+        <div style="background:#f9f8ff;border-radius:14px;padding:16px;margin-bottom:12px;border:1px solid var(--border);">
+          <div style="font-size:13px;font-weight:700;margin-bottom:10px;">📮 오늘의 질문 설정</div>
+          <input type="text" id="mbQuestionInput" class="ctrl-input" placeholder="예: 오늘 가장 기억에 남는 순간은?" style="width:100%;margin-bottom:8px;">
+          <input type="text" id="mbQuestionEmoji" class="ctrl-input" placeholder="이모지 (예: 🌙)" style="width:80px;margin-bottom:8px;">
+          <button id="btnSetMbQuestion" style="padding:8px 16px;background:var(--purple);color:white;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;">저장</button>
+        </div>
+        <div style="background:#f0fdf4;border-radius:14px;padding:16px;border:1px solid #bbf7d0;">
+          <div style="font-size:13px;font-weight:700;margin-bottom:10px;">✍️ 오늘의 한 줄 질문</div>
+          <input type="text" id="dailyQInput" class="ctrl-input" placeholder="예: 지금 이 순간 나를 표현하는 단어는?" style="width:100%;margin-bottom:8px;">
+          <input type="text" id="dailyQHint" class="ctrl-input" placeholder="힌트 (예: 형용사, 명사 무엇이든)" style="width:100%;margin-bottom:8px;">
+          <button id="btnSetDailyQ" style="padding:8px 16px;background:#16a34a;color:white;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;">저장</button>
+        </div>
+      </div>
+
+      <!-- ② 받은 편지 (미답장) -->
+      <div id="mb-sub-pending" style="display:none;">
+        <div id="mbLetterList"><div class="loading">불러오는 중...</div></div>
+      </div>
+
+      <!-- ③ 보낸 편지 (답장 완료) -->
+      <div id="mb-sub-sent" style="display:none;">
+        <div id="mbSentList"><div class="loading">불러오는 중...</div></div>
+      </div>
+
+      <!-- ④ 예약 편지 (선생님 → 학생) -->
+      <div id="mb-sub-schedule" style="display:none;">
+        <div style="background:#fff7ed;border-radius:14px;padding:16px;margin-bottom:14px;border:1px solid #fed7aa;">
+          <div style="font-size:13px;font-weight:700;margin-bottom:12px;">📅 학생에게 편지 보내기</div>
+          <div style="margin-bottom:8px;">
+            <div class="ctrl-label">받는 학생</div>
+            <select id="scheduleToSel" class="ctrl-select" style="width:100%;margin-top:4px;">
+              <option value="">-- 학생 선택 (전체 = 전체 발송) --</option>
+              <option value="all">📢 전체 학생</option>
+            </select>
+          </div>
+          <div style="margin-bottom:8px;">
+            <div class="ctrl-label">보내는 캐릭터</div>
+            <select id="scheduleCharSel" class="ctrl-select" style="width:100%;margin-top:4px;">
+              <option value="teacher">👑 선생님</option>
+              <option value="dalmuree">🌙 달무리</option>
+              <option value="harang">🌸 하랑</option>
+              <option value="gureum">☁️ 구름이</option>
+            </select>
+          </div>
+          <div style="margin-bottom:8px;">
+            <div class="ctrl-label">📅 발송 날짜 (비워두면 지금 바로)</div>
+            <input type="date" id="scheduleDate" class="ctrl-input" style="width:100%;margin-top:4px;">
+          </div>
+          <div style="margin-bottom:10px;">
+            <div class="ctrl-label">편지 내용</div>
+            <textarea id="scheduleContent" class="ctrl-input" placeholder="학생에게 보낼 편지를 써주세요 💌" style="width:100%;min-height:100px;resize:vertical;margin-top:4px;"></textarea>
+          </div>
+          <button id="btnSendSchedule" style="width:100%;padding:10px;background:#ea580c;color:white;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;">📬 편지 보내기</button>
+        </div>
+        <div style="font-size:13px;font-weight:700;margin-bottom:10px;">📋 예약/발송된 편지 목록</div>
+        <div id="mbScheduleList"><div class="loading">불러오는 중...</div></div>
+      </div>
+    </div>
+
+    <!-- 글쓰기 관리 (공모전/전시관) -->
+    <div class="section" id="sec-writing" style="display:none">
+      <div style="margin-bottom:16px;">
+        <div class="section-title">✍️ 글쓰기 관리</div>
+      </div>
+      <!-- 공모전 등록 -->
+      <div style="background:#fffbeb;border-radius:14px;padding:16px;margin-bottom:16px;border:1px solid #fde68a;">
+        <div style="font-size:13px;font-weight:700;margin-bottom:12px;">🏆 공모전 등록</div>
+        <input type="text" class="ctrl-input" id="contestTitle" placeholder="공모전 이름" style="width:100%;margin-bottom:8px;">
+        <input type="text" class="ctrl-input" id="contestOrganizer" placeholder="주최 기관" style="width:100%;margin-bottom:8px;">
+        <input type="text" class="ctrl-input" id="contestTarget" placeholder="대상 (예: 초등~중등)" style="width:100%;margin-bottom:8px;">
+        <input type="text" class="ctrl-input" id="contestPrize" placeholder="시상 내용" style="width:100%;margin-bottom:8px;">
+        <input type="date" class="ctrl-input" id="contestDeadline" style="width:100%;margin-bottom:8px;">
+        <input type="text" class="ctrl-input" id="contestUrl" placeholder="공모전 링크 (https://...)" style="width:100%;margin-bottom:8px;">
+        <button id="btnAddContest" style="width:100%;padding:10px;background:#d97706;color:white;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;">공모전 등록</button>
+      </div>
+      <!-- 작품 전시관 등록 -->
+      <div style="background:#fdf4ff;border-radius:14px;padding:16px;border:1px solid #e9d5ff;">
+        <div style="font-size:13px;font-weight:700;margin-bottom:12px;">🎨 작품 전시 등록</div>
+        <input type="text" class="ctrl-input" id="exhibitTitle" placeholder="작품 제목" style="width:100%;margin-bottom:8px;">
+        <input type="text" class="ctrl-input" id="exhibitStudent" placeholder="학생 이름" style="width:100%;margin-bottom:8px;">
+        <input type="text" class="ctrl-input" id="exhibitCategory" placeholder="종류 (예: 시, 수필, 독서록)" style="width:100%;margin-bottom:8px;">
+        <textarea class="ctrl-input" id="exhibitContent" placeholder="작품 내용" style="width:100%;min-height:80px;resize:vertical;margin-bottom:8px;"></textarea>
+        <input type="text" class="ctrl-input" id="exhibitComment" placeholder="선생님 코멘트" style="width:100%;margin-bottom:8px;">
+        <input type="text" class="ctrl-input" id="exhibitBadge" placeholder="배지 (예: 이달의 작가)" style="width:100%;margin-bottom:8px;">
+        <button id="btnAddExhibit" style="width:100%;padding:10px;background:#9333ea;color:white;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;">전시관에 등록</button>
+      </div>
+    </div>
+
+    <!-- 독서 기록 탭 -->
+    <div class="section" id="sec-readlog" style="display:none">
+      <div style="margin-bottom:16px;">
+        <div class="section-title">📚 학생 독서 기록</div>
+        <div style="font-size:13px;color:var(--muted);">학생별 읽은 책 목록과 퀴즈 답변을 확인해요</div>
+      </div>
+      <!-- 필터 -->
+      <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
+        <select id="readlogSelClass" class="ctrl-select" style="min-width:140px;">
+          <option value="">전체 반</option>
+        </select>
+        <select id="readlogSelStudent" class="ctrl-select" style="min-width:140px;">
+          <option value="">전체 학생</option>
+        </select>
+        <select id="readlogSelStatus" class="ctrl-select">
+          <option value="">전체 상태</option>
+          <option value="approved">✅ 승인됨</option>
+          <option value="pending">⏳ 대기중</option>
+        </select>
+        <button class="btn-load" id="btnLoadReadLog">🔍 조회</button>
+      </div>
+      <!-- 통계 -->
+      <div id="readlogStats" style="display:none;margin-bottom:14px;"></div>
+      <!-- 목록 -->
+      <div id="readlogList"><div class="empty" style="text-align:center;padding:40px;color:var(--muted);">조회 버튼을 눌러주세요</div></div>
+    </div>
+
+    <div class="section" id="sec-bingo">
+      <div style="background:white;border-radius:16px;border:1px solid var(--border);padding:20px;margin-bottom:16px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+          <div style="font-size:16px;font-weight:900;">🎯 이달의 빙고 미션 설정</div>
+          <div id="bingoMonthBadge" style="font-size:12px;font-weight:700;color:var(--purple);background:var(--purple-light);padding:4px 10px;border-radius:20px;"></div>
+        </div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">AI가 매달 새 미션을 만들어줘요! 직접 수정도 가능해요 ✏️</div>
+        <button id="btnAIBingo" style="width:100%;padding:13px;background:linear-gradient(135deg,#7c5cbf,#a07ee0);color:white;border:none;border-radius:12px;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:12px;display:flex;align-items:center;justify-content:center;gap:8px;">
+          ✨ AI로 이달 빙고 자동 생성
+        </button>
+        <div id="bingoInputGrid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px;"></div>
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px;">
+          <div style="font-size:13px;font-weight:700;color:var(--muted);">줄 완성 보너스 포인트:</div>
+          <input id="bingoLineBonus" type="number" value="30" min="10" max="200"
+            style="width:70px;padding:8px;border:1px solid var(--border);border-radius:8px;font-family:inherit;font-size:14px;font-weight:900;color:var(--purple);text-align:center;">
+          <div style="font-size:13px;color:var(--muted);">pt / 줄</div>
+        </div>
+        <button id="btnSaveBingo" style="width:100%;padding:13px;background:var(--green);color:white;border:none;border-radius:12px;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;">💾 학생들에게 저장하기</button>
+      </div>
+      <div style="background:white;border-radius:16px;border:1px solid var(--border);padding:16px;">
+        <div style="font-size:14px;font-weight:900;margin-bottom:12px;">👀 미리보기</div>
+        <div id="bingoPreview" style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 맞춤법 모달 -->
+<div id="spellModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:1100;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:20px;width:100%;max-width:460px;max-height:80vh;overflow-y:auto;">
+    <div style="padding:16px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+      <div style="font-weight:900;">🔍 맞춤법 검사</div>
+      <button onclick="document.getElementById('spellModal').style.display='none'" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted);">✕</button>
+    </div>
+    <div id="spellContent" style="padding:16px;"></div>
+    <div style="padding:0 16px 16px;">
+      <button id="btnSpellApplyT" style="display:none;width:100%;padding:11px;background:var(--purple);color:white;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;">✅ 교정된 문장으로 바꾸기</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, collection, query, where, orderBy, onSnapshot, doc, setDoc, getDoc, updateDoc, deleteDoc, getDocs, addDoc, increment } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const app = initializeApp({
+  apiKey: "AIzaSyB_f-U4h2PMzDv2zHhH0AEtffr3XfGYxsQ",
+  authDomain: "chaek-mabeopsa.firebaseapp.com",
+  projectId: "chaek-mabeopsa",
+  storageBucket: "chaek-mabeopsa.firebasestorage.app",
+  messagingSenderId: "957424809777",
+  appId: "1:957424809777:web:7a67c94015066703d32210"
+});
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+const EMOJIS = ['🌱','📖','✨','🔮','🧙','⚡','🌟','👑'];
+const TITLES = [[0,'독서 시작'],[500,'책벌레'],[1500,'이야기꾼'],[3000,'지식 탐험가'],[5000,'현자 견습'],[8000,'마법사'],[12000,'대마법사'],[18000,'책의 신']];
+let classes = []; // 전역 반 목록 (settings/homework에서 로드)
+function getLv(pts) { let l=0; for(const [t] of TITLES){if(pts>=t)l++;} return Math.min(Math.max(l,1),8); }
+function getTitle(pts) { return TITLES[getLv(pts)-1][1]; }
+function timeAgo(ts) {
+  if(!ts) return '';
+  const d = ts.toDate ? ts.toDate() : new Date(ts);
+  const diff = Math.floor((Date.now()-d)/1000);
+  if(diff<60) return '방금 전';
+  if(diff<3600) return Math.floor(diff/60)+'분 전';
+  if(diff<86400) return Math.floor(diff/3600)+'시간 전';
+  return Math.floor(diff/86400)+'일 전';
+}
+function fireConfetti() {
+  if(typeof confetti==='undefined') return;
+  confetti({ particleCount:100, spread:70, origin:{y:0.6}, colors:['#7c5cbf','#f59e0b','#22c55e','#60a5fa','#f472b6'] });
+  setTimeout(()=>confetti({ particleCount:50, angle:60, spread:55, origin:{x:0} }), 300);
+  setTimeout(()=>confetti({ particleCount:50, angle:120, spread:55, origin:{x:1} }), 400);
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2500);
+}
+window.showToast = showToast;
+window.switchTab = (name, btn) => {
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('sec-'+name).classList.add('active');
+  if(name==='bingo') loadBingoSettings();
+  if(name==='bingoproof') loadBingoProofs();
+  if(name==='mailbox') loadMailboxAdmin();
+  if(name==='writing') loadWritingAdmin();
+  if(name==='readlog') loadReadLog();
+  if(name==='dashboard') loadDashboard();
+  if(name==='adventure_stats') loadAdventureStats();
+  if(name==='feedback') loadFeedbackTab();
+  if(name==='writingstage') loadWritingStageTab();
+  if(name==='notifications') loadBellNotifications();
+  if(name==='newstudents') loadNewStudents();
+};
+
+// ===== 우체통 관리 =====
+// ===== 독서 기록 탭 =====
+async function loadReadLog() {
+  // 반 셀렉트 채우기
+  const clsSel = document.getElementById('readlogSelClass');
+  const stuSel = document.getElementById('readlogSelStudent');
+  clsSel.innerHTML = '<option value="">전체 반</option>';
+  classes.forEach(c => {
+    const o = document.createElement('option'); o.value=c; o.textContent=c; clsSel.appendChild(o);
+  });
+
+  // 전체 학생 로드
+  const usersSnap = await getDocs(collection(db,'users'));
+  const allStudents = usersSnap.docs.map(d=>({id:d.id,...d.data()})).filter(u=>u.role!=='teacher').sort((a,b)=>(a.name||'').localeCompare(b.name||''));
+  stuSel.innerHTML = '<option value="">전체 학생</option>';
+  allStudents.forEach(u => {
+    const o = document.createElement('option'); o.value=u.id; o.textContent=(u.name||u.email)+(u.className?' ('+u.className+')':''); stuSel.appendChild(o);
+  });
+
+  // 반 선택 시 학생 필터
+  clsSel.addEventListener('change', () => {
+    const cls = clsSel.value;
+    stuSel.innerHTML = '<option value="">전체 학생</option>';
+    const filtered = cls ? allStudents.filter(u=>u.className===cls) : allStudents;
+    filtered.forEach(u => {
+      const o = document.createElement('option'); o.value=u.id; o.textContent=(u.name||u.email); stuSel.appendChild(o);
+    });
+  });
+
+  document.getElementById('btnLoadReadLog').onclick = async () => {
+    const cls = clsSel.value;
+    const stuId = stuSel.value;
+    const status = document.getElementById('readlogSelStatus').value;
+    const list = document.getElementById('readlogList');
+    const statsEl = document.getElementById('readlogStats');
+    list.innerHTML = '<div class="loading">불러오는 중...</div>';
+    statsEl.style.display = 'none';
+
+    try {
+      // 책 쿼리
+      let booksSnap;
+      if(stuId) {
+        booksSnap = await getDocs(query(collection(db,'books'), where('userId','==',stuId)));
+      } else {
+        booksSnap = await getDocs(collection(db,'books'));
+      }
+
+      let books = booksSnap.docs.map(d=>({id:d.id,...d.data()}));
+      if(cls && !stuId) books = books.filter(b => allStudents.find(u=>u.id===b.userId&&u.className===cls));
+      if(status) books = books.filter(b=>b.status===status);
+      books.sort((a,b)=>(b.createdAt?.toMillis?.()??0)-(a.createdAt?.toMillis?.()??0));
+
+      if(!books.length) { list.innerHTML='<div class="empty" style="text-align:center;padding:40px;color:var(--muted);">📚 해당 조건의 책이 없어요</div>'; return; }
+
+      // 통계
+      const approved = books.filter(b=>b.status==='approved');
+      const typeCount = {};
+      approved.forEach(b=>{ typeCount[b.bookType||'normal']=(typeCount[b.bookType||'normal']||0)+1; });
+      const avgStar = approved.filter(b=>b.starRating).reduce((s,b)=>s+b.starRating,0)/(approved.filter(b=>b.starRating).length||1);
+      statsEl.style.display = 'grid';
+      statsEl.style.gridTemplateColumns = 'repeat(4,1fr)';
+      statsEl.style.gap = '8px';
+      statsEl.innerHTML = [
+        {label:'총 기록', val:books.length+'권', color:'var(--purple)'},
+        {label:'승인됨', val:approved.length+'권', color:'var(--green)'},
+        {label:'평균 별점', val:avgStar.toFixed(1)+'★', color:'var(--gold)'},
+        {label:'만화책', val:(typeCount.comic||0)+'권', color:'var(--muted)'},
+      ].map(s=>`<div style="background:var(--surface2);border-radius:10px;padding:10px;text-align:center;border:1px solid var(--border);">
+        <div style="font-size:18px;font-weight:900;color:${s.color};">${s.val}</div>
+        <div style="font-size:11px;color:var(--muted);">${s.label}</div>
+      </div>`).join('');
+
+      // 책 목록
+      const BOOK_TYPE_LABEL = {comic:'🖼️ 만화',thin:'📗 얇은',normal:'📘 보통',thick:'📙 두꺼운'};
+      const STAR_DISPLAY = v => {
+        const full = Math.floor(v), half = v%1>=0.5, empty = 5-full-(half?1:0);
+        return '★'.repeat(full)+(half?'½':'')+('☆'.repeat(empty));
+      };
+      list.innerHTML = books.map(b => {
+        const stu = allStudents.find(u=>u.id===b.userId);
+        const statusBadge = b.status==='approved'
+          ? '<span style="padding:2px 8px;border-radius:8px;background:rgba(34,197,94,0.1);color:#16a34a;font-size:10px;font-weight:700;">✅ 승인</span>'
+          : b.status==='rejected'
+          ? '<span style="padding:2px 8px;border-radius:8px;background:rgba(248,113,113,0.1);color:#dc2626;font-size:10px;font-weight:700;">❌ 반려</span>'
+          : '<span style="padding:2px 8px;border-radius:8px;background:rgba(251,191,36,0.1);color:#d97706;font-size:10px;font-weight:700;">⏳ 대기</span>';
+        const dateStr = b.endDate || (b.createdAt?.toDate ? b.createdAt.toDate().toLocaleDateString('ko-KR') : '');
+        return '<div style="background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:10px;">'
+          +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">'
+          +'<div style="font-size:13px;font-weight:900;">'+( stu?stu.name||stu.email:'알 수 없음')+'</div>'
+          +(stu?.className?'<span style="font-size:11px;color:var(--muted);">'+stu.className+'</span>':'')
+          +statusBadge
+          +'<div style="margin-left:auto;font-size:11px;color:var(--muted);">'+dateStr+'</div>'
+          +'</div>'
+          +'<div style="font-size:15px;font-weight:700;margin-bottom:3px;">《'+b.title+'》'+(BOOK_TYPE_LABEL[b.bookType]?'<span style="font-size:11px;color:var(--muted);margin-left:6px;">'+BOOK_TYPE_LABEL[b.bookType]+'</span>':'')+'</div>'
+          +(b.author?'<div style="font-size:12px;color:var(--muted);margin-bottom:6px;">'+b.author+' 지음</div>':'')
+          +(b.starRating?'<div style="font-size:13px;color:#fbbf24;margin-bottom:6px;">'+STAR_DISPLAY(b.starRating)+' <span style="color:var(--muted);font-size:11px;">('+b.starRating+'/5)</span></div>':'')
+          +(b.review?'<div style="font-size:12px;line-height:1.7;margin-bottom:4px;">💬 "'+b.review+'"</div>':'')
+          +(b.quote?'<div style="font-size:12px;color:#a07ee0;background:rgba(124,92,191,0.08);border-radius:6px;padding:6px 10px;margin-bottom:4px;line-height:1.6;">✍️ "'+b.quote+'"</div>':'')
+          +(b.quizQuestion?'<div style="background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.2);border-radius:8px;padding:8px 10px;margin-top:4px;">'
+            +'<div style="font-size:10px;font-weight:700;color:#16a34a;margin-bottom:3px;">🤔 확인 질문</div>'
+            +'<div style="font-size:11px;color:var(--muted);margin-bottom:4px;">'+b.quizQuestion+'</div>'
+            +'<div style="font-size:12px;line-height:1.6;">💬 "'+( b.quizAnswer||'(없음)')+'"</div></div>':'')
+          +'</div>';
+      }).join('');
+    } catch(e) { list.innerHTML='<div style="color:var(--muted);padding:20px;">오류: '+e.message+'</div>'; }
+  };
+}
+
+async function loadMailboxAdmin() {
+  const CHARS = [
+    {id:'dalmuree',name:'달무리',emoji:'🌙'},{id:'harang',name:'하랑',emoji:'🌸'},
+    {id:'gureum',name:'구름이',emoji:'☁️'},{id:'teacher',name:'선생님',emoji:'👑'}
+  ];
+
+  // 질문 현재값 불러오기
+  try {
+    const qSnap = await getDoc(doc(db,'mailboxQuestions','current'));
+    if(qSnap.exists()) {
+      document.getElementById('mbQuestionInput').value = qSnap.data().text||'';
+      document.getElementById('mbQuestionEmoji').value = qSnap.data().emoji||'📮';
+    }
+    const dqSnap = await getDoc(doc(db,'dailyQuestions','current'));
+    if(dqSnap.exists()) {
+      document.getElementById('dailyQInput').value = dqSnap.data().text||'';
+      document.getElementById('dailyQHint').value = dqSnap.data().hint||'';
+    }
+  } catch(e) {}
+
+  // 서브탭 전환
+  document.querySelectorAll('.mb-sub-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.mb-sub-btn').forEach(b => {
+        b.style.background = 'transparent'; b.style.color = 'var(--muted)'; b.style.boxShadow = 'none';
+      });
+      btn.style.background = 'white'; btn.style.color = 'var(--purple)'; btn.style.boxShadow = '0 1px 4px rgba(0,0,0,0.08)';
+      document.querySelectorAll('[id^="mb-sub-"]').forEach(el => el.style.display = 'none');
+      document.getElementById('mb-sub-'+btn.dataset.sub).style.display = 'block';
+    });
+  });
+
+  // 질문 저장
+  document.getElementById('btnSetMbQuestion').onclick = async () => {
+    const text = document.getElementById('mbQuestionInput').value.trim();
+    const emoji = document.getElementById('mbQuestionEmoji').value.trim() || '📮';
+    if(!text) { showToast('질문을 입력해주세요!'); return; }
+    await setDoc(doc(db,'mailboxQuestions','current'), {text, emoji, updatedAt:new Date()});
+    showToast('📮 오늘의 질문 저장!');
+  };
+  document.getElementById('btnSetDailyQ').onclick = async () => {
+    const text = document.getElementById('dailyQInput').value.trim();
+    const hint = document.getElementById('dailyQHint').value.trim();
+    if(!text) { showToast('질문을 입력해주세요!'); return; }
+    await setDoc(doc(db,'dailyQuestions','current'), {text, hint, updatedAt:new Date()});
+    showToast('✍️ 한 줄 질문 저장!');
+  };
+
+  // 편지 전체 로드
+  const snap = await getDocs(collection(db,'mailboxLetters'));
+  const allLetters = snap.docs.map(d=>({id:d.id,...d.data()}))
+    .sort((a,b)=>(b.createdAt?.toMillis?.()??0)-(a.createdAt?.toMillis?.()??0));
+
+  const pending = allLetters.filter(l => !l.reply || l.reply.trim() === '');
+  const sent    = allLetters.filter(l => l.reply && l.reply.trim() !== '');
+
+  // 미답장 뱃지
+  const cntEl = document.getElementById('mbPendingCnt');
+  if(cntEl) { cntEl.textContent = pending.length || ''; cntEl.style.display = pending.length ? 'inline' : 'none'; }
+
+  // ── 편지 카드 렌더 함수 ──
+  function renderLetterCard(l, showReplyForm) {
+    const charInfo = CHARS.find(c=>c.id===l.replyChar) || CHARS[3];
+    let inner = `
+      <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">${l.userName||'학생'} · ${l.date||l.createdAt?.toDate?.()?.toLocaleDateString('ko-KR')||''}</div>
+      ${l.question ? `<div style="font-size:11px;color:var(--purple2);background:rgba(124,92,191,0.08);border-radius:6px;padding:4px 8px;margin-bottom:6px;">Q. ${l.question}</div>` : ''}
+      <div style="font-size:13px;font-weight:600;margin-bottom:10px;line-height:1.7;padding:10px;background:rgba(255,255,255,0.06);border-radius:8px;">"${l.text}"</div>`;
+
+    if(showReplyForm) {
+      // 미답장 → 답장 폼
+      inner += `
+        <select class="reply-char-sel" style="width:100%;padding:6px;border:1px solid var(--border);border-radius:8px;font-size:12px;margin-bottom:6px;outline:none;background:var(--bg2);">
+          ${CHARS.map(c=>`<option value="${c.id}">${c.emoji} ${c.name}</option>`).join('')}
+        </select>
+        <textarea class="reply-text-input" placeholder="답장 내용을 써주세요..." style="width:100%;min-height:80px;padding:10px;border:1px solid var(--border);border-radius:8px;font-size:13px;resize:vertical;outline:none;margin-bottom:6px;background:transparent;color:var(--text);"></textarea>
+        <div style="display:flex;gap:6px;margin-bottom:8px;">
+          <button class="btn-ai-draft" data-letter="${encodeURIComponent(l.text||'')}" data-question="${encodeURIComponent(l.question||'')}" style="flex:1;padding:8px;background:linear-gradient(135deg,rgba(124,92,191,0.15),rgba(96,165,250,0.1));border:1px solid rgba(124,92,191,0.3);border-radius:8px;font-size:12px;font-weight:700;color:var(--purple2);cursor:pointer;">✨ AI 초안</button>
+          <button class="btn-spell-reply" style="padding:8px 12px;background:rgba(124,92,191,0.08);border:1px solid rgba(124,92,191,0.2);border-radius:8px;font-size:12px;font-weight:700;color:var(--purple2);cursor:pointer;">🔍 맞춤법</button>
+        </div>
+        <button class="btn-send-reply" data-id="${l.id}" style="width:100%;padding:9px;background:var(--purple);color:white;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;">📨 답장 보내기</button>`;
+    } else {
+      // 이미 답장함 → 답장 내용 표시 + 수정 버튼
+      inner += `
+        <div style="background:rgba(124,92,191,0.06);border:1px solid rgba(124,92,191,0.15);border-radius:10px;padding:10px;margin-top:4px;">
+          <div style="font-size:10px;font-weight:700;color:var(--purple2);margin-bottom:4px;">${charInfo.emoji} ${charInfo.name}의 답장 · ${l.repliedAt?.toDate?.()?.toLocaleDateString('ko-KR')||''}</div>
+          <div style="font-size:12px;line-height:1.7;">${l.reply}</div>
+        </div>
+        <button class="btn-edit-reply" data-id="${l.id}" style="margin-top:8px;width:100%;padding:7px;background:rgba(124,92,191,0.08);color:var(--purple2);border:1px solid rgba(124,92,191,0.2);border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;">✏️ 답장 수정</button>`;
+    }
+    return inner;
+  }
+
+  // ── 미답장 렌더 ──
+  const pendingList = document.getElementById('mbLetterList');
+  if(!pending.length) {
+    pendingList.innerHTML = '<div class="empty" style="padding:24px;text-align:center;color:var(--muted);">🎉 모든 편지에 답장 완료!</div>';
+  } else {
+    pendingList.innerHTML = '';
+    pending.forEach(l => {
+      const card = document.createElement('div');
+      card.style.cssText = 'background:var(--surface2);border-radius:14px;padding:14px;margin-bottom:10px;border:1px solid var(--border);';
+      card.innerHTML = renderLetterCard(l, true);
+      pendingList.appendChild(card);
+    });
+    wireLetterEvents(pendingList, true);
+  }
+
+  // ── 보낸 편지 렌더 ──
+  const sentList = document.getElementById('mbSentList');
+  if(!sent.length) {
+    sentList.innerHTML = '<div class="empty" style="padding:24px;text-align:center;color:var(--muted);">아직 보낸 편지가 없어요</div>';
+  } else {
+    sentList.innerHTML = `<div style="font-size:12px;color:var(--muted);margin-bottom:10px;">총 ${sent.length}건의 답장 완료</div>`;
+    sent.forEach(l => {
+      const card = document.createElement('div');
+      card.style.cssText = 'background:var(--surface2);border-radius:14px;padding:14px;margin-bottom:10px;border:1px solid var(--border);';
+      card.innerHTML = renderLetterCard(l, false);
+      sentList.appendChild(card);
+    });
+    wireLetterEvents(sentList, false);
+  }
+
+  // ── 예약 편지 탭 ──
+  // 학생 목록 채우기
+  const toSel = document.getElementById('scheduleToSel');
+  if(toSel.options.length <= 2) {
+    try {
+      const usersSnap = await getDocs(collection(db,'users'));
+      usersSnap.docs.map(d=>({id:d.id,...d.data()}))
+        .filter(u=>u.role!=='teacher' && u.approved!==false)
+        .sort((a,b)=>(a.name||'').localeCompare(b.name||''))
+        .forEach(u => {
+          const o = document.createElement('option');
+          o.value = u.id; o.textContent = (u.name||u.email) + ' (' + (u.className||'반 미정') + ')';
+          toSel.appendChild(o);
+        });
+    } catch(e) {}
+  }
+
+  // 선생님 → 학생 편지 목록
+  const schedSnap = await getDocs(query(collection(db,'mailboxLetters'), where('fromTeacher','==',true)));
+  const schedList = document.getElementById('mbScheduleList');
+  const schedLetters = schedSnap.docs.map(d=>({id:d.id,...d.data()}))
+    .sort((a,b)=>(b.createdAt?.toMillis?.()??0)-(a.createdAt?.toMillis?.()??0));
+  if(!schedLetters.length) {
+    schedList.innerHTML = '<div class="empty" style="padding:16px;text-align:center;color:var(--muted);">아직 보낸 편지가 없어요</div>';
+  } else {
+    schedList.innerHTML = schedLetters.map(l => `
+      <div style="background:var(--surface2);border-radius:12px;padding:12px;margin-bottom:8px;border:1px solid var(--border);">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
+          <span style="font-size:11px;font-weight:700;color:#ea580c;">📬 선생님 → ${l.toAll?'전체':l.toName||l.toUserId||'?'}</span>
+          <span style="font-size:10px;color:var(--muted);">${l.createdAt?.toDate?.()?.toLocaleDateString('ko-KR')||''}</span>
+          ${l.scheduledDate ? `<span style="font-size:10px;background:rgba(234,88,12,0.1);color:#ea580c;padding:1px 6px;border-radius:6px;">📅 ${l.scheduledDate}</span>` : ''}
+        </div>
+        <div style="font-size:13px;line-height:1.6;">${l.text}</div>
+      </div>`).join('');
+  }
+
+  // 편지 보내기
+  document.getElementById('btnSendSchedule').onclick = async () => {
+    const toUid = toSel.value;
+    const charId = document.getElementById('scheduleCharSel').value;
+    const schedDate = document.getElementById('scheduleDate').value;
+    const content = document.getElementById('scheduleContent').value.trim();
+    if(!toUid) { showToast('받는 학생을 선택해주세요!'); return; }
+    if(!content) { showToast('편지 내용을 써주세요!'); return; }
+    const charInfo = CHARS.find(c=>c.id===charId);
+    const isAll = toUid === 'all';
+
+    // 전체 발송
+    if(isAll) {
+      const usersSnap = await getDocs(collection(db,'users'));
+      const students = usersSnap.docs.map(d=>({id:d.id,...d.data()})).filter(u=>u.role!=='teacher'&&u.approved!==false);
+      for(const stu of students) {
+        await addDoc(collection(db,'mailboxLetters'), {
+          userId: stu.id, userName: stu.name||stu.email,
+          text: content, fromTeacher: true, toAll: true,
+          replyChar: charId, charName: charInfo?.name||'선생님',
+          scheduledDate: schedDate||null, createdAt: new Date(), date: new Date().toLocaleDateString('ko-KR')
+        });
+      }
+      showToast(`📬 ${students.length}명에게 편지 발송 완료!`);
+    } else {
+      const toName = toSel.options[toSel.selectedIndex]?.text || '';
+      await addDoc(collection(db,'mailboxLetters'), {
+        userId: toUid, toName: toName.split(' (')[0],
+        text: content, fromTeacher: true, toAll: false,
+        replyChar: charId, charName: charInfo?.name||'선생님',
+        scheduledDate: schedDate||null, createdAt: new Date(), date: new Date().toLocaleDateString('ko-KR')
+      });
+      showToast('📬 편지 발송 완료!');
+    }
+    document.getElementById('scheduleContent').value = '';
+    loadMailboxAdmin();
+  };
+
+  function wireLetterEvents(container, isPending) {
+    // 답장 보내기
+    container.querySelectorAll('.btn-send-reply').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const card = btn.closest('[style*="border-radius:14px"]');
+        const reply = card.querySelector('.reply-text-input')?.value.trim();
+        const replyChar = card.querySelector('.reply-char-sel')?.value || 'teacher';
+        if(!reply) { showToast('답장 내용을 써주세요!'); return; }
+        btn.textContent = '전송 중...'; btn.disabled = true;
+        try {
+          await updateDoc(doc(db,'mailboxLetters',btn.dataset.id), {reply, replyChar, repliedAt:new Date()});
+          showToast('📨 답장 전송 완료!');
+          loadMailboxAdmin();
+        } catch(e) { showToast('오류: '+e.message); btn.textContent='📨 답장 보내기'; btn.disabled=false; }
+      });
+    });
+
+    // 답장 수정
+    container.querySelectorAll('.btn-edit-reply').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const card = btn.closest('[style*="border-radius:14px"]');
+        const replyDiv = card.querySelector('[style*="border-radius:10px"]');
+        const current = replyDiv?.querySelector('[style*="line-height:1.7"]')?.textContent || '';
+        const ta = document.createElement('textarea');
+        ta.value = current; ta.style.cssText='width:100%;min-height:80px;padding:10px;border:1px solid var(--border);border-radius:8px;font-size:13px;resize:vertical;outline:none;background:transparent;color:var(--text);margin-top:8px;';
+        replyDiv.replaceWith(ta);
+        btn.textContent = '💾 저장';
+        btn.onclick = async () => {
+          const newReply = ta.value.trim();
+          if(!newReply) return;
+          await updateDoc(doc(db,'mailboxLetters',btn.dataset.id), {reply: newReply, repliedAt:new Date()});
+          showToast('✅ 수정 완료!');
+          loadMailboxAdmin();
+        };
+      });
+    });
+
+    // AI 초안
+    container.querySelectorAll('.btn-ai-draft').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const card = btn.closest('[style*="border-radius:14px"]');
+        const textarea = card.querySelector('.reply-text-input');
+        const letterText = decodeURIComponent(btn.dataset.letter||'');
+        const question   = decodeURIComponent(btn.dataset.question||'');
+        btn.textContent = '✨ 생성 중...'; btn.disabled = true;
+        try {
+          const res = await fetch('https://api.anthropic.com/v1/messages', {
+            method:'POST',
+            headers:{'Content-Type':'application/json','anthropic-dangerous-direct-browser-access':'true'},
+            body: JSON.stringify({
+              model:'claude-sonnet-4-6', max_tokens:600,
+              system:'당신은 글모락 국어학원의 따뜻한 선생님입니다. 학생이 보낸 편지에 감성적이고 따뜻한 답장을 200자 이내로 써주세요. 학생의 감정에 공감하고 다음 편지를 쓰고 싶게 만드는 격려의 말을 써주세요. 서명 없이 본문만.',
+              messages:[{role:'user',content:'질문: '+question+'\n\n편지:\n'+letterText}]
+            })
+          });
+          const data = await res.json();
+          if(textarea) textarea.value = data.content?.[0]?.text?.trim()||'';
+          showToast('✨ AI 초안 완성!');
+        } catch(e) { showToast('오류: '+e.message); }
+        btn.textContent = '✨ AI 초안'; btn.disabled = false;
+      });
+    });
+
+    // 맞춤법
+    container.querySelectorAll('.btn-spell-reply').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const card = btn.closest('[style*="border-radius:14px"]');
+        const ta = card.querySelector('.reply-text-input');
+        if(!ta?.value.trim()) { showToast('답장을 먼저 입력해주세요!'); return; }
+        checkSpellingT(ta.value, c => { ta.value = c; });
+      });
+    });
+  }
+}
+
+// ===== 글쓰기 관리 =====
+async function loadWritingAdmin() {
+  document.getElementById('btnAddContest').onclick = async () => {
+    const data = {
+      title: document.getElementById('contestTitle').value.trim(),
+      organizer: document.getElementById('contestOrganizer').value.trim(),
+      target: document.getElementById('contestTarget').value.trim(),
+      prize: document.getElementById('contestPrize').value.trim(),
+      deadline: document.getElementById('contestDeadline').value,
+      url: document.getElementById('contestUrl').value.trim(),
+      dday: document.getElementById('contestDeadline').value,
+      createdAt: new Date()
+    };
+    if(!data.title||!data.deadline) { showToast('제목과 마감일은 필수예요!'); return; }
+    await addDoc(collection(db,'contests'), data);
+    showToast('🏆 공모전 등록 완료!');
+    ['contestTitle','contestOrganizer','contestTarget','contestPrize','contestUrl'].forEach(id=>{document.getElementById(id).value='';});
+  };
+
+  document.getElementById('btnAddExhibit').onclick = async () => {
+    const today = new Date();
+    const month = today.getFullYear()+'년 '+(today.getMonth()+1)+'월';
+    const studentName = document.getElementById('exhibitStudent').value.trim();
+    // userId 찾기
+    let userId = '';
+    try {
+      const usersSnap = await getDocs(collection(db,'users'));
+      const found = usersSnap.docs.find(d=>(d.data().name||'')===studentName);
+      if(found) userId = found.id;
+    } catch(e) {}
+    const data = {
+      title: document.getElementById('exhibitTitle').value.trim(),
+      userName: studentName,
+      userId,
+      category: document.getElementById('exhibitCategory').value.trim(),
+      content: document.getElementById('exhibitContent').value.trim(),
+      teacherComment: document.getElementById('exhibitComment').value.trim(),
+      badge: document.getElementById('exhibitBadge').value.trim(),
+      month, createdAt: new Date()
+    };
+    if(!data.title||!data.content) { showToast('제목과 내용은 필수예요!'); return; }
+    await addDoc(collection(db,'exhibits'), data);
+    // 포인트 지급
+    if(userId) await updateDoc(doc(db,'users',userId), {points: increment(100)});
+    showToast('🎨 작품 전시 등록 완료! '+( userId?'+100pt 지급':''));
+    ['exhibitTitle','exhibitStudent','exhibitCategory','exhibitContent','exhibitComment','exhibitBadge'].forEach(id=>{
+      const el=document.getElementById(id); if(el) el.value='';
+    });
+  };
+}
+
+
+// ===== 맞춤법 검사 (선생님용) =====
+let spellCallbackT = null;
+
+async function checkSpellingT(text, onApply) {
+  if(!text?.trim() || text.trim().length < 2) { showToast('텍스트를 먼저 입력해주세요!'); return; }
+  document.getElementById('spellModal').style.display = 'flex';
+  document.getElementById('spellContent').innerHTML = '<div style="text-align:center;padding:30px;color:var(--muted);"><div style="font-size:28px;margin-bottom:10px;">🔍</div><div>검사 중...</div></div>';
+  document.getElementById('btnSpellApplyT').style.display = 'none';
+  spellCallbackT = onApply;
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers:{'Content-Type':'application/json','anthropic-dangerous-direct-browser-access':'true'},
+      body: JSON.stringify({
+        model:'claude-sonnet-4-6', max_tokens:800,
+        system:'국어 맞춤법 교정 선생님입니다. JSON으로만 응답: {"corrected":"교정 문장","errors":[{"original":"틀린","fixed":"고친","reason":"이유"}],"comment":"격려"}',
+        messages:[{role:'user',content:'맞춤법 검사:\n\n'+text}]
+      })
+    });
+    const data = await res.json();
+    const result = JSON.parse(data.content?.[0]?.text?.replace(/```json|```/g,'').trim()||'{}');
+    let html = '';
+    if(!result.errors?.length) {
+      html = '<div style="text-align:center;padding:16px;background:rgba(34,197,94,0.08);border-radius:12px;"><div style="font-size:28px;margin-bottom:6px;">✅</div><div style="font-size:14px;font-weight:700;color:#22c55e;">맞춤법이 완벽해요!</div>'+(result.comment?'<div style="font-size:12px;color:var(--muted);margin-top:4px;">'+result.comment+'</div>':'')+'</div>';
+    } else {
+      html += '<div style="margin-bottom:12px;"><div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:8px;">🔴 '+result.errors.length+'곳 수정 필요</div>';
+      result.errors.forEach(e => {
+        html += '<div style="background:rgba(248,113,113,0.06);border:1px solid rgba(248,113,113,0.2);border-radius:10px;padding:10px 12px;margin-bottom:6px;">';
+        html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><span style="color:#f87171;font-weight:700;text-decoration:line-through;">'+e.original+'</span><span>→</span><span style="color:#22c55e;font-weight:700;">'+e.fixed+'</span></div>';
+        html += '<div style="font-size:12px;color:var(--muted);">💡 '+e.reason+'</div></div>';
+      });
+      html += '</div>';
+      if(result.corrected) {
+        html += '<div style="background:rgba(124,92,191,0.08);border:1px solid rgba(124,92,191,0.3);border-radius:12px;padding:12px;margin-bottom:10px;">';
+        html += '<div style="font-size:11px;font-weight:700;color:var(--purple2);margin-bottom:6px;">✏️ 교정된 문장</div>';
+        html += '<div style="font-size:13px;line-height:1.8;">'+result.corrected+'</div></div>';
+        document.getElementById('btnSpellApplyT').style.display = 'block';
+        document.getElementById('btnSpellApplyT').dataset.corrected = result.corrected;
+      }
+      if(result.comment) html += '<div style="font-size:12px;color:var(--muted);text-align:center;">💬 '+result.comment+'</div>';
+    }
+    document.getElementById('spellContent').innerHTML = html;
+  } catch(e) {
+    document.getElementById('spellContent').innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);">오류: '+e.message+'</div>';
+  }
+}
+
+document.getElementById('btnSpellApplyT')?.addEventListener('click', () => {
+  const c = document.getElementById('btnSpellApplyT').dataset.corrected;
+  if(c && spellCallbackT) { spellCallbackT(c); document.getElementById('spellModal').style.display='none'; showToast('✅ 교정 완료!'); }
+});
+
+// 맞춤법 버튼을 textarea/input에 동적으로 추가하는 헬퍼
+function addSpellBtn(inputEl) {
+  if(!inputEl || inputEl.dataset.spellAdded) return;
+  inputEl.dataset.spellAdded = '1';
+  const btn = document.createElement('button');
+  btn.textContent = '🔍 맞춤법';
+  btn.style.cssText = 'position:absolute;bottom:6px;right:6px;padding:3px 8px;background:rgba(124,92,191,0.15);border:1px solid rgba(124,92,191,0.3);border-radius:6px;font-size:11px;font-weight:700;color:var(--purple2);cursor:pointer;z-index:1;';
+  btn.addEventListener('click', (e) => {
+    e.preventDefault();
+    checkSpellingT(inputEl.value, (c) => { inputEl.value = c; });
+  });
+  const wrap = inputEl.parentElement;
+  const pos = getComputedStyle(wrap).position;
+  if(pos==='static') wrap.style.position='relative';
+  wrap.appendChild(btn);
+}
+
+document.getElementById('loginBtn').onclick = async () => {
+  const email = document.getElementById('loginEmail').value;
+  const pw = document.getElementById('loginPw').value;
+  document.getElementById('loginErr').textContent = '';
+  try { await signInWithEmailAndPassword(auth, email, pw); }
+  catch(e) { document.getElementById('loginErr').textContent = '이메일 또는 비밀번호가 틀렸어요.'; }
+};
+document.getElementById('logoutBtn').onclick = () => signOut(auth);
+
+onAuthStateChanged(auth, async user => {
+  if(user) {
+    document.getElementById('loginWrap').style.display = 'none';
+    document.getElementById('appWrap').style.display = 'block';
+    // classes 전역 선로드
+    try {
+      const csSnap = await getDoc(doc(db,'settings','homework'));
+      classes = csSnap.exists() ? (csSnap.data().classes||[]) : [];
+    } catch(e) { classes = []; }
+    loadPending();
+    loadMoviePending();
+    loadStudents();
+  } else {
+    document.getElementById('loginWrap').style.display = 'flex';
+    document.getElementById('appWrap').style.display = 'none';
+  }
+});
+
+function loadPending() {
+  const q = query(collection(db,'books'), where('status','==','pending'));
+  onSnapshot(q, snap => {
+    const cnt = snap.docs.length;
+    document.getElementById('sumPending').textContent = cnt;
+    const badge = document.getElementById('pendingBadge');
+    badge.textContent = cnt;
+    badge.style.display = cnt > 0 ? 'flex' : 'none';
+    const list = document.getElementById('pendingList');
+    if(cnt === 0) {
+      list.innerHTML = `<div class="empty"><div class="empty-icon">🎉</div><div class="empty-text">모두 처리했어요!</div><div class="empty-sub">대기 중인 제출이 없습니다.</div></div>`;
+      return;
+    }
+    const sortedDocs = snap.docs.sort((a,b)=>{
+      const ta=a.data().createdAt?.toDate?.()??new Date(0);
+      const tb=b.data().createdAt?.toDate?.()??new Date(0);
+      return tb-ta;
+    });
+    list.innerHTML = sortedDocs.map(d => {
+      const b = d.data();
+      const lv = getLv(b.userPoints||0);
+      return `<div class="pending-card" id="pc-${d.id}" style="position:relative;">
+        <div style="position:absolute;top:14px;left:14px;z-index:2;">
+          <input type="checkbox" class="book-check" data-id="${d.id}" data-uid="${b.userId}" data-name="${b.userName}" data-title="${b.title}" data-pts="${b.points||b.basePoints||100}" style="width:16px;height:16px;cursor:pointer;">
+        </div>
+        <div class="pending-top" style="padding-left:32px;">
+          <div class="student-avatar">${EMOJIS[lv-1]}</div>
+          <div><div class="student-name">${b.userName||'학생'}</div><div class="student-level">Lv.${lv} · ${getTitle(b.userPoints||0)}</div></div>
+          <div class="submitted-time">${timeAgo(b.createdAt)}</div>
+        </div>
+        <div class="book-info">
+          <div class="book-info-title">《${b.title}》${b.isGeulmoak?'<span class="geulmoak-badge" style="margin-left:6px;background:#7c5cbf;color:white;font-size:10px;padding:2px 7px;border-radius:10px;">🌟 추천도서 +50pt</span>':''}${b.isNewberyList?'<span style="margin-left:6px;background:rgba(124,92,191,0.15);color:#7c3aed;font-size:10px;padding:2px 7px;border-radius:10px;">🏅 뉴베리상 +150pt</span>':''}${b.isCaldecottList?'<span style="margin-left:6px;background:rgba(124,92,191,0.15);color:#7c3aed;font-size:10px;padding:2px 7px;border-radius:10px;">🎨 칼데콧상 +150pt</span>':''}${b.isWorldBook1001?'<span style="margin-left:6px;background:rgba(124,92,191,0.15);color:#7c3aed;font-size:10px;padding:2px 7px;border-radius:10px;">📚 세계문학1001 +150pt</span>':''}${b.isNobelList?'<span style="margin-left:6px;background:rgba(124,92,191,0.15);color:#7c3aed;font-size:10px;padding:2px 7px;border-radius:10px;">🏆 노벨문학상 +150pt</span>':''}${b.isMinumsaList?'<span style="margin-left:6px;background:rgba(124,92,191,0.15);color:#7c3aed;font-size:10px;padding:2px 7px;border-radius:10px;">📖 민음사전집 +150pt</span>':''}</div>
+          <div class="book-info-author">${b.author||''} 지음</div>
+          ${b.bookType ? `<div style="display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;background:var(--purple-light);color:var(--purple);margin-bottom:4px;">${{comic:'🖼️ 만화책',thin:'📗 얇은 책',normal:'📘 보통 책',thick:'📙 두꺼운 책'}[b.bookType]||b.bookType} · 기본 ${b.basePoints||100}pt</div>` : ''}
+          <div class="book-review">"${b.review}"</div>
+          ${b.starRating ? `<div style="font-size:13px;margin-top:4px">${'⭐'.repeat(b.starRating)} <span style="color:var(--muted);font-size:11px">(${b.starRating}/5)</span></div>` : ''}
+          ${b.quote ? `<div style="margin-top:6px;font-size:12px;color:#a07ee0;background:rgba(124,92,191,0.1);border-radius:6px;padding:6px 10px;border-left:3px solid #7c5cbf;">✍️ "${b.quote}"</div>` : ''}
+          ${b.quizQuestion ? `<div style="margin-top:8px;background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.2);border-radius:8px;padding:10px 12px;">
+            <div style="font-size:10px;font-weight:700;color:#16a34a;margin-bottom:4px;">🤔 책 확인 질문</div>
+            <div style="font-size:12px;color:var(--muted);margin-bottom:6px;line-height:1.5;">${b.quizQuestion}</div>
+            <div style="font-size:12px;line-height:1.7;font-weight:500;">💬 "${b.quizAnswer||'(답변 없음)'}"</div>
+          </div>` : '<div style="margin-top:6px;font-size:11px;color:var(--muted);">⚠️ 퀴즈 답변 없음</div>'}
+        </div>
+        <div style="margin-bottom:8px;">
+          <input style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:10px;font-size:13px;background:var(--surface);color:var(--text);" type="text" id="comment-${d.id}" placeholder="💬 칭찬 한마디 (선택)">
+        </div>
+        <div class="action-row">
+          <div class="pts-input-wrap">
+            <span class="pts-label">⭐</span>
+            <input class="pts-input" type="number" value="${b.points||b.basePoints||100}" min="10" max="500" id="pts-${d.id}">
+            <span class="pts-label">pt</span>
+          </div>
+          <button class="btn-approve" data-id="${d.id}" data-uid="${b.userId}" data-name="${b.userName}" data-title="${b.title}">✅ 승인</button>
+          <button class="btn-reject" data-id="${d.id}" data-name="${b.userName}" data-title="${b.title}">❌ 반려</button>
+        </div>
+      </div>`;
+    }).join('');
+
+    list.querySelectorAll('.btn-approve').forEach(btn => {
+      btn.onclick = async () => {
+        const {id, uid, name, title} = btn.dataset;
+        const pts = parseInt(document.getElementById('pts-'+id).value)||100;
+        const isGeulmoak = btn.closest('.pending-card').querySelector('.geulmoak-badge') !== null;
+        const finalPts = isGeulmoak ? pts + 50 : pts;
+        const review = btn.closest('.pending-card').querySelector('.book-review')?.textContent || '';
+        const commentEl = document.getElementById('comment-'+id);
+
+        btn.textContent = '✨ 생성 중...';
+        btn.disabled = true;
+
+        // AI 칭찬 자동 생성
+        let comment = '';
+        try {
+          const res = await fetch('https://api.anthropic.com/v1/messages', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              model: 'claude-sonnet-4-20250514',
+              max_tokens: 100,
+              system: '당신은 글모락 국어학원의 교장 김지수 선생님입니다. 학생이 책을 읽고 제출한 감상을 보고 따뜻하고 창의적인 칭찬 한마디를 써주세요. 반드시 한국어로, 1~2문장, 이모지 1개 포함, 학생 이름은 쓰지 마세요. 중요: 매번 완전히 다른 표현과 다른 이모지를 사용하세요. "책을 끝까지 읽은 것만으로도 대단해요" 같은 표현은 절대 반복하지 마세요. 책 내용과 감상문에 직접 반응하는 구체적인 칭찬을 써주세요.',
+              messages: [{ role: 'user', content: `책 제목: ${title}\n학생 감상: ${review}\n\n칭찬 한마디만 써주세요.` }]
+            })
+          });
+          const data = await res.json();
+          comment = data.content?.[0]?.text?.trim() || '';
+        } catch(e) {
+          const fallbacks = [
+            '이 책을 선택한 안목이 정말 훌륭해요! 📚',
+            '감상문에서 진심이 느껴져요. 멋진 독자예요! ✨',
+            '책과 나눈 대화가 느껴지는 글이에요! 🔮',
+            '이런 책을 읽다니, 독서 취향이 남다르네요! 🌱',
+            '한 장 한 장 쌓아온 노력이 빛나요! 💫',
+            '생각의 깊이가 달라지고 있어요, 느껴지나요? 🧙',
+          ];
+          comment = fallbacks[Math.floor(Math.random()*fallbacks.length)];
+        }
+
+        if(commentEl) commentEl.value = comment;
+
+        try {
+          await updateDoc(doc(db,'books',id), {status:'approved', approvedAt:new Date(), pointsAwarded:finalPts, teacherComment:comment});
+          // 책 종류별 책갈피 지급 (만화1/얇은2/보통3/두꺼운5)
+          const bookSnap2 = await getDoc(doc(db,'books',id));
+          const bookTypeForBm = bookSnap2.data()?.bookType || 'normal';
+          const bmMap = {comic:1, thin:2, normal:3, thick:5};
+          const bmAward = bmMap[bookTypeForBm] || 3;
+          await updateDoc(doc(db,'users',uid), {points:increment(finalPts), booksRead:increment(1), bookmarks:increment(bmAward)});
+          // 포인트 로그
+          try { await addDoc(collection(db,'pointLogs'), {userId:uid, amount:finalPts, reason:'📚 독서 승인: 《'+title+'》', type:'earn', createdAt:new Date()}); } catch(e) {}
+          showToast(`✅ ${name}의 《${title}》 승인! +${finalPts}pt, 🔖+${bmAward}개${isGeulmoak?' (추천도서 +50pt 포함!)':''}`);
+        } catch(e) { showToast('오류: '+e.message); }
+
+        btn.textContent = '✅ 승인';
+        btn.disabled = false;
+      };
+    });
+    list.querySelectorAll('.btn-reject').forEach(btn => {
+      btn.onclick = async () => {
+        const {id, name, title} = btn.dataset;
+        try {
+          await updateDoc(doc(db,'books',id), {status:'rejected', rejectedAt:new Date()});
+          showToast(`❌ ${name}의 《${title}》 반려 처리`);
+        } catch(e) { showToast('오류: '+e.message); }
+      };
+    });
+  });
+}
+
+// ===== 🎬 영화 승인 =====
+function loadMoviePending() {
+  function renderMoviePending(allDocs) {
+    const cnt = allDocs.length;
+    const badge = document.getElementById('moviePendingBadge');
+    if(badge) { badge.textContent = cnt; badge.style.display = cnt > 0 ? 'inline' : 'none'; }
+    const list = document.getElementById('moviePendingList');
+    if(!list) return;
+    if(cnt === 0) {
+      list.innerHTML = `<div class="empty" style="padding:20px;text-align:center;color:var(--muted);">🎉 대기 중인 영화가 없어요!</div>`;
+      return;
+    }
+    list.innerHTML = allDocs.map(({id, data: m, coll}) => {
+      const typeLabel = m.type==='drama'?'드라마':'영화';
+      const k1001Badge = m.isK1001 ? `<span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:6px;background:rgba(124,92,191,0.15);color:#7c3aed;">🎬 1001 +${m.k1001Bonus||150}pt</span>` : '';
+      return `<div class="pending-card" id="mpc-${id}" style="display:flex;gap:14px;align-items:flex-start;">
+        ${m.posterUrl
+          ? `<img src="${m.posterUrl}" style="width:52px;height:72px;object-fit:cover;border-radius:8px;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,0.15);">`
+          : `<div style="width:52px;height:72px;background:rgba(245,158,11,0.15);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;">🎬</div>`}
+        <div style="flex:1;min-width:0;">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
+            <span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:6px;background:rgba(245,158,11,0.1);color:#f59e0b;">${typeLabel}</span>
+            ${k1001Badge}
+            <span style="font-size:11px;color:var(--muted);">${m.userName||'학생'} · ${m.year||''}</span>
+          </div>
+          <div style="font-size:15px;font-weight:900;margin-bottom:4px;">${m.title}</div>
+          ${m.review ? `<div style="font-size:12px;color:var(--muted);margin-bottom:4px;">💬 감상: "${m.review}"</div>` : ''}
+          ${m.quote ? `<div style="font-size:12px;color:#f59e0b;background:rgba(245,158,11,0.08);border-radius:6px;padding:5px 8px;margin-bottom:6px;border-left:2px solid #f59e0b;">🎞️ "${m.quote}"</div>` : ''}
+          ${m.quizQuestion ? `<div style="font-size:11px;background:rgba(124,92,191,0.08);border-radius:8px;padding:8px;margin-bottom:6px;">
+            <div style="font-weight:700;color:var(--purple2);margin-bottom:3px;">🤔 ${m.quizQuestion}</div>
+            <div style="color:var(--muted);">💬 ${m.quizAnswer||'(답변 없음)'}</div>
+          </div>` : ''}
+          <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+            <input type="number" id="mpts-${id}" value="${m.basePoints||m.points||50}" min="10" max="300"
+              style="width:70px;padding:6px 8px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-weight:700;outline:none;">
+            <span style="font-size:12px;color:var(--muted);">pt</span>
+            <input type="text" id="mcomment-${id}" placeholder="💬 칭찬 한마디 (선택)"
+              style="flex:1;min-width:120px;padding:6px 10px;border:1px solid var(--border);border-radius:8px;font-size:12px;outline:none;">
+            <button class="btn-movie-approve" data-id="${id}" data-uid="${m.userId}" data-name="${m.userName||'학생'}" data-title="${m.title}" data-coll="${coll}"
+              style="padding:6px 14px;background:#f59e0b;color:white;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;">
+              ✅ 승인
+            </button>
+            <button class="btn-movie-reject" data-id="${id}" data-name="${m.userName||'학생'}" data-title="${m.title}" data-coll="${coll}"
+              style="padding:6px 12px;background:rgba(248,113,113,0.1);color:#f87171;border:1px solid rgba(248,113,113,0.3);border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;">
+              ❌
+            </button>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+
+    list.querySelectorAll('.btn-movie-approve').forEach(btn => {
+      btn.onclick = async () => {
+        const {id, uid, name, title, coll} = btn.dataset;
+        const pts = parseInt(document.getElementById('mpts-'+id)?.value) || 50;
+        const comment = document.getElementById('mcomment-'+id)?.value?.trim() || '';
+        btn.textContent = '✨ 처리 중...'; btn.disabled = true;
+        try {
+          await updateDoc(doc(db, coll, id), {status:'approved', approvedAt:new Date(), pointsAwarded:pts, teacherComment:comment});
+          await updateDoc(doc(db,'users',uid), {points: increment(pts)});
+          try { await addDoc(collection(db,'pointLogs'), {userId:uid, amount:pts, reason:'🎬 영화 승인: 《'+title+'》', type:'earn', createdAt:new Date()}); } catch(e) {}
+          showToast(`✅ ${name}의 《${title}》 영화 승인! +${pts}pt`);
+        } catch(e) { showToast('오류: '+e.message); }
+        btn.textContent = '✅ 승인'; btn.disabled = false;
+      };
+    });
+    list.querySelectorAll('.btn-movie-reject').forEach(btn => {
+      btn.onclick = async () => {
+        const {id, name, title, coll} = btn.dataset;
+        try {
+          await updateDoc(doc(db, coll, id), {status:'rejected', rejectedAt:new Date()});
+          showToast(`❌ ${name}의 《${title}》 반려`);
+        } catch(e) { showToast('오류: '+e.message); }
+      };
+    });
+  }
+
+  let moviesData = [], watchingData = [];
+  const merge = () => {
+    const all = [...moviesData, ...watchingData].sort((a,b)=>(b.data.createdAt?.toDate?.()??0)-(a.data.createdAt?.toDate?.()??0));
+    renderMoviePending(all);
+  };
+
+  // onSnapshot with JS-side filter (인덱스 없어도 동작)
+  onSnapshot(collection(db,'movies'), snap => {
+    moviesData = snap.docs
+      .filter(d => d.data().status === 'pending')
+      .map(d=>({id:d.id, data:d.data(), coll:'movies'}));
+    merge();
+  }, err => console.warn('movies 구독 오류:', err));
+
+  onSnapshot(collection(db,'currentWatching'), snap => {
+    watchingData = snap.docs
+      .filter(d => d.data().status === 'pending')
+      .map(d=>({id:d.id, data:d.data(), coll:'currentWatching'}));
+    merge();
+  }, err => console.warn('currentWatching 구독 오류:', err));
+}
+
+// 월별 미션 세트 (12달 × 16개)
+const MONTHLY_MISSIONS = {
+  1:  ['두꺼운 책 읽기','시 한 편 읽기','책 속 명문장 기록','새해 독서 계획 세우기','겨울 배경 소설 읽기','작가 이름 외우기','도서관 방문','FREE ⭐','100쪽 이상 읽기','독서 일기 쓰기','책 추천받기','고전 문학 읽기','책 속 단어 10개 외우기','가족에게 책 추천','새 장르 도전','소감문 쓰기'],
+  2:  ['사랑 테마 책 읽기','시집 읽기','책 속 명문장 기록','짧은 글짓기','역사책 읽기','작가 조사하기','친구에게 책 추천','FREE ⭐','100쪽 이상 읽기','독서 일기 쓰기','그림책 읽기','고전 소설 읽기','책 표지 그려보기','가족과 책 이야기','새 장르 도전','독서 퀴즈 풀기'],
+  3:  ['봄 배경 소설 읽기','시 한 편 읽기','책 속 명문장 기록','독서 목표 세우기','자연 관련 책 읽기','작가 이름 외우기','도서관 방문','FREE ⭐','100쪽 이상 읽기','독서 일기 쓰기','책 추천받기','성장 소설 읽기','봄꽃 관련 시 읽기','가족에게 책 추천','새 장르 도전','독후감 쓰기'],
+  4:  ['과학책 읽기','시 한 편 읽기','책 속 명문장 기록','독서 토론 참여','여행 관련 책 읽기','작가 조사하기','친구에게 책 추천','FREE ⭐','100쪽 이상 읽기','독서 일기 쓰기','그림책 읽기','판타지 소설 읽기','마음에 든 책 재독','가족과 책 이야기','새 장르 도전','소감문 쓰기'],
+  5:  ['가정 테마 책 읽기','시집 읽기','책 속 명문장 기록','부모님께 책 추천','역사 소설 읽기','작가 이름 외우기','도서관 방문','FREE ⭐','100쪽 이상 읽기','독서 일기 쓰기','위인전 읽기','고전 문학 읽기','책 속 단어 외우기','가족에게 책 읽어주기','새 장르 도전','독후감 쓰기'],
+  6:  ['바다 배경 소설 읽기','시 한 편 읽기','책 속 명문장 기록','여름방학 독서 계획','탐험 관련 책 읽기','작가 조사하기','친구에게 책 추천','FREE ⭐','100쪽 이상 읽기','독서 일기 쓰기','그림책 읽기','모험 소설 읽기','시원한 카페서 독서','가족과 책 이야기','새 장르 도전','소감문 쓰기'],
+  7:  ['여름 배경 소설 읽기','시집 읽기','책 속 명문장 기록','방학 독서 챌린지','과학 소설 읽기','작가 이름 외우기','도서관 방문','FREE ⭐','200쪽 이상 읽기','독서 일기 쓰기','만화책 읽기','추리 소설 읽기','나무 그늘서 독서','가족에게 책 추천','새 장르 도전','독후감 쓰기'],
+  8:  ['성장 소설 읽기','시 한 편 읽기','책 속 명문장 기록','개학 전 독서 완성','자기계발서 읽기','작가 조사하기','친구에게 책 추천','FREE ⭐','100쪽 이상 읽기','독서 일기 쓰기','그림책 읽기','판타지 소설 읽기','책 속 장면 상상하기','가족과 책 이야기','새 장르 도전','소감문 쓰기'],
+  9:  ['가을 배경 소설 읽기','시집 읽기','책 속 명문장 기록','독서의 달 챌린지','철학 관련 책 읽기','작가 이름 외우기','도서관 방문','FREE ⭐','100쪽 이상 읽기','독서 일기 쓰기','위인전 읽기','고전 소설 읽기','낙엽 보며 독서','가족에게 책 추천','새 장르 도전','독후감 쓰기'],
+  10: ['추리 소설 읽기','시 한 편 읽기','책 속 명문장 기록','가을 독서 계획','역사책 읽기','작가 조사하기','친구에게 책 추천','FREE ⭐','100쪽 이상 읽기','독서 일기 쓰기','그림책 읽기','공포 소설 읽기','책 속 배경 그려보기','가족과 책 이야기','새 장르 도전','소감문 쓰기'],
+  11: ['겨울 준비 소설 읽기','시집 읽기','책 속 명문장 기록','올해 독서 결산','사회 관련 책 읽기','작가 이름 외우기','도서관 방문','FREE ⭐','100쪽 이상 읽기','독서 일기 쓰기','만화책 읽기','고전 문학 읽기','따뜻한 곳서 독서','가족에게 책 추천','새 장르 도전','독후감 쓰기'],
+  12: ['겨울 배경 소설 읽기','시 한 편 읽기','책 속 명문장 기록','올해 최고 책 추천','따뜻한 책 읽기','작가 조사하기','친구에게 책 선물','FREE ⭐','100쪽 이상 읽기','독서 일기 쓰기','그림책 읽기','한 해 마무리 독후감','이불 속서 독서','가족과 책 이야기','내년 독서 계획','소감문 쓰기'],
+};
+
+function generateBingoWithAI() {
+  const btn = document.getElementById('btnAIBingo');
+  btn.innerHTML = '✨ 미션 불러오는 중...';
+  btn.disabled = true;
+
+  const now = new Date();
+  const month = now.getMonth() + 1;
+  const monthName = MONTHS_KR[now.getMonth()];
+
+  // 같은 달이라도 매번 다르게 — 랜덤 셔플
+  const base = [...MONTHLY_MISSIONS[month]];
+  const freeIdx = base.findIndex(m => m === 'FREE ⭐');
+  const withoutFree = base.filter(m => m !== 'FREE ⭐');
+  // Fisher-Yates 셔플
+  for(let i = withoutFree.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [withoutFree[i], withoutFree[j]] = [withoutFree[j], withoutFree[i]];
+  }
+  // FREE는 항상 7번(인덱스 7) 위치에
+  withoutFree.splice(7, 0, 'FREE ⭐');
+  bingoMissions = withoutFree;
+
+  renderBingoInputs();
+  showToast('🎯 ' + monthName + ' 빙고 미션 생성 완료!');
+
+  btn.innerHTML = '✨ AI로 이달 빙고 자동 생성';
+  btn.disabled = false;
+}
+
+document.getElementById('btnAIBingo')?.addEventListener('click', generateBingoWithAI);
+
+function renderBingoInputs() {
+  const grid = document.getElementById('bingoInputGrid');
+  const preview = document.getElementById('bingoPreview');
+  const bonusInput = document.getElementById('bingoLineBonus');
+  if(bonusInput) bonusInput.value = bingoLineBonus;
+  if(!grid) return;
+  grid.innerHTML = bingoMissions.map((m,i) => `
+    <input type="text" value="${m}" data-i="${i}"
+      style="padding:8px 6px;border:1px solid var(--border);border-radius:8px;
+             font-family:inherit;font-size:11px;text-align:center;outline:none;
+             background:${m==='FREE ⭐'?'var(--purple-light)':'white'};
+             color:${m==='FREE ⭐'?'var(--purple)':'var(--text)'}"
+      placeholder="미션 ${i+1}">`
+  ).join('');
+  renderBingoPreview();
+  grid.querySelectorAll('input').forEach(inp => {
+    inp.addEventListener('input', () => {
+      bingoMissions[parseInt(inp.dataset.i)] = inp.value;
+      renderBingoPreview();
+    });
+  });
+}
+
+function renderBingoPreview() {
+  const preview = document.getElementById('bingoPreview');
+  if(!preview) return;
+  preview.innerHTML = bingoMissions.map((m,i) => `
+    <div style="aspect-ratio:1;display:flex;align-items:center;justify-content:center;
+                text-align:center;font-size:10px;font-weight:700;padding:4px;
+                border-radius:8px;border:1px solid var(--border);line-height:1.3;
+                background:${m==='FREE ⭐'?'var(--purple-light)':'var(--surface2)'};
+                color:${m==='FREE ⭐'?'var(--purple)':'var(--text)'}">
+      ${m||''}
+    </div>`).join('');
+}
+
+document.getElementById('btnSaveBingo')?.addEventListener('click', async () => {
+  const bonus = parseInt(document.getElementById('bingoLineBonus').value) || 30;
+  try {
+    await setDoc(doc(db,'settings','bingo'), {
+      missions: bingoMissions,
+      lineBonus: bonus,
+      updatedAt: new Date()
+    });
+    bingoLineBonus = bonus;
+    showToast('🎯 빙고 미션 저장 완료!');
+  } catch(e) { showToast('저장 실패: ' + e.message); }
+});
+
+async function loadBingoProofs() {
+  const list = document.getElementById('proofList');
+  list.innerHTML = '<div class="loading">불러오는 중...</div>';
+
+  try {
+    // 전체 조회 후 JS 필터 (Firestore 인덱스 문제 방지)
+    const snap = await getDocs(collection(db,'bingoProofs'));
+    const allProofs = snap.docs.filter(d => {
+      const s = d.data().status;
+      return !s || s === 'pending'; // status 없거나 pending인 것
+    });
+    // snap.docs 대신 allProofs 사용
+    const filteredSnap = { docs: allProofs, length: allProofs.length };
+    const badge = document.getElementById('proofBadge');
+    badge.textContent = allProofs.length;
+    badge.style.display = allProofs.length > 0 ? 'flex' : 'none';
+
+    if(allProofs.length === 0) {
+      list.innerHTML = `<div class="empty"><div class="empty-icon">🎉</div><div class="empty-text">모든 인증을 처리했어요!</div></div>`;
+      return;
+    }
+
+    list.innerHTML = allProofs.map(d => {
+      const p = d.data();
+      return `<div class="pending-card" id="pp-${d.id}">
+        <div class="pending-top">
+          <div class="student-avatar">🎯</div>
+          <div>
+            <div class="student-name">${p.userName}</div>
+            <div class="student-level">${timeAgo(p.createdAt)}</div>
+          </div>
+        </div>
+        <div class="book-info">
+          <div class="book-info-title">🎯 ${p.mission}</div>
+          <div style="margin-top:8px;font-size:13px;line-height:1.6;color:var(--text);background:white;border-radius:8px;padding:10px 12px;border-left:3px solid var(--purple-light);">"${p.proofText}"</div>
+        </div>
+        <div style="background:var(--amber-light);border-radius:8px;padding:8px 12px;margin-bottom:10px;font-size:12px;color:var(--amber);">
+          📸 카톡 @geulmorak 으로 사진 확인하세요!
+        </div>
+        <div class="action-row">
+          <button class="btn-approve" data-id="${d.id}" data-uid="${p.userId}" data-mission="${p.mission}" data-midx="${p.missionIdx}">✅ 승인</button>
+          <button class="btn-proof-reject" data-id="${d.id}" data-name="${p.userName}">❌ 반려</button>
+        </div>
+      </div>`;
+    }).join('');
+
+    // 승인 버튼
+    list.querySelectorAll('.btn-approve').forEach(btn => {
+      btn.onclick = async () => {
+        const {id, uid, midx} = btn.dataset;
+        btn.textContent = '⏳ 처리 중...'; btn.disabled = true;
+        try {
+          // 인증 승인 처리
+          await updateDoc(doc(db,'bingoProofs',id), {status:'approved', approvedAt:new Date()});
+          // 빙고판에 체크 추가
+          const bingoSnap = await getDocs(query(collection(db,'bingo'), where('userId','==',uid)));
+          if(!bingoSnap.empty) {
+            const bingoDoc = bingoSnap.docs[0];
+            const checked = bingoDoc.data().checked || [];
+            if(!checked.includes(parseInt(midx))) {
+              checked.push(parseInt(midx));
+              await updateDoc(doc(db,'bingo',bingoDoc.id), {checked, updatedAt:new Date()});
+            }
+          } else {
+            await addDoc(collection(db,'bingo'), {userId:uid, checked:[parseInt(midx)], awardedLines:[], createdAt:new Date()});
+          }
+          document.getElementById('pp-'+id)?.remove();
+          showToast('✅ 빙고 인증 승인!');
+        } catch(e) { showToast('오류: '+e.message); }
+        btn.textContent = '✅ 승인'; btn.disabled = false;
+      };
+    });
+
+    // 반려 버튼
+    list.querySelectorAll('.btn-proof-reject').forEach(btn => {
+      btn.onclick = async () => {
+        const {id, name} = btn.dataset;
+        try {
+          await updateDoc(doc(db,'bingoProofs',id), {status:'rejected', rejectedAt:new Date()});
+          document.getElementById('pp-'+id)?.remove();
+          showToast(`❌ ${name}의 빙고 인증 반려`);
+        } catch(e) { showToast('오류: '+e.message); }
+      };
+    });
+  } catch(e) {
+    list.innerHTML = `<div class="empty"><div class="empty-text">불러오기 실패</div></div>`;
+  }
+}
+
+// ===== 계정 직접 생성/수정 =====
+document.getElementById('btnCreateStudent')?.addEventListener('click', async () => {
+  const name  = document.getElementById('manualName')?.value.trim();
+  const email = document.getElementById('manualEmail')?.value.trim();
+  const pw    = document.getElementById('manualPw')?.value.trim();
+  const cls   = document.getElementById('manualClass')?.value.trim();
+  const res   = document.getElementById('manualResult');
+
+  if(!name||!email||!pw) { res.style.color='#f87171'; res.textContent='❌ 이름, 이메일, 비밀번호를 모두 입력해주세요!'; return; }
+
+  res.style.color='var(--muted)'; res.textContent='⏳ 처리 중...';
+  try {
+    // Firebase Auth 계정 생성
+    const cred = await createUserWithEmailAndPassword(auth, email, pw);
+    const uid = cred.user.uid;
+    // Firestore 문서 생성
+    await setDoc(doc(db,'users',uid), {
+      name, email, className: cls||'',
+      points:0, booksRead:0, bookmarks:0,
+      approved:true, onboarding:'done',
+      role:'student', createdAt:new Date()
+    });
+    res.style.color='#22c55e';
+    res.textContent='✅ 계정 생성 완료! ('+email+') 이제 바로 로그인 가능해요';
+    document.getElementById('manualName').value='';
+    document.getElementById('manualEmail').value='';
+    document.getElementById('manualPw').value='';
+  } catch(e) {
+    if(e.code==='auth/email-already-in-use') {
+      res.style.color='#f59e0b';
+      res.textContent='⚠️ 이미 있는 계정이에요. 아래 "기존 계정 승인 처리" 버튼을 눌러주세요!';
+    } else {
+      res.style.color='#f87171';
+      res.textContent='❌ 오류: '+e.message;
+    }
+  }
+});
+
+document.getElementById('btnFixStudent')?.addEventListener('click', async () => {
+  const email = document.getElementById('manualEmail')?.value.trim();
+  const name  = document.getElementById('manualName')?.value.trim();
+  const cls   = document.getElementById('manualClass')?.value.trim();
+  const res   = document.getElementById('manualResult');
+
+  if(!email) { res.style.color='#f87171'; res.textContent='❌ 이메일을 입력해주세요!'; return; }
+
+  res.style.color='var(--muted)'; res.textContent='⏳ 검색 중...';
+  try {
+    // 이메일로 유저 찾기
+    const snap = await getDocs(query(collection(db,'users'), where('email','==',email)));
+    if(snap.empty) {
+      res.style.color='#f87171';
+      res.textContent='❌ '+email+' 계정을 찾을 수 없어요. "계정 생성"을 해주세요!';
+      return;
+    }
+    const userDoc = snap.docs[0];
+    const updateData = { approved:true, onboarding:'done' };
+    if(name) updateData.name = name;
+    if(cls)  updateData.className = cls;
+    await updateDoc(doc(db,'users',userDoc.id), updateData);
+    res.style.color='#22c55e';
+    res.textContent='✅ 승인 완료! ('+email+') 이제 바로 로그인 가능해요';
+  } catch(e) {
+    res.style.color='#f87171';
+    res.textContent='❌ 오류: '+e.message;
+  }
+});
+
+// ===== 재촉 알림 =====
+async function loadBellNotifications() {
+  const wrap = document.getElementById('notificationsContent');
+  wrap.innerHTML = '<div class="loading">불러오는 중...</div>';
+  try {
+    const snap = await getDocs(query(collection(db,'notifications'), where('type','==','hurry')));
+    const notis = snap.docs.map(d=>({id:d.id,...d.data()}))
+      .sort((a,b)=>(b.createdAt?.toMillis?.()??0)-(a.createdAt?.toMillis?.()??0));
+
+    const badge = document.getElementById('notisBadge');
+    const unread = notis.filter(n=>!n.read).length;
+    if(badge) { badge.textContent=unread; badge.style.display=unread?'flex':'none'; }
+
+    if(!notis.length) { wrap.innerHTML='<div class="empty" style="padding:30px;text-align:center;color:var(--muted);">🔔 아직 벨 알림이 없어요!</div>'; return; }
+
+    wrap.innerHTML = '';
+    notis.forEach(n => {
+      const card = document.createElement('div');
+      card.style.cssText = 'display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--surface2);border-radius:12px;margin-bottom:8px;border:1px solid '+(n.read?'var(--border)':'rgba(248,113,113,0.3)')+';';
+      const timeAgo2 = n.createdAt ? timeAgo(n.createdAt) : '';
+      card.innerHTML = '<div style="font-size:24px;">📣</div>'
+        +'<div style="flex:1;"><div style="font-size:13px;font-weight:700;margin-bottom:2px;">'+n.message+'</div>'
+        +'<div style="font-size:11px;color:var(--muted);">'+timeAgo2+'</div></div>'
+        +(n.read?'':'<div style="width:8px;height:8px;border-radius:50%;background:#f87171;flex-shrink:0;"></div>');
+      card.addEventListener('click', async () => {
+        await updateDoc(doc(db,'notifications',n.id), {read:true});
+        card.style.borderColor='var(--border)';
+        card.querySelector('div:last-child')?.remove?.();
+        const newUnread = wrap.querySelectorAll('[style*="f87171"]').length;
+        if(badge) { badge.textContent=newUnread; badge.style.display=newUnread?'flex':'none'; }
+      });
+      wrap.appendChild(card);
+    });
+  } catch(e) { wrap.innerHTML='<div style="color:#f87171;padding:20px;">오류: '+e.message+'</div>'; }
+}
+
+// 탭 로드 시 알림 뱃지 체크
+async function checkBellNotifications() {
+  try {
+    const snap = await getDocs(collection(db,'notifications'));
+    const unread = snap.docs.filter(d=>d.data().type==='hurry'&&!d.data().read).length;
+    const badge = document.getElementById('notisBadge');
+    if(badge) { badge.textContent=unread; badge.style.display=unread?'flex':'none'; }
+  } catch(e) { console.warn('알림 체크 오류(무시):', e.code); }
+}
+
+// ===== 글쓰기 단계 현황 =====
+const WS_STAGES = [
+  {id:'submitted',  label:'📤 제출 완료',       color:'#60a5fa', bg:'rgba(96,165,250,0.1)',  border:'rgba(96,165,250,0.3)'},
+  {id:'waiting',    label:'⏳ 첨삭 대기',       color:'#f59e0b', bg:'rgba(245,158,11,0.1)',  border:'rgba(245,158,11,0.3)'},
+  {id:'reviewing',  label:'✏️ 첨삭 중',         color:'#a78bfa', bg:'rgba(167,139,250,0.1)', border:'rgba(167,139,250,0.3)'},
+  {id:'notebook',   label:'📓 완성 노트 써오기', color:'#fb923c', bg:'rgba(251,146,60,0.1)',  border:'rgba(251,146,60,0.3)'},
+  {id:'done',       label:'✅ 완성!',            color:'#22c55e', bg:'rgba(34,197,94,0.1)',   border:'rgba(34,197,94,0.3)'},
+];
+
+async function loadWritingStageTab() {
+  const clsSel = document.getElementById('wsSelClass');
+  if(clsSel.children.length <= 1) {
+    classes.forEach(c => { const o=document.createElement('option'); o.value=c; o.textContent=c; clsSel.appendChild(o); });
+  }
+  document.getElementById('btnLoadWS').onclick = renderWritingStages;
+}
+
+async function renderWritingStages() {
+  const wrap = document.getElementById('writingStageContent');
+  const cls = document.getElementById('wsSelClass').value;
+  if(!cls) { showToast('반을 선택해주세요!'); return; }
+  wrap.innerHTML = '<div class="loading">불러오는 중...</div>';
+
+  try {
+    // 해당 반 학생 목록
+    const usersSnap = await getDocs(collection(db,'users'));
+    const students = usersSnap.docs.map(d=>({id:d.id,...d.data()}))
+      .filter(u=>(u.className===cls||u.class===cls)&&u.role!=='teacher'&&u.approved!==false)
+      .sort((a,b)=>(a.name||'').localeCompare(b.name||''));
+
+    // 책 목록 (숙제표에서)
+    const sheetSnap = await getDocs(collection(db,'sheets'));
+    const sheet = sheetSnap.docs.map(d=>({id:d.id,...d.data()}))
+      .find(s=>s.id===cls||s.class===cls);
+    
+    // 이번 달 책 (월간 리포트에서)
+    const now = new Date();
+    const curMonth = now.getFullYear()+'년 '+(now.getMonth()+1)+'월';
+    const mrSnap = await getDocs(query(collection(db,'monthReports'), where('cls','==',cls)));
+    const mr = mrSnap.docs.map(d=>d.data()).find(r=>r.month===curMonth);
+
+    const books = mr ? [
+      mr.weeks?.[0]?.content || '1주차 세계문학',
+      mr.weeks?.[1]?.content || '2주차 한국문학',
+      mr.weeks?.[2]?.content || '3주차 비문학',
+      mr.weeks?.[3]?.content || '4주차 영화',
+    ].filter(Boolean) : ['세계문학','한국문학','비문학','영화'];
+
+    // 글쓰기 단계 데이터 로드
+    const stageSnap = await getDocs(query(collection(db,'writingStages'), where('cls','==',cls)));
+    const stageMap = {};
+    stageSnap.docs.forEach(d => {
+      const data = d.data();
+      if(!stageMap[data.userId]) stageMap[data.userId] = {};
+      stageMap[data.userId][data.bookIdx] = {id:d.id, stage:data.stage};
+    });
+
+    wrap.innerHTML = '';
+
+    // 책별 섹션
+    books.forEach((book, bi) => {
+      const section = document.createElement('div');
+      section.style.cssText = 'background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:12px;';
+
+      let html = '<div style="font-size:14px;font-weight:900;margin-bottom:12px;">📚 '+(bi+1)+'주차 · '+book+'</div>';
+      html += '<div style="display:flex;flex-direction:column;gap:6px;">';
+
+      students.forEach(stu => {
+        const stageData = stageMap[stu.id]?.[bi] || {id:null, stage:'none'};
+        const curStageIdx = WS_STAGES.findIndex(s=>s.id===stageData.stage);
+        const curStage = curStageIdx>=0 ? WS_STAGES[curStageIdx] : null;
+
+        html += '<div class="ws-row" style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--surface);border-radius:10px;">';
+        html += '<div style="font-size:13px;font-weight:700;flex-shrink:0;min-width:60px;">'+(stu.name||'?')+'</div>';
+        
+        // 단계 버튼 (클릭으로 순환)
+        html += '<button class="ws-stage-btn" data-uid="'+stu.id+'" data-bi="'+bi+'" data-stage="'+(stageData.stage||'none')+'" data-docid="'+(stageData.id||'')+'" style="flex:1;padding:7px 12px;border-radius:8px;border:1px solid '+(curStage?curStage.border:'var(--border)')+';background:'+(curStage?curStage.bg:'rgba(255,255,255,0.03)')+';color:'+(curStage?curStage.color:'var(--muted)')+';font-size:12px;font-weight:700;cursor:pointer;text-align:left;">'+(curStage?curStage.label:'— 시작 전')+'</button>';
+        html += '</div>';
+      });
+
+      html += '</div>';
+      section.innerHTML = html;
+      wrap.appendChild(section);
+
+      // 단계 순환 이벤트
+      section.querySelectorAll('.ws-stage-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const uid = btn.dataset.uid;
+          const bi2 = parseInt(btn.dataset.bi);
+          const curStage = btn.dataset.stage;
+          const docId = btn.dataset.docid;
+
+          // 다음 단계
+          const stageIds = ['none', ...WS_STAGES.map(s=>s.id)];
+          const curIdx = stageIds.indexOf(curStage);
+          const nextStage = stageIds[(curIdx+1) % stageIds.length];
+          const nextS = WS_STAGES.find(s=>s.id===nextStage);
+
+          btn.textContent = '저장 중...';
+          try {
+            if(docId) {
+              await updateDoc(doc(db,'writingStages',docId), {stage:nextStage, updatedAt:new Date()});
+            } else {
+              const newDoc = await addDoc(collection(db,'writingStages'), {
+                cls, userId:uid, bookIdx:bi2, bookName:books[bi2]||'',
+                stage:nextStage, createdAt:new Date(), updatedAt:new Date()
+              });
+              btn.dataset.docid = newDoc.id;
+            }
+            btn.dataset.stage = nextStage;
+            btn.textContent = nextS ? nextS.label : '— 시작 전';
+            btn.style.background = nextS ? nextS.bg : 'rgba(255,255,255,0.03)';
+            btn.style.borderColor = nextS ? nextS.border : 'var(--border)';
+            btn.style.color = nextS ? nextS.color : 'var(--muted)';
+            if(nextStage==='done') showToast('🎉 완성!');
+          } catch(e) { showToast('오류: '+e.message); btn.textContent='오류'; }
+        });
+      });
+    });
+
+  } catch(e) { wrap.innerHTML='<div style="color:#f87171;padding:20px;">오류: '+e.message+'</div>'; }
+}
+
+// ===== 글쓰기 첨삭 =====
+const ESSAY_TYPES = {essay:'✍️ 에세이', review:'📚 독후감', diary:'📖 일기', poem:'🌸 시', other:'📄 기타'};
+
+async function loadFeedbackTab() {
+  const clsSel = document.getElementById('fbSelClass');
+  if(clsSel.children.length <= 1) {
+    classes.forEach(c => { const o=document.createElement('option'); o.value=c; o.textContent=c; clsSel.appendChild(o); });
+  }
+  // 대기 중 개수 뱃지
+  try {
+    const snap = await getDocs(collection(db,'essays'));
+    const pending = snap.docs.filter(d=>d.data().status==='pending').length;
+    const badge = document.getElementById('feedbackBadge');
+    if(badge) { badge.textContent=pending; badge.style.display=pending?'flex':'none'; }
+  } catch(e) {}
+
+  document.getElementById('btnLoadFeedback').onclick = () => renderFeedbackList();
+  renderFeedbackList(); // 기본 로드
+}
+
+async function renderFeedbackList() {
+  const wrap = document.getElementById('feedbackList');
+  wrap.innerHTML = '<div class="loading">불러오는 중...</div>';
+  const status = document.getElementById('fbSelStatus').value;
+  const cls    = document.getElementById('fbSelClass').value;
+
+  try {
+    const snap = await getDocs(collection(db,'essays'));
+    let essays = snap.docs.map(d=>({id:d.id,...d.data()}));
+
+    // 필터
+    if(status !== 'all') essays = essays.filter(e=>e.status===status);
+    if(cls) {
+      // 해당 반 학생 UID 목록
+      const usersSnap = await getDocs(collection(db,'users'));
+      const clsUids = new Set(usersSnap.docs.map(d=>({id:d.id,...d.data()}))
+        .filter(u=>(u.className===cls||u.class===cls)).map(u=>u.id));
+      essays = essays.filter(e=>clsUids.has(e.userId));
+    }
+    essays.sort((a,b)=>(b.createdAt?.toMillis?.()??0)-(a.createdAt?.toMillis?.()??0));
+
+    if(!essays.length) { wrap.innerHTML='<div class="empty" style="padding:30px;text-align:center;color:var(--muted);">해당하는 글이 없어요</div>'; return; }
+
+    wrap.innerHTML = '';
+    essays.forEach(e => {
+      const card = document.createElement('div');
+      card.style.cssText = 'background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:12px;';
+      const isPending = e.status === 'pending';
+
+      let inner = '';
+      inner += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">';
+      inner += '<div style="font-size:12px;color:var(--muted);">'+(ESSAY_TYPES[e.type||'other']||'📄')+' · '+(e.userName||'학생')+'</div>';
+      inner += '<div style="font-size:11px;font-weight:700;color:'+(isPending?'#f59e0b':'#22c55e')+';padding:2px 8px;border-radius:6px;background:'+(isPending?'rgba(245,158,11,0.1)':'rgba(34,197,94,0.1)+')+'">'+(isPending?'⏳ 첨삭 대기':'✅ 완료')+'</div></div>';
+      inner += '<div style="font-size:15px;font-weight:900;margin-bottom:8px;">'+e.title+'</div>';
+      inner += '<div style="font-size:13px;line-height:1.8;color:var(--text);background:rgba(255,255,255,0.04);border-radius:10px;padding:12px;margin-bottom:10px;white-space:pre-wrap;max-height:200px;overflow-y:auto;">'+e.body+'</div>';
+
+      // 첨삭 입력칸
+      inner += '<div style="margin-bottom:6px;"><div style="font-size:11px;font-weight:700;color:var(--purple2);margin-bottom:4px;">✏️ 첨삭 내용</div>';
+      inner += '<textarea class="fb-text" style="width:100%;min-height:80px;padding:10px;border:1px solid var(--border);border-radius:8px;font-size:13px;resize:vertical;background:transparent;color:var(--text);outline:none;" placeholder="첨삭 내용을 입력해주세요...">'+(e.feedback||'')+'</textarea></div>';
+      inner += '<div style="display:flex;gap:8px;align-items:center;">';
+      inner += '<input type="number" class="fb-score" placeholder="점수" min="0" max="100" value="'+(e.score||'')+'" style="width:80px;padding:8px;border:1px solid var(--border);border-radius:8px;font-size:13px;background:transparent;color:var(--text);text-align:center;">';
+      inner += '<button class="btn-save-feedback" data-id="'+e.id+'" data-uid="'+e.userId+'" style="flex:1;padding:9px;background:#22c55e;color:white;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;">✅ 첨삭 완료</button>';
+      inner += '<button class="btn-spell-fb" style="padding:9px 12px;background:rgba(124,92,191,0.1);border:1px solid rgba(124,92,191,0.3);border-radius:8px;font-size:12px;font-weight:700;color:var(--purple2);cursor:pointer;">🔍 맞춤법</button>';
+      inner += '</div>';
+
+      card.innerHTML = inner;
+      wrap.appendChild(card);
+
+      // 저장 이벤트
+      card.querySelector('.btn-save-feedback').addEventListener('click', async btn => {
+        const saveBtn = card.querySelector('.btn-save-feedback');
+        const feedback = card.querySelector('.fb-text').value.trim();
+        const score    = card.querySelector('.fb-score').value;
+        const id = saveBtn.dataset.id;
+        const uid = saveBtn.dataset.uid;
+        if(!feedback) { showToast('첨삭 내용을 입력해주세요!'); return; }
+        saveBtn.textContent='저장 중...'; saveBtn.disabled=true;
+        try {
+          await updateDoc(doc(db,'essays',id), {
+            feedback, score: score||null,
+            status:'reviewed', feedbackAt:new Date()
+          });
+          // 글로락 월드 첨삭 카운트 +1
+          const countRef = doc(db,'feedbackCounts',uid);
+          const cSnap = await getDoc(countRef);
+          await setDoc(countRef, {userId:uid, count:(cSnap.exists()?cSnap.data().count:0)+1, updatedAt:new Date()});
+          // 학생에게 알림 (essayBadge)
+          showToast('✅ 첨삭 완료! 학생이 확인할 수 있어요');
+          renderFeedbackList();
+        } catch(e) { showToast('오류: '+e.message); saveBtn.textContent='✅ 첨삭 완료'; saveBtn.disabled=false; }
+      });
+
+      // 맞춤법
+      card.querySelector('.btn-spell-fb').addEventListener('click', () => {
+        const textarea = card.querySelector('.fb-text');
+        if(!textarea.value.trim()) { showToast('첨삭 내용을 먼저 입력해주세요!'); return; }
+        checkSpellingT(textarea.value, c => { textarea.value=c; });
+      });
+    });
+  } catch(e) { wrap.innerHTML='<div style="color:#f87171;padding:20px;">오류: '+e.message+'</div>'; }
+}
+
+// ===== 학생 현황 대시보드 =====
+async function loadDashboard() {
+  // 반 셀렉트 채우기
+  const clsSel = document.getElementById('dbSelClass');
+  if(clsSel.children.length <= 1) {
+    classes.forEach(c => {
+      const o = document.createElement('option'); o.value=c; o.textContent=c; clsSel.appendChild(o);
+    });
+  }
+  document.getElementById('btnLoadDashboard').onclick = renderDashboard;
+}
+
+async function renderDashboard() {
+  const wrap = document.getElementById('dashboardContent');
+  wrap.innerHTML = '<div class="loading">불러오는 중...</div>';
+  const cls = document.getElementById('dbSelClass').value;
+  const type = document.getElementById('dbSelType').value;
+
+  try {
+    // 전체 학생 목록
+    const usersSnap = await getDocs(collection(db,'users'));
+    let students = usersSnap.docs.map(d=>({id:d.id,...d.data()}))
+      .filter(u => u.role!=='teacher' && u.approved!==false);
+    if(cls) students = students.filter(u => u.className===cls || u.class===cls);
+    students.sort((a,b)=>(a.name||'').localeCompare(b.name||''));
+
+    if(!students.length) { wrap.innerHTML='<div class="empty" style="padding:20px;text-align:center;">학생이 없어요</div>'; return; }
+
+    // 각 학생별 데이터 병렬 로드
+    const collections = {
+      reading: 'currentReading',
+      watching: 'currentWatching',
+      workbook: 'workbooks'
+    };
+
+    const loadTypes = type==='all' ? ['reading','watching','workbook'] : [type];
+
+    const allData = {};
+    await Promise.all(loadTypes.map(async t => {
+      const snap = await getDocs(collection(db, collections[t]));
+      allData[t] = {};
+      snap.docs.forEach(d => {
+        const data = d.data();
+        if(!allData[t][data.userId]) allData[t][data.userId] = [];
+        allData[t][data.userId].push({id:d.id,...data});
+      });
+    }));
+
+    const typeInfo = {
+      reading: {label:'📖 읽는 중', color:'#22c55e', bg:'rgba(34,197,94,0.08)', border:'rgba(34,197,94,0.2)'},
+      watching:{label:'🎬 보는 중', color:'#f59e0b', bg:'rgba(245,158,11,0.08)', border:'rgba(245,158,11,0.2)'},
+      workbook:{label:'📝 문제집', color:'#6366f1', bg:'rgba(99,102,241,0.08)', border:'rgba(99,102,241,0.2)'},
+    };
+
+    const today = new Date();
+    const getDays = (dateStr) => dateStr ? Math.floor((today-new Date(dateStr))/86400000) : null;
+
+    let html = '';
+
+    students.forEach(stu => {
+      const hasAny = loadTypes.some(t => (allData[t][stu.id]||[]).length > 0);
+      if(!hasAny && type!=='all') return;
+
+      html += '<div style="background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:10px;">';
+      html += '<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">';
+      html += '<div style="width:36px;height:36px;background:rgba(124,92,191,0.15);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">👤</div>';
+      html += '<div><div style="font-size:14px;font-weight:900;">'+(stu.name||stu.email)+'</div>';
+      html += '<div style="font-size:11px;color:var(--muted);">'+(stu.className||'반 미배정')+'</div></div>';
+      html += '<div style="margin-left:auto;font-size:12px;color:var(--muted);">Lv.'+(Math.floor((stu.points||0)/100)+1)+'</div>';
+      html += '</div>';
+
+      loadTypes.forEach(t => {
+        const items = allData[t][stu.id] || [];
+        if(!items.length) {
+          if(type==='all') html += '<div style="font-size:12px;color:var(--muted);padding:4px 0;">'+typeInfo[t].label+' — 없음</div>';
+          return;
+        }
+        const ti = typeInfo[t];
+        html += '<div style="background:'+ti.bg+';border:1px solid '+ti.border+';border-radius:10px;padding:10px;margin-bottom:6px;">';
+        html += '<div style="font-size:11px;font-weight:700;color:'+ti.color+';margin-bottom:6px;">'+ti.label+' ('+items.length+'개)</div>';
+        items.forEach(item => {
+          const lastDate = item.lastReadDate||item.lastDate||item.startDate||'';
+          const days = getDays(lastDate);
+          const total = item.totalPages||item.total||0;
+          const current = item.currentPage||item.current||0;
+          const pct = total ? Math.round(current/total*100) : 0;
+          const daysColor = days===null?'var(--muted)':days>=7?'#f87171':days>=3?'#f59e0b':'#22c55e';
+          const unit = item.unit||'p';
+
+          html += '<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.04);">';
+          html += '<div style="flex:1;min-width:0;"><div style="font-size:12px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+item.title+'</div>';
+          if(total) html += '<div style="font-size:10px;color:var(--muted);">'+current+'/'+total+unit+' ('+pct+'%)</div>';
+          html += '</div>';
+          if(days!==null) html += '<div style="font-size:11px;font-weight:700;color:'+daysColor+';flex-shrink:0;">'+(days===0?'오늘':days+'일 전')+'</div>';
+          html += '</div>';
+        });
+        html += '</div>';
+      });
+      html += '</div>';
+    });
+
+    if(!html) html = '<div class="empty" style="padding:30px;text-align:center;">해당 조건의 데이터가 없어요</div>';
+    wrap.innerHTML = html;
+  } catch(e) {
+    wrap.innerHTML = '<div style="color:#f87171;padding:20px;">오류: '+e.message+'</div>';
+  }
+}
+
+// ===== 모험 인기도 통계 =====
+async function loadAdventureStats() {
+  const wrap = document.getElementById('adventureStatsContent');
+  wrap.innerHTML = '<div class="loading">불러오는 중...</div>';
+  try {
+    const snap = await getDocs(collection(db,'adventureStats'));
+    const stats = snap.docs.map(d=>({...d.data()}))
+      .sort((a,b)=>(b.count||0)-(a.count||0));
+
+    if(!stats.length) { wrap.innerHTML='<div class="empty" style="padding:20px;text-align:center;">아직 모험 기록이 없어요!</div>'; return; }
+
+    const maxCount = stats[0].count||1;
+    let html = '';
+    stats.forEach((s,i) => {
+      const pct = Math.round((s.count/maxCount)*100);
+      const medal = i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
+      html += '<div style="padding:10px 14px;margin-bottom:8px;background:var(--surface2);border-radius:12px;">';
+      html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">';
+      html += '<div style="font-size:16px;min-width:24px;">'+(medal||'#'+(i+1))+'</div>';
+      html += '<div style="font-size:14px;font-weight:700;flex:1;">'+s.place+'</div>';
+      html += '<div style="font-size:13px;font-weight:900;color:var(--purple2);">'+s.count+'회</div>';
+      html += '</div>';
+      html += '<div style="height:6px;background:rgba(255,255,255,0.08);border-radius:3px;">';
+      html += '<div style="height:6px;background:var(--purple);border-radius:3px;width:'+pct+'%;transition:width 0.5s;"></div></div>';
+      html += '</div>';
+    });
+    wrap.innerHTML = html;
+  } catch(e) {
+    wrap.innerHTML = '<div style="color:#f87171;padding:20px;">오류: '+e.message+'</div>';
+  }
+}
+
+// ===== 신입생 승인 =====
+async function loadNewStudents() {
+  const list = document.getElementById('newStudentList');
+  list.innerHTML = '<div class="loading">불러오는 중...</div>';
+  try {
+    const snap = await getDocs(collection(db,'users'));
+    const pending = snap.docs.map(d=>({id:d.id,...d.data()}))
+      .filter(u => u.approved === false && u.role !== 'teacher')
+      .sort((a,b)=>(b.createdAt?.toMillis?.()??0)-(a.createdAt?.toMillis?.()??0));
+
+    if(!pending.length) {
+      list.innerHTML = '<div class="empty" style="text-align:center;padding:40px;"><div style="font-size:48px;margin-bottom:12px;">✅</div><div>승인 대기 중인 신입생이 없어요!</div></div>';
+      return;
+    }
+
+    list.innerHTML = pending.map(u => {
+      const date = u.createdAt?.toDate ? u.createdAt.toDate().toLocaleDateString('ko-KR') : '';
+      return '<div style="background:var(--surface2);border:1px solid rgba(251,191,36,0.3);border-radius:14px;padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:12px;">'
+        +'<div style="width:44px;height:44px;border-radius:50%;background:rgba(251,191,36,0.15);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">👤</div>'
+        +'<div style="flex:1;">'
+        +'<div style="font-size:15px;font-weight:900;">'+( u.name||'이름없음')+'</div>'
+        +'<div style="font-size:12px;color:var(--muted);">'+u.email+'</div>'
+        +'<div style="font-size:11px;color:var(--muted);">가입일: '+date+'</div>'
+        +'</div>'
+        +'<div style="display:flex;flex-direction:column;gap:6px;">'
+        +'<button class="btn-approve-student" data-uid="'+u.id+'" data-name="'+(u.name||u.email)+'" style="padding:8px 16px;background:#22c55e;color:white;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;">✅ 승인</button>'
+        +'<button class="btn-reject-student" data-uid="'+u.id+'" data-name="'+(u.name||u.email)+'" style="padding:8px 16px;background:rgba(248,113,113,0.15);color:#f87171;border:1px solid rgba(248,113,113,0.3);border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;">❌ 거절</button>'
+        +'</div></div>';
+    }).join('');
+
+    list.querySelectorAll('.btn-approve-student').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        if(!confirm(btn.dataset.name+'님을 승인할까요?')) return;
+        // 반 선택 팝업
+        const cls = prompt('배정할 반: '+classes.join(', '), classes[0]||'');
+        if(!cls) return;
+        await updateDoc(doc(db,'users',btn.dataset.uid), {
+          approved:true, onboarding:'welcome', approvedAt:new Date(),
+          className: cls, class: cls
+        });
+        showToast('✅ '+btn.dataset.name+' 승인 완료! ('+cls+') 🎉');
+        await loadNewStudents();
+      });
+    });
+
+    list.querySelectorAll('.btn-reject-student').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        if(!confirm(btn.dataset.name+'님의 가입을 거절할까요?')) return;
+        // Firebase Auth 계정은 유지하고 rejected 상태로
+        await updateDoc(doc(db,'users',btn.dataset.uid), {approved:'rejected'});
+        showToast('❌ '+btn.dataset.name+' 거절 처리');
+        await loadNewStudents();
+      });
+    });
+  } catch(e) {
+    list.innerHTML = '<div style="color:var(--muted);padding:20px;">오류: '+e.message+'</div>';
+  }
+}
+
+// ===== 비밀번호 재설정 =====
+async function resetStudentPassword(uid, name) {
+  const newPw = prompt(name+'님의 새 비밀번호를 입력해주세요 (6자 이상)');
+  if(!newPw || newPw.length < 6) { showToast('6자 이상 입력해주세요!'); return; }
+
+  // Firebase Admin SDK 없이는 직접 변경 불가 - 이메일 링크 발송
+  // 대신 teacher.html에서 직접 생성한 계정의 경우 updatePassword 사용 가능
+  showToast('⚠️ 보안상 비밀번호는 직접 변경이 어려워요. Firebase Console → Authentication에서 변경하거나, 학생에게 이메일 재설정 링크를 보내주세요!');
+}
+
+// ===== 반별 필터 =====
+async function initStudentFilter() {
+  const classSettingSnap = await getDoc(doc(db,'settings','homework'));
+  const cls = classSettingSnap.exists() ? (classSettingSnap.data().classes||[]) : [];
+  const sel = document.getElementById('filterClass');
+  sel.innerHTML = '<option value="">전체 학생</option>';
+  cls.forEach(c => {
+    const o = document.createElement('option'); o.value=c; o.textContent=c; sel.appendChild(o);
+  });
+}
+document.getElementById('btnFilterStudents')?.addEventListener('click', () => loadStudents(document.getElementById('filterClass').value));
+initStudentFilter();
+
+async function loadStudents(filterCls='') {
+  const snap = await getDocs(collection(db,'users'));
+  let users = snap.docs.map(d=>({id:d.id,...d.data()})).filter(u=>u.role!=='teacher');
+  if(filterCls) users = users.filter(u=>(u.className||u.class)===filterCls);
+  users.sort((a,b)=>(b.points||0)-(a.points||0));
+  const countEl = document.getElementById('classStudentCount');
+  if(countEl) countEl.textContent = filterCls ? filterCls+' · '+users.length+'명' : '전체 '+users.length+'명';
+  document.getElementById('sumStudents').textContent = users.length;
+  document.getElementById('sumBooks').textContent = users.reduce((s,u)=>s+(u.booksRead||0),0);
+
+  // 반 목록 미리 로드
+  const classSettingSnap = await getDoc(doc(db,'settings','homework'));
+  classes = classSettingSnap.exists() ? (classSettingSnap.data().classes||[]) : [];
+
+  document.getElementById('studentList').innerHTML = users.length===0
+    ? `<div class="empty"><div class="empty-icon">👥</div><div class="empty-text">학생이 없어요</div></div>`
+    : users.map(u=>{
+        const lv=getLv(u.points||0);
+        const classOptions = classes.map(c =>
+          `<option value="${c}" ${u.className===c?'selected':''}>${c}</option>`
+        ).join('');
+        return `<div class="student-card">
+          <div class="stu-avatar">${EMOJIS[lv-1]}</div>
+          <div class="stu-info">
+            <div class="stu-name">${u.name||u.email} <span class="lv-badge">Lv.${lv}</span></div>
+            <div class="stu-sub">읽은 책 ${u.booksRead||0}권 · ${getTitle(u.points||0)}</div>
+            ${u.className ? '' : '<div style="font-size:10px;color:#f87171;margin-top:2px;">⚠️ 반 미배정</div>'}
+            <div style="margin-top:6px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+              <select class="class-assign-sel" data-uid="${u.id}"
+                style="padding:4px 8px;border:1px solid var(--border);border-radius:8px;font-size:12px;font-weight:700;color:var(--purple);background:var(--purple-light);outline:none;cursor:pointer;">
+                <option value="">반 미배정</option>
+                ${classOptions}
+              </select>
+              <select class="house-assign-sel" data-uid="${u.id}" data-name="${u.name||u.email}"
+                style="padding:4px 8px;border:1px solid var(--border);border-radius:8px;font-size:12px;font-weight:700;outline:none;cursor:pointer;
+                  ${u.house==='hyunmu'?'background:rgba(30,30,50,0.6);color:#94a3b8;border-color:#64748b;':
+                    u.house==='cheongryong'?'background:rgba(96,165,250,0.2);color:#1d4ed8;border-color:#60a5fa;':
+                    u.house==='jujak'?'background:rgba(248,113,113,0.2);color:#dc2626;border-color:#f87171;':
+                    u.house==='baekho'?'background:rgba(226,232,240,0.3);color:#475569;border-color:#cbd5e1;':
+                    'background:white;color:var(--muted);'}">
+                <option value="">⬜ 기숙사 미배정</option>
+                <option value="hyunmu"  ${u.house==='hyunmu'  ?'selected':''}>🐢 현무단</option>
+                <option value="cheongryong" ${u.house==='cheongryong'?'selected':''}>🐉 청룡단</option>
+                <option value="jujak"   ${u.house==='jujak'   ?'selected':''}>🦅 주작단</option>
+                <option value="baekho"  ${u.house==='baekho'  ?'selected':''}>🐯 백호단</option>
+              </select>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;margin-left:auto;">
+            <div class="stu-pts"><div class="stu-pts-val">${(u.points||0).toLocaleString()}</div><div class="stu-pts-lbl">포인트</div></div>
+            <button class="btn-review-hist" data-uid="${u.id}" data-name="${u.name||u.email}"
+              style="font-size:11px;padding:4px 10px;background:var(--purple-light);color:var(--purple);border:1px solid var(--purple2);border-radius:8px;cursor:pointer;font-weight:700;white-space:nowrap;">
+              📝 수업 후기
+            </button>
+            <button class="btn-hw-approve" data-uid="${u.id}" data-name="${u.name||u.email}"
+              style="font-size:11px;padding:4px 10px;background:rgba(34,197,94,0.1);color:#16a34a;border:1px solid rgba(34,197,94,0.3);border-radius:8px;cursor:pointer;font-weight:700;white-space:nowrap;">
+              ✅ 숙제 승인
+            </button>
+            <button class="btn-extra-hw" data-uid="${u.id}" data-name="${u.name||u.email}"
+              style="font-size:11px;padding:4px 10px;background:rgba(251,191,36,0.1);color:#d97706;border:1px solid rgba(251,191,36,0.4);border-radius:8px;cursor:pointer;font-weight:700;white-space:nowrap;">
+              📝 개인 숙제
+            </button>
+            <button class="btn-pw-reset" data-uid="${u.id}" data-name="${u.name||u.email}" data-email="${u.email||''}"
+              style="font-size:11px;padding:4px 10px;background:rgba(248,113,113,0.1);color:#dc2626;border:1px solid rgba(248,113,113,0.3);border-radius:8px;cursor:pointer;font-weight:700;white-space:nowrap;">
+              📧 비번 재설정
+            </button>
+          </div>
+        </div>`;
+      }).join('');
+
+  // 반 배정 이벤트
+  document.getElementById('studentList').querySelectorAll('.class-assign-sel').forEach(sel => {
+    sel.addEventListener('change', async () => {
+      const uid = sel.dataset.uid;
+      const cls = sel.value;
+      try {
+        await updateDoc(doc(db,'users',uid), { className: cls });
+        showToast(cls ? `✅ ${cls} 배정 완료!` : '반 배정 해제');
+      } catch(e) { showToast('오류: '+e.message); }
+    });
+  });
+
+  // 기숙사 배정 이벤트
+  const HOUSE_INFO = {
+    hyunmu:      { label:'🐢 현무단', bg:'rgba(30,30,50,0.6)',    color:'#94a3b8', border:'#64748b' },
+    cheongryong: { label:'🐉 청룡단', bg:'rgba(96,165,250,0.2)',  color:'#1d4ed8', border:'#60a5fa' },
+    jujak:       { label:'🦅 주작단', bg:'rgba(248,113,113,0.2)', color:'#dc2626', border:'#f87171' },
+    baekho:      { label:'🐯 백호단', bg:'rgba(226,232,240,0.3)', color:'#475569', border:'#cbd5e1' },
+    hwangryong:  { label:'🐲 황룡',   bg:'rgba(251,191,36,0.2)',  color:'#b45309', border:'#fbbf24' },
+  };
+  document.getElementById('studentList').querySelectorAll('.house-assign-sel').forEach(sel => {
+    sel.addEventListener('change', async () => {
+      const uid = sel.dataset.uid;
+      const name = sel.dataset.name;
+      const house = sel.value;
+      try {
+        await updateDoc(doc(db,'users',uid), { house: house || null });
+        const info = HOUSE_INFO[house];
+        if(info) {
+          sel.style.background = info.bg;
+          sel.style.color = info.color;
+          sel.style.borderColor = info.border;
+          showToast(`${info.label} 입단 완료! 🎉 ${name}`);
+        } else {
+          sel.style.background = 'white';
+          sel.style.color = 'var(--muted)';
+          sel.style.borderColor = 'var(--border)';
+          showToast(`기숙사 배정 해제`);
+        }
+      } catch(e) { showToast('오류: '+e.message); }
+    });
+  });
+
+  const medals=['🥇','🥈','🥉'];
+  document.getElementById('rankingTable').innerHTML = `
+    <div class="rank-header"><div>순위</div><div>이름</div><div style="text-align:center">읽은 책</div><div style="text-align:right">포인트</div></div>
+    ${users.map((u,i)=>{
+      const lv=getLv(u.points||0);
+      return `<div class="rank-row">
+        <div class="rk-num ${i<3?'rk-'+(i+1):''}">${i<3?medals[i]:i+1}</div>
+        <div><div class="rk-name">${u.name||u.email}</div><div style="font-size:11px;color:var(--muted)">Lv.${lv} ${getTitle(u.points||0)}</div></div>
+        <div class="rk-books">${u.booksRead||0}</div>
+        <div class="rk-pts">${(u.points||0).toLocaleString()}</div>
+      </div>`;
+    }).join('')}`;
+}
+</script>
+  <!-- 숙제 승인 모달 -->
+  <div id="hwApproveModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:999;align-items:center;justify-content:center;padding:20px;">
+    <div style="background:white;border-radius:20px;width:100%;max-width:480px;max-height:85vh;overflow:hidden;display:flex;flex-direction:column;">
+      <div style="padding:18px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+        <div style="font-size:15px;font-weight:900;" id="hwModalName">숙제 승인</div>
+        <button onclick="document.getElementById('hwApproveModal').style.display='none'"
+          style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted);">✕</button>
+      </div>
+      <div id="hwModalContent" style="overflow-y:auto;padding:16px;flex:1;"></div>
+    </div>
+  </div>
+
+  <!-- 수업 후기 모달 -->
+  <div id="reviewModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:999;align-items:center;justify-content:center;padding:20px;">
+    <div style="background:white;border-radius:20px;width:100%;max-width:560px;max-height:80vh;overflow:hidden;display:flex;flex-direction:column;">
+      <div style="padding:18px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+        <div>
+          <div style="font-size:16px;font-weight:900;" id="reviewModalName">수업 후기</div>
+          <div style="font-size:12px;color:var(--muted);">고사성어 · 단어 점수 및 피드백 이력</div>
+        </div>
+        <button onclick="document.getElementById('reviewModal').style.display='none'"
+          style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted);">✕</button>
+      </div>
+      <div id="reviewModalContent" style="overflow-y:auto;padding:16px;flex:1;">
+        <div style="text-align:center;color:var(--muted);padding:40px;">불러오는 중...</div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+  import { getFirestore, collection, query, where, orderBy, doc, getDoc, getDocs, updateDoc, deleteDoc, setDoc, addDoc, increment } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { getAuth, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { initializeApp, getApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  const db2 = getFirestore(getApp());
+  // 편의를 위해 모듈 내 _db/getDoc 별칭 사용
+  const _db = db2;
+  document.getElementById('studentList').addEventListener('click', async (e) => {
+    const btn = e.target.closest('.btn-review-hist');
+    if(!btn) return;
+    const uid = btn.dataset.uid;
+    const name = btn.dataset.name;
+    const modal = document.getElementById('reviewModal');
+    const modalContent = document.getElementById('reviewModalContent');
+    document.getElementById('reviewModalName').textContent = name + '의 수업 후기';
+    modal.style.display = 'flex';
+    modalContent.innerHTML = '<div style="text-align:center;color:var(--muted);padding:40px;">불러오는 중...</div>';
+
+    try {
+      const snap = await getDocs(collection(_db,'classReview'));
+      const rows = [];
+      snap.docs.forEach(d => {
+        const data = d.data();
+        const rec = (data.records||{})[uid];
+        if(rec) rows.push({ week: data.week||d.id, cls: data.cls||'', idiomScore: rec.idiomScore, wordScore: rec.wordScore, memo: rec.memo||'' });
+      });
+      rows.sort((a,b) => b.week.localeCompare(a.week));
+
+      if(rows.length === 0) {
+        modalContent.innerHTML = '<div style="text-align:center;color:var(--muted);padding:40px;">아직 수업 후기가 없어요</div>';
+        return;
+      }
+
+      // 미니 차트
+      const scoreRows = rows.filter(r=>r.idiomScore!=null||r.wordScore!=null).slice(0,8).reverse();
+      const chartHtml = scoreRows.length > 0 ? `
+        <div style="margin-bottom:16px;background:#f9f8ff;border-radius:12px;padding:14px;">
+          <div style="font-size:12px;font-weight:700;color:var(--purple);margin-bottom:8px;">📊 점수 추이</div>
+          <div style="display:flex;gap:6px;align-items:flex-end;height:60px;">
+            ${scoreRows.map(r => `
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;">
+                <div style="display:flex;gap:2px;align-items:flex-end;height:48px;">
+                  ${r.idiomScore!=null?`<div title="고사성어 ${r.idiomScore}점" style="width:10px;background:#a78bfa;border-radius:3px 3px 0 0;height:${Math.round((r.idiomScore/100)*48)}px;"></div>`:'<div style="width:10px;"></div>'}
+                  ${r.wordScore!=null?`<div title="단어 ${r.wordScore}점" style="width:10px;background:#60a5fa;border-radius:3px 3px 0 0;height:${Math.round((r.wordScore/100)*48)}px;"></div>`:'<div style="width:10px;"></div>'}
+                </div>
+                <div style="font-size:9px;color:var(--muted);white-space:nowrap;">${r.week.replace(/.*-W/,'W')}</div>
+              </div>`).join('')}
+          </div>
+          <div style="display:flex;gap:10px;margin-top:6px;font-size:11px;color:var(--muted);">
+            <span><span style="display:inline-block;width:8px;height:8px;background:#a78bfa;border-radius:2px;margin-right:3px;"></span>고사성어</span>
+            <span><span style="display:inline-block;width:8px;height:8px;background:#60a5fa;border-radius:2px;margin-right:3px;"></span>단어</span>
+          </div>
+        </div>` : '';
+
+      modalContent.innerHTML = chartHtml + `
+        <table style="width:100%;border-collapse:collapse;font-size:13px;">
+          <thead>
+            <tr style="background:var(--purple-light);">
+              <th style="padding:8px 10px;text-align:left;color:var(--purple);font-weight:700;">주차</th>
+              <th style="padding:8px 10px;text-align:center;color:var(--purple);font-weight:700;">📖 고사성어</th>
+              <th style="padding:8px 10px;text-align:center;color:var(--purple);font-weight:700;">🔤 단어</th>
+              <th style="padding:8px 10px;text-align:left;color:var(--purple);font-weight:700;">💬 메모</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows.map((r,i) => `
+            <tr style="border-bottom:1px solid var(--border);${i%2===0?'background:#fafafa':''}">
+              <td style="padding:9px 10px;font-weight:700;">${r.week}</td>
+              <td style="padding:9px 10px;text-align:center;">${r.idiomScore!=null?`<span style="font-weight:900;color:${r.idiomScore>=80?'#22c55e':r.idiomScore>=60?'#f8b471':'#f87171'}">${r.idiomScore}점</span>`:'<span style="color:#ccc">-</span>'}</td>
+              <td style="padding:9px 10px;text-align:center;">${r.wordScore!=null?`<span style="font-weight:900;color:${r.wordScore>=80?'#22c55e':r.wordScore>=60?'#f8b471':'#f87171'}">${r.wordScore}점</span>`:'<span style="color:#ccc">-</span>'}</td>
+              <td style="padding:9px 10px;font-size:12px;color:#666;">${r.memo||'-'}</td>
+            </tr>`).join('')}
+          </tbody>
+        </table>`;
+    } catch(e) {
+      modalContent.innerHTML = `<div style="text-align:center;color:var(--muted);padding:40px;">오류: ${e.message}</div>`;
+    }
+  });
+
+  // 모달 배경 클릭 닫기
+  document.getElementById('reviewModal').addEventListener('click', (e) => {
+    if(e.target === e.currentTarget) e.currentTarget.style.display = 'none';
+  });
+
+  // ===== 숙제 승인 =====
+  function getWeekStart() {
+    const now = new Date();
+    const day = now.getDay();
+    const diff = now.getDate() - day + (day===0?-6:1);
+    const mon = new Date(now.setDate(diff));
+    return mon.toISOString().slice(0,10);
+  }
+
+  document.getElementById('studentList').addEventListener('click', async (e2) => {
+    const btn = e2.target.closest('.btn-hw-approve');
+    if(!btn) return;
+    const uid = btn.dataset.uid;
+    const name = btn.dataset.name;
+    const weekStart = getWeekStart();
+    const hwDocId = 'student_'+uid+'_'+weekStart;
+
+    // 모달 열기
+    const modal = document.getElementById('hwApproveModal');
+    document.getElementById('hwModalName').textContent = name+'의 숙제 승인';
+    document.getElementById('hwModalContent').innerHTML = '<div style="text-align:center;color:var(--muted);padding:30px;">불러오는 중...</div>';
+    modal.style.display = 'flex';
+
+    try {
+      const snap = await getDoc(doc(_db,'studentHw', hwDocId));
+      const d = snap.exists() ? snap.data() : null;
+      const dayChecks = d?.dayChecks || {};
+      const DAYS = ['월','화','수','목','금'];
+
+      // 완료율 계산
+      const items = Object.keys(dayChecks);
+      let totalChecks=0, doneChecks=0;
+      items.forEach(item => {
+        (dayChecks[item]||[]).forEach(v => { totalChecks++; if(v) doneChecks++; });
+      });
+      const pct = totalChecks ? Math.round(doneChecks/totalChecks*100) : 0;
+      const statusColor = d?.hwApproved===true?'#22c55e':d?.hwApproved===false?'#f87171':'#94a3b8';
+      const statusText = d?.hwApproved===true?'✅ 승인됨':d?.hwApproved===false?'❌ 반려됨':'⏳ 미처리';
+
+      // innerHTML을 string concat으로 구성
+      const DAYS2 = ['월','화','수','목','금'];
+      let mHtml = '';
+      mHtml += '<div style="margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;">';
+      mHtml += '<div style="font-size:13px;font-weight:700;">📅 '+weekStart+' 주차</div>';
+      mHtml += '<span style="font-size:12px;font-weight:700;padding:3px 10px;border-radius:8px;background:rgba(34,197,94,0.1);color:'+statusColor+';">'+statusText+'</span>';
+      mHtml += '</div>';
+      mHtml += '<div style="background:#f9f8ff;border-radius:12px;padding:14px;margin-bottom:14px;">';
+      mHtml += '<div style="font-size:13px;font-weight:700;margin-bottom:10px;">숙제 완료율 <span style="color:'+(pct>=80?'#22c55e':pct>=50?'#f8b471':'#f87171')+';font-size:18px;font-weight:900;">'+pct+'%</span></div>';
+      if(items.length) {
+        items.forEach(item => {
+          const checks = dayChecks[item]||[];
+          const done = checks.filter(v=>v).length;
+          mHtml += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">';
+          mHtml += '<span style="font-size:12px;font-weight:700;min-width:80px;">'+(done===checks.length&&done>0?'✅ ':'')+item+'</span>';
+          mHtml += '<div style="display:flex;gap:4px;">';
+          checks.forEach((v,i) => {
+            mHtml += '<div style="width:22px;height:22px;border-radius:6px;border:2px solid '+(v?'#22c55e':'#e2e8f0')+';background:'+(v?'rgba(34,197,94,0.15)':'transparent')+';display:flex;align-items:center;justify-content:center;font-size:11px;color:'+(v?'#22c55e':'#94a3b8')+';">'+(v?'✓':(DAYS2[i]||i+1))+'</div>';
+          });
+          mHtml += '</div></div>';
+        });
+      } else {
+        mHtml += '<div style="color:var(--muted);font-size:13px;">아직 체크한 항목이 없어요</div>';
+      }
+      mHtml += '</div>';
+            // 녹음 링크 표시
+      if(d && d.recordingUrl) {
+        mHtml += '<div style="background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.3);border-radius:10px;padding:10px 12px;margin-bottom:12px;">';
+        mHtml += '<div style="font-size:11px;font-weight:700;color:#6366f1;margin-bottom:4px;">🎙️ 녹음 링크 제출됨</div>';
+        mHtml += '<div style="display:flex;align-items:center;gap:8px;">';
+        mHtml += '<span style="font-size:12px;color:#6366f1;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+d.recordingUrl+'</span>';
+        mHtml += '<a href="'+d.recordingUrl+'" target="_blank" style="padding:5px 10px;background:#6366f1;color:white;border-radius:6px;font-size:11px;font-weight:700;text-decoration:none;white-space:nowrap;flex-shrink:0;">열기 →</a>';
+        mHtml += '</div></div>';
+      }
+      mHtml += '<div style="margin-bottom:12px;">';
+      mHtml += '<div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:6px;">💬 선생님 코멘트</div>';
+      mHtml += '<textarea id="hwCommentInput" style="width:100%;padding:10px;border:1px solid var(--border);border-radius:10px;font-size:13px;resize:vertical;min-height:60px;outline:none;" placeholder="예: 이번 주 정말 열심히 했어요! 💪">'+(d?.teacherComment||'')+'</textarea>';
+      mHtml += '</div>';
+      mHtml += '<div style="margin-bottom:14px;">';
+      mHtml += '<div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:6px;">🎁 포인트 지급</div>';
+      mHtml += '<input id="hwPtsInput" type="number" min="0" max="500" value="'+(d?.hwPtsAwarded||Math.round(pct/10)*10)+'" style="width:100%;padding:10px;border:1px solid var(--border);border-radius:10px;font-size:14px;font-weight:900;text-align:center;outline:none;" placeholder="pt">';
+      mHtml += '</div>';
+      mHtml += '<div style="display:flex;gap:8px;">';
+      mHtml += '<button id="btnHwApprove" style="flex:1;padding:12px;background:#22c55e;color:white;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;">✅ 승인</button>';
+      mHtml += '<button id="btnHwReject" style="flex:1;padding:12px;background:#f87171;color:white;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;">❌ 반려</button>';
+      mHtml += '</div>';
+      document.getElementById('hwModalContent').innerHTML = mHtml;
+
+            // 승인
+      document.getElementById('btnHwApprove').onclick = async () => {
+        const comment = document.getElementById('hwCommentInput').value.trim();
+        const pts = parseInt(document.getElementById('hwPtsInput').value)||0;
+        try {
+          await setDoc(doc(_db,'studentHw',hwDocId), { hwApproved:true, teacherComment:comment, hwPtsAwarded:pts, approvedAt:new Date() }, {merge:true});
+          if(pts>0) await updateDoc(doc(_db,'users',uid), { points: increment(pts) });
+          window.showToast('✅ '+name+' 숙제 승인 완료! +'+pts+'pt');
+          modal.style.display='none';
+        } catch(err) { window.showToast('오류: '+err.message); }
+      };
+      // 반려
+      document.getElementById('btnHwReject').onclick = async () => {
+        const comment = document.getElementById('hwCommentInput').value.trim();
+        try {
+          await setDoc(doc(_db,'studentHw',hwDocId), { hwApproved:false, teacherComment:comment, approvedAt:new Date() }, {merge:true});
+          window.showToast('❌ '+name+' 숙제 반려 처리');
+          modal.style.display='none';
+        } catch(err) { window.showToast('오류: '+err.message); }
+      };
+    } catch(err) {
+      document.getElementById('hwModalContent').innerHTML = '<div style="text-align:center;color:var(--muted);padding:30px;">오류: '+err.message+'</div>';
+    }
+  });
+
+  document.getElementById('hwApproveModal').addEventListener('click', (e) => {
+    if(e.target===e.currentTarget) e.currentTarget.style.display='none';
+  });
+
+  // ===== 개인 추가 숙제 =====
+  let currentExtraHwUid = '';
+
+  document.getElementById('studentList').addEventListener('click', async (e3) => {
+    const btn = e3.target.closest('.btn-extra-hw');
+    if(!btn) return;
+    currentExtraHwUid = btn.dataset.uid;
+    const name = btn.dataset.name;
+    document.getElementById('extraHwModalTitle').textContent = name+' · 개인 추가 숙제';
+    document.getElementById('extraHwTitle').value = '';
+    document.getElementById('extraHwDesc').value = '';
+    document.getElementById('extraHwDue').value = '';
+    document.getElementById('extraHwPts').value = '10';
+    document.getElementById('extraHwModal').style.display = 'flex';
+    await loadExtraHwList(currentExtraHwUid);
+  });
+
+  document.getElementById('btnSaveExtraHw').addEventListener('click', async () => {
+    const title = document.getElementById('extraHwTitle').value.trim();
+    if(!title) { window.showToast('숙제 제목을 입력해주세요!'); return; }
+    try {
+      await addDoc(collection(_db,'extraHomework'), {
+        userId: currentExtraHwUid,
+        title,
+        desc: document.getElementById('extraHwDesc').value.trim(),
+        due: document.getElementById('extraHwDue').value,
+        pts: parseInt(document.getElementById('extraHwPts').value)||10,
+        done: false,
+        createdAt: new Date()
+      });
+      window.showToast('📝 개인 추가 숙제 저장 완료!');
+      document.getElementById('extraHwTitle').value = '';
+      document.getElementById('extraHwDesc').value = '';
+      await loadExtraHwList(currentExtraHwUid);
+    } catch(e) { window.showToast('오류: '+e.message); }
+  });
+
+  async function loadExtraHwList(uid) {
+    const listEl = document.getElementById('extraHwList');
+    const snap = await getDocs(query(collection(_db,'extraHomework'), where('userId','==',uid), orderBy('createdAt','desc')));
+    if(snap.empty) { listEl.innerHTML = '<div style="font-size:12px;color:var(--muted);text-align:center;padding:10px;">아직 추가 숙제가 없어요</div>'; return; }
+    listEl.innerHTML = '<div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:8px;">기존 추가 숙제</div>'
+      + snap.docs.map(d => {
+        const hw = d.data();
+        return '<div style="padding:10px 12px;background:rgba(255,255,255,0.04);border-radius:10px;margin-bottom:6px;display:flex;align-items:center;gap:8px;">'
+          +'<div style="flex:1;">'
+          +'<div style="font-size:13px;font-weight:700;'+(hw.done?'text-decoration:line-through;color:var(--muted);':'')+'">'+hw.title+'</div>'
+          +(hw.desc?'<div style="font-size:11px;color:var(--muted);">'+hw.desc+'</div>':'')
+          +(hw.due?'<div style="font-size:11px;color:var(--muted);">📅 '+hw.due+'</div>':'')
+          +'</div>'
+          +'<div style="font-size:11px;color:#d97706;font-weight:700;">'+hw.pts+'pt</div>'
+          +'<span style="font-size:11px;padding:2px 8px;border-radius:6px;background:'+(hw.done?'rgba(34,197,94,0.1)':'rgba(251,191,36,0.1)')+';color:'+(hw.done?'#16a34a':'#d97706')+'">'+(hw.done?'✅완료':'⏳미완')+'</span>'
+          +'<button class="btn-del-extra" data-id="'+d.id+'" style="font-size:11px;padding:2px 8px;border-radius:6px;background:rgba(248,113,113,0.1);color:#dc2626;border:none;cursor:pointer;">삭제</button>'
+          +'</div>';
+      }).join('');
+
+    listEl.querySelectorAll('.btn-del-extra').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        await deleteDoc(doc(_db,'extraHomework',btn.dataset.id));
+        await loadExtraHwList(uid);
+        window.showToast('삭제 완료');
+      });
+    });
+  }
+  // ===== 📧 비밀번호 재설정 메일 =====
+  let pwResetTargetEmail = '';
+  let pwResetTargetName = '';
+
+  document.getElementById('studentList').addEventListener('click', async (eTp) => {
+    const btn = eTp.target.closest('.btn-pw-reset');
+    if(!btn) return;
+    pwResetTargetEmail = btn.dataset.email;
+    pwResetTargetName = btn.dataset.name;
+
+    if(!pwResetTargetEmail) { window.showToast('이 학생은 이메일 정보가 없어요!'); return; }
+
+    document.getElementById('pwResetStudentInfo').innerHTML =
+      `👤 <span style="color:#1e1b4b;">${pwResetTargetName}</span> <span style="font-size:12px;font-weight:400;color:#6b7280;">(${pwResetTargetEmail})</span>`;
+    document.getElementById('pwResetModal').style.display = 'flex';
+  });
+
+  // 재설정 메일 보내기
+  document.getElementById('btnSendPwReset').addEventListener('click', async () => {
+    if(!pwResetTargetEmail) return;
+    const btn = document.getElementById('btnSendPwReset');
+    btn.textContent = '전송 중...'; btn.disabled = true;
+    try {
+      await sendPasswordResetEmail(getAuth(), pwResetTargetEmail);
+      window.showToast(`📧 ${pwResetTargetName}님 이메일로 재설정 링크를 보냈어요!`);
+      document.getElementById('pwResetModal').style.display = 'none';
+    } catch(e) {
+      if(e.code === 'auth/user-not-found') window.showToast('해당 이메일로 가입된 계정을 찾을 수 없어요.');
+      else window.showToast('오류: '+e.message);
+    }
+    btn.textContent = '📧 재설정 메일 보내기'; btn.disabled = false;
+  });
+
+  // 배경 클릭 닫기
+  document.getElementById('pwResetModal').addEventListener('click', (e) => {
+    if(e.target === e.currentTarget) e.currentTarget.style.display = 'none';
+  });
+
+  </script>
+</body>
+</html>
