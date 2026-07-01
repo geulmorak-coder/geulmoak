@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>글모락 - 1001 컬렉션</title>
+<style>
+  * { box-sizing: border-box; margin:0; padding:0; }
+  body {
+    font-family: 'Noto Sans KR', -apple-system, sans-serif;
+    background: #0f0e17;
+    color: #fff;
+    min-height: 100vh;
+    padding-bottom: 40px;
+  }
+  .topbar {
+    position: sticky; top:0; z-index: 50;
+    background: rgba(15,14,23,0.95);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    padding: 14px 16px;
+    display:flex; align-items:center; gap:10px;
+  }
+  .back-btn {
+    background: rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1);
+    color:#fff; border-radius:10px; padding:8px 12px; font-size:13px; cursor:pointer;
+    text-decoration:none; display:inline-flex; align-items:center; gap:4px;
+  }
+  .topbar-title { font-size:16px; font-weight:900; flex:1; }
+  .container { max-width: 720px; margin: 0 auto; padding: 16px; }
+
+  .header-row { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+  .header-desc { font-size:12px; color:#9ca3af; }
+  .dice-btn {
+    font-size:24px; background:#1a1827; border:1px solid rgba(255,255,255,0.1);
+    border-radius:14px; width:48px; height:48px; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; transition: transform 0.3s;
+  }
+
+  .tabs { display:flex; gap:6px; margin-bottom:16px; background:rgba(255,255,255,0.04); border-radius:12px; padding:4px; overflow-x:auto; }
+  .tab-btn {
+    flex:1; padding:8px 6px; border:none; border-radius:9px; font-size:11px; font-weight:700;
+    cursor:pointer; background:transparent; color:#9ca3af; white-space:nowrap; font-family:inherit;
+  }
+  .tab-btn.active { background:#7c5cbf; color:white; }
+
+  .random-card {
+    display:none; background:linear-gradient(135deg,rgba(124,92,191,0.15),rgba(245,158,11,0.1));
+    border:1px solid #7c5cbf; border-radius:18px; padding:18px; margin-bottom:16px; text-align:center;
+  }
+  .random-card .label { font-size:11px; font-weight:700; color:#a78bfa; margin-bottom:8px; }
+  .random-card .era { font-size:11px; color:#9ca3af; margin-bottom:4px; }
+  .random-card .title { font-size:20px; font-weight:900; margin-bottom:12px; }
+  .random-card .btns { display:flex; gap:8px; justify-content:center; }
+  .random-card button { padding:8px 14px; border-radius:10px; font-size:12px; font-weight:700; cursor:pointer; border:none; font-family:inherit; }
+  .btn-again { background:#1a1827; color:#fff; border:1px solid rgba(255,255,255,0.15) !important; }
+  .btn-check { background:#7c5cbf; color:white; }
+
+  .progress-card { background:#161522; border:1px solid rgba(255,255,255,0.08); border-radius:16px; padding:14px; margin-bottom:14px; }
+  .progress-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+  .progress-top .title { font-size:14px; font-weight:900; }
+  .progress-top .pct { font-size:22px; font-weight:900; color:#a78bfa; }
+  .bar-bg { height:8px; background:rgba(255,255,255,0.08); border-radius:4px; overflow:hidden; margin-bottom:6px; }
+  .bar-fill { height:8px; background:linear-gradient(90deg,#a78bfa,#f59e0b); border-radius:4px; width:0%; transition:width 0.6s; }
+  .count-text { font-size:11px; color:#9ca3af; }
+
+  .search-input {
+    width:100%; padding:10px 14px; border-radius:12px; border:1px solid rgba(255,255,255,0.1);
+    background:#161522; color:#fff; font-size:13px; margin-bottom:14px; font-family:inherit;
+  }
+  .search-input::placeholder { color:#6b7280; }
+
+  .era-section { margin-bottom:14px; background:#161522; border:1px solid rgba(255,255,255,0.08); border-radius:16px; overflow:hidden; }
+  .era-hdr { padding:12px 16px; display:flex; align-items:center; justify-content:space-between; cursor:pointer; user-select:none; }
+  .era-hdr .name { font-size:14px; font-weight:900; }
+  .era-hdr .right { display:flex; align-items:center; gap:8px; }
+  .era-hdr .ratio { font-size:12px; color:#9ca3af; }
+  .era-hdr .chevron { font-size:12px; color:#9ca3af; transition: transform 0.2s; }
+  .era-body { display:none; padding:10px 12px 12px; border-top:1px solid rgba(255,255,255,0.08); }
+  .item-grid { display:flex; flex-wrap:wrap; gap:6px; }
+  .item-btn {
+    padding:5px 10px; border-radius:20px; border:1px solid rgba(255,255,255,0.15);
+    background:transparent; color:#d1d5db; font-size:12px; font-weight:400; cursor:pointer;
+    font-family:inherit; transition:all 0.15s;
+  }
+  .item-btn.done { border-color:rgba(34,197,94,0.4); background:rgba(34,197,94,0.12); color:#22c55e; font-weight:700; }
+
+  .empty-state { text-align:center; color:#6b7280; padding:30px; font-size:13px; }
+  .loading { text-align:center; color:#9ca3af; padding:30px; font-size:13px; }
+
+  .toast {
+    position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(20px);
+    background:#1f2937; color:white; padding:12px 20px; border-radius:12px; font-size:13px;
+    opacity:0; pointer-events:none; transition:all 0.3s; z-index:200; max-width:90%; text-align:center;
+    box-shadow:0 8px 24px rgba(0,0,0,0.3);
+  }
+  .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+  .login-gate { max-width: 360px; margin: 80px auto; text-align:center; padding: 0 20px; }
+  .login-gate .icon { font-size:48px; margin-bottom:16px; }
+  .login-gate .msg { font-size:14px; color:#9ca3af; line-height:1.6; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="index.html" class="back-btn">← 돌아가기</a>
+  <div class="topbar-title">📚 1001 컬렉션</div>
+</div>
+
+<div id="loginGate" class="login-gate" style="display:none;">
+  <div class="icon">🔒</div>
+  <div class="msg">로그인이 필요해요.<br>메인 앱에서 로그인 후 다시 들어와주세요!</div>
+</div>
+
+<div id="mainContent" class="container" style="display:none;">
+  <div class="header-row">
+    <div>
+      <div class="header-desc" id="c1001Desc">죽기 전에 봐야 할 한국 영화 리스트 · 체크하면 +150pt 보너스!</div>
+    </div>
+    <button class="dice-btn" id="btnRandom" title="이번엔 뭘 볼까?">🎲</button>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-coll="korean_movie">🇰🇷 한국영화</button>
+    <button class="tab-btn" data-coll="world_movie">🌍 세계영화</button>
+    <button class="tab-btn" data-coll="newbery">🏅 뉴베리상</button>
+    <button class="tab-btn" data-coll="caldecott">🎨 칼데콧상</button>
+    <button class="tab-btn" data-coll="world_book">📚 세계문학1001</button>
+    <button class="tab-btn" data-coll="nobel">🏆 노벨문학상</button>
+    <button class="tab-btn" data-coll="minumsa">📖 민음사전집</button>
+  </div>
+
+  <div class="random-card" id="randomCard">
+    <div class="label">🎲 이번엔 이거 어때요?</div>
+    <div class="era" id="randomEra"></div>
+    <div class="title" id="randomTitle"></div>
+    <div class="btns">
+      <button class="btn-again" id="btnRandomAgain">🔄 다시 뽑기</button>
+      <button class="btn-check" id="btnRandomCheck">✅ 이미 했어요</button>
+    </div>
+  </div>
+
+  <div class="progress-card">
+    <div class="progress-top">
+      <div class="title">나의 진행률</div>
+      <div class="pct" id="progPct">0%</div>
+    </div>
+    <div class="bar-bg"><div class="bar-fill" id="progBar"></div></div>
+    <div class="count-text" id="progCount">0 / 1001 편 완료</div>
+  </div>
+
+  <input type="text" class="search-input" id="searchInput" placeholder="🔍 제목 검색...">
+
+  <div id="listWrap"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
+import { getFirestore, doc, setDoc, getDoc, deleteDoc, updateDoc, collection, addDoc, query, where, getDocs, increment } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyB_f-U4h2PMzDv2zHhH0AEtffr3XfGYxsQ",
+  authDomain: "chaek-mabeopsa.firebaseapp.com",
+  projectId: "chaek-mabeopsa",
+  storageBucket: "chaek-mabeopsa.firebasestorage.app",
+  messagingSenderId: "957424809777",
+  appId: "1:957424809777:web:7a67c94015066703d32210"
+};
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+let currentUser = null;
+let userData = null;
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2500);
+}
+
+onAuthStateChanged(auth, async (user) => {
+  if(!user) {
+    document.getElementById('loginGate').style.display = 'block';
+    document.getElementById('mainContent').style.display = 'none';
+    return;
+  }
+  currentUser = user;
+  try {
+    const uSnap = await getDoc(doc(db,'users',user.uid));
+    userData = uSnap.exists() ? uSnap.data() : {};
+  } catch(e) { userData = {}; }
+  document.getElementById('loginGate').style.display = 'none';
+  document.getElementById('mainContent').style.display = 'block';
+  initApp();
+});
+
+const C1001_REGISTRY = {
+  korean_movie: { file: 'KOREAN_1001', data: null, label: '죽기 전에 봐야 할 한국 영화 리스트', icon: '🇰🇷', unit: '편', collKey: 'korean1001', bonusReason: '한국영화', isMovie: true },
+  world_movie:  { file: 'WORLD_MOVIE_1001', data: null, label: '죽기 전에 봐야 할 영화 1001', icon: '🌍', unit: '편', collKey: 'worldMovie1001', bonusReason: '세계영화', isMovie: true },
+  newbery:      { file: 'NEWBERY_LIST', data: null, label: '뉴베리상 수상작', icon: '🏅', unit: '권', collKey: 'newberyList', bonusReason: '뉴베리상', isMovie: false },
+  caldecott:    { file: 'CALDECOTT_LIST', data: null, label: '칼데콧상 수상작', icon: '🎨', unit: '권', collKey: 'caldecottList', bonusReason: '칼데콧상', isMovie: false },
+  world_book:   { file: 'WORLD_BOOK_1001', data: null, label: '죽기 전에 읽어야 할 책 1001', icon: '📚', unit: '권', collKey: 'worldBook1001', bonusReason: '세계문학 1001', isMovie: false },
+  nobel:        { file: 'NOBEL_LIST', data: null, label: '노벨문학상 수상자', icon: '🏆', unit: '명', collKey: 'nobelList', bonusReason: '노벨문학상', isMovie: false },
+  minumsa:      { file: 'MINUMSA_LIST', data: null, label: '민음사 세계문학전집', icon: '📖', unit: '권', collKey: 'minumsaList', bonusReason: '민음사 세계문학전집', isMovie: false },
+};
+
+async function loadC1001Data(collId) {
+  const conf = C1001_REGISTRY[collId];
+  if(conf.data) return conf.data;
+  try {
+    const res = await fetch('data/' + conf.file + '.json');
+    conf.data = await res.json();
+  } catch(e) {
+    console.warn('1001 데이터 로드 실패:', collId, e);
+    conf.data = {};
+  }
+  return conf.data;
+}
+
+let currentColl = 'korean_movie';
+
+function initApp() {
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      if(btn.dataset.coll === currentColl) return;
+      currentColl = btn.dataset.coll;
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b === btn));
+      document.getElementById('randomCard').style.display = 'none';
+      await renderCollection();
+    });
+  });
+  renderCollection();
+}
+
+async function renderCollection() {
+  const listWrap = document.getElementById('listWrap');
+  listWrap.innerHTML = '<div class="loading">불러오는 중...</div>';
+
+  const conf = C1001_REGISTRY[currentColl];
+  await loadC1001Data(currentColl);
+  const allItems = Object.values(conf.data).flat();
+
+  document.getElementById('c1001Desc').textContent = conf.label + ' 리스트 · 체크하면 +150pt 보너스!';
+  document.getElementById('progCount').textContent = '0 / ' + allItems.length + ' ' + conf.unit + ' 완료';
+
+  const snap = await getDoc(doc(db, conf.collKey, currentUser.uid));
+  let checked = snap.exists() ? (snap.data().watched || []) : [];
+
+  function updateProgress(checkedArr) {
+    const pct = Math.round(checkedArr.length / allItems.length * 100);
+    document.getElementById('progPct').textContent = pct + '%';
+    document.getElementById('progBar').style.width = pct + '%';
+    document.getElementById('progCount').textContent = checkedArr.length + ' / ' + allItems.length + ' ' + conf.unit + ' 완료';
+  }
+  updateProgress(checked);
+
+  async function toggleItem(item, btn) {
+    const isDone = checked.includes(item);
+    const targetColl = conf.isMovie ? 'movies' : 'books';
+    const flagField = 'is' + conf.collKey.charAt(0).toUpperCase() + conf.collKey.slice(1);
+
+    if(isDone) {
+      if(!confirm(`'${item}' 체크를 취소할까요?`)) return;
+      checked = checked.filter(m => m !== item);
+      try {
+        const q = await getDocs(query(collection(db,targetColl),
+          where('userId','==',currentUser.uid), where('title','==',item), where(flagField,'==',true)));
+        for(const d of q.docs) {
+          const data = d.data();
+          if(data.status === 'approved' && data.pointsAwarded) {
+            await updateDoc(doc(db,'users',currentUser.uid), {points: increment(-data.pointsAwarded)});
+            await addDoc(collection(db,'pointLogs'), {userId:currentUser.uid, amount:-data.pointsAwarded, reason:`${conf.icon} ${conf.bonusReason} 체크 취소: `+item, type:'spend', createdAt:new Date()});
+          }
+          await deleteDoc(doc(db,targetColl,d.id));
+        }
+        showToast(`☑️ ${item} 체크 취소`);
+      } catch(e) {}
+    } else {
+      checked = [...checked, item];
+      try {
+        if(conf.isMovie) {
+          await addDoc(collection(db,'movies'), {
+            userId: currentUser.uid, userName: userData?.name || '',
+            title: item, type: 'movie', [flagField]: true,
+            basePoints: 50, k1001Bonus: 150, points: 200,
+            status: 'pending', watchedAt: new Date().toISOString().slice(0,10), createdAt: new Date()
+          });
+        } else {
+          await addDoc(collection(db,'books'), {
+            userId: currentUser.uid, userName: userData?.name || '',
+            title: item, [flagField]: true,
+            basePoints: 50, k1001Bonus: 150, points: 200,
+            status: 'pending', createdAt: new Date()
+          });
+        }
+        showToast(`${conf.icon} ${item} 체크! 선생님 승인 후 +200pt(기본 50+보너스 150) 지급돼요`);
+      } catch(e) { showToast('오류: '+e.message); }
+    }
+    await setDoc(doc(db,conf.collKey,currentUser.uid), {watched: checked, updatedAt: new Date()});
+    updateProgress(checked);
+    if(btn) {
+      const nowDone = checked.includes(item);
+      btn.textContent = (nowDone ? '✅ ' : '') + item;
+      btn.classList.toggle('done', nowDone);
+    }
+  }
+
+  function renderList(filterQ = '') {
+    const q = filterQ.toLowerCase();
+    listWrap.innerHTML = '';
+    Object.entries(conf.data).forEach(([era, items]) => {
+      const filtered = q ? items.filter(m => m.toLowerCase().includes(q)) : items;
+      if(!filtered.length) return;
+      const doneInEra = filtered.filter(m => checked.includes(m)).length;
+
+      const section = document.createElement('div');
+      section.className = 'era-section';
+      section.innerHTML = `
+        <div class="era-hdr">
+          <div class="name">${era}</div>
+          <div class="right">
+            <span class="ratio" style="${doneInEra===filtered.length?'color:#22c55e;':''}">${doneInEra} / ${filtered.length}</span>
+            <span class="chevron">▼</span>
+          </div>
+        </div>
+        <div class="era-body"><div class="item-grid"></div></div>`;
+
+      const grid = section.querySelector('.item-grid');
+      filtered.forEach(item => {
+        const isDone = checked.includes(item);
+        const btn = document.createElement('button');
+        btn.className = 'item-btn' + (isDone ? ' done' : '');
+        btn.textContent = (isDone ? '✅ ' : '') + item;
+        btn.addEventListener('click', () => toggleItem(item, btn));
+        grid.appendChild(btn);
+      });
+
+      section.querySelector('.era-hdr').addEventListener('click', () => {
+        const body = section.querySelector('.era-body');
+        const chevron = section.querySelector('.chevron');
+        const open = body.style.display !== 'none';
+        body.style.display = open ? 'none' : 'block';
+        chevron.style.transform = open ? '' : 'rotate(180deg)';
+      });
+
+      listWrap.appendChild(section);
+    });
+    if(!listWrap.children.length) {
+      listWrap.innerHTML = '<div class="empty-state">🔍 검색 결과가 없어요</div>';
+    }
+  }
+
+  renderList();
+
+  const searchInp = document.getElementById('searchInput');
+  searchInp.value = '';
+  searchInp.oninput = () => renderList(searchInp.value);
+
+  let currentRandomItem = '';
+  function pickRandom() {
+    const unfinished = allItems.filter(m => !checked.includes(m));
+    const pool = unfinished.length ? unfinished : allItems;
+    currentRandomItem = pool[Math.floor(Math.random() * pool.length)];
+    const era = Object.entries(conf.data).find(([,list]) => list.includes(currentRandomItem))?.[0] || '';
+    document.getElementById('randomEra').textContent = era;
+    document.getElementById('randomTitle').textContent = currentRandomItem;
+    document.getElementById('randomCard').style.display = 'block';
+  }
+
+  document.getElementById('btnRandom').onclick = () => {
+    const btn = document.getElementById('btnRandom');
+    btn.style.transform = 'rotate(360deg)';
+    setTimeout(() => btn.style.transform = '', 400);
+    pickRandom();
+    document.getElementById('randomCard').scrollIntoView({behavior:'smooth', block:'nearest'});
+  };
+  document.getElementById('btnRandomAgain').onclick = pickRandom;
+  document.getElementById('btnRandomCheck').onclick = async () => {
+    if(!currentRandomItem || checked.includes(currentRandomItem)) {
+      document.getElementById('randomCard').style.display = 'none';
+      return;
+    }
+    await toggleItem(currentRandomItem, null);
+    renderList(searchInp.value);
+    document.getElementById('randomCard').style.display = 'none';
+  };
+}
+</script>
+</body>
+</html>
