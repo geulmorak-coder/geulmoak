@@ -412,6 +412,23 @@
       <div id="wbNoClassNotice" style="text-align:center;padding:30px;color:var(--muted);font-size:13px;">👆 먼저 반을 선택해주세요</div>
       <div id="wbMainWrap" style="display:none;">
 
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;margin-bottom:16px;box-shadow:var(--shadow-card);display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;">
+        <div style="flex:1;min-width:180px;">
+          <div class="ctrl-label">📚 이 반에서 진행 중인 문제집 (여러 개 가능)</div>
+          <select id="wbSelBook" class="ctrl-select" style="width:100%;"><option value="__new__">➕ 새 문제집 추가</option></select>
+        </div>
+        <button id="btnWbDeleteBook" style="display:none;padding:9px 14px;background:var(--amber-light);color:var(--amber);border:1px solid rgba(184,134,11,0.4);border-radius:8px;font-size:12.5px;font-weight:700;cursor:pointer;white-space:nowrap;">📦 이 문제집 완료 처리</button>
+        <label style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);cursor:pointer;white-space:nowrap;padding-bottom:9px;">
+          <input type="checkbox" id="wbShowArchived" style="cursor:pointer;"> 지난 기록도 보기
+        </label>
+      </div>
+
+      <div id="wbRoundRow" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px;margin-bottom:16px;box-shadow:var(--shadow-card);display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+        <span style="font-size:12px;font-weight:700;color:var(--muted);margin-right:4px;">🔁 회독</span>
+        <div id="wbRoundTabs" style="display:flex;gap:6px;flex-wrap:wrap;"></div>
+        <button id="btnWbAddRound" style="padding:6px 12px;background:var(--purple-light);color:var(--purple2);border:1px solid var(--purple2);border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;">➕ 새 회차</button>
+      </div>
+
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;margin-bottom:16px;box-shadow:var(--shadow-card);">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
           <div class="ctrl-label" style="margin-bottom:0;">문제집 제목</div>
@@ -464,6 +481,17 @@
           <select id="epSelClass" class="ctrl-select" style="margin-bottom:0;min-width:160px;"><option value="">-- 반 선택 --</option></select>
         </div>
         <div style="flex:1;min-width:180px;">
+          <div class="ctrl-label">📝 이 반에서 진행 중인 시험 (여러 개 가능)</div>
+          <select id="epSelExam" class="ctrl-select" style="width:100%;margin-bottom:0;"><option value="__new__">➕ 새 시험 추가</option></select>
+        </div>
+        <button id="btnEpDeleteExam" style="display:none;padding:9px 14px;background:var(--amber-light);color:var(--amber);border:1px solid rgba(184,134,11,0.4);border-radius:8px;font-size:12.5px;font-weight:700;cursor:pointer;white-space:nowrap;">📦 이 시험 완료 처리</button>
+        <label style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);cursor:pointer;white-space:nowrap;padding-bottom:9px;">
+          <input type="checkbox" id="epShowArchived" style="cursor:pointer;"> 지난 기록도 보기
+        </label>
+      </div>
+
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;margin-bottom:16px;box-shadow:var(--shadow-card);display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">
+        <div style="flex:1;min-width:180px;">
           <div class="ctrl-label">시험 제목 (이미지에 표시돼요)</div>
           <input type="text" id="epTitle" class="ctrl-input" placeholder="예: 2026년 6월 고3 모의고사" style="margin-bottom:0;">
         </div>
@@ -471,7 +499,7 @@
           <div class="ctrl-label">전체 문항 수</div>
           <input type="number" id="epTotal" class="ctrl-input" value="45" min="1" max="100" style="width:90px;margin-bottom:0;">
         </div>
-        <button id="btnEpApply" style="padding:10px 16px;background:var(--purple);color:white;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;">🔄 문항수 적용</button>
+        <button id="btnEpApply" style="padding:10px 16px;background:var(--purple);color:white;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;">🔄 적용</button>
       </div>
 
       <div id="epNoClassNotice" style="display:none;text-align:center;padding:30px;color:var(--muted);font-size:13px;">👆 먼저 반을 선택해주세요</div>
@@ -1414,6 +1442,8 @@ let epTotal = 45;
 let epDone = new Set();
 let epInited = false;
 let epCurrentClass = '';
+let epExams = {}; // { 시험제목: {total, done:[...]} }
+let epCurrentExamKey = '';
 
 function initExamProgress() {
   if(!epInited) {
@@ -1423,16 +1453,23 @@ function initExamProgress() {
     classes.forEach(c => { const o=document.createElement('option'); o.value=c; o.textContent=c; selCls.appendChild(o); });
     selCls.addEventListener('change', () => loadExamProgressForClass(selCls.value));
 
+    document.getElementById('epSelExam').addEventListener('change', (e) => selectExam(e.target.value));
+
     document.getElementById('btnEpApply').addEventListener('click', async () => {
       if(!epCurrentClass) { window.showToast('반을 먼저 선택해주세요!'); return; }
+      const titleVal = document.getElementById('epTitle').value.trim();
+      if(!titleVal) { window.showToast('시험 제목을 입력해주세요!'); return; }
       const n = parseInt(document.getElementById('epTotal').value) || 45;
       epTotal = Math.max(1, Math.min(100, n));
+      // 새 제목이면 done 초기화, 같은 제목(기존 선택) 유지면 done 이어감
+      if(epCurrentExamKey !== titleVal) epDone = new Set();
+      epCurrentExamKey = titleVal;
       epDone = new Set([...epDone].filter(x => x <= epTotal));
       renderExamProgressGrid();
       await saveExamProgress();
+      refreshExamSelect();
+      window.showToast('🔄 적용했어요!');
     });
-
-    document.getElementById('epTitle').addEventListener('change', saveExamProgress);
 
     document.getElementById('btnEpReset').addEventListener('click', async () => {
       if(!confirm('체크한 문항을 전부 초기화할까요?')) return;
@@ -1441,6 +1478,29 @@ function initExamProgress() {
       await saveExamProgress();
       window.showToast('↺ 초기화했어요!');
     });
+
+    document.getElementById('btnEpDeleteExam').addEventListener('click', async () => {
+      if(!epCurrentExamKey) return;
+      const isArchived = epExams[epCurrentExamKey]?.status === 'archived';
+      if(isArchived) {
+        epExams[epCurrentExamKey].status = 'active';
+        await persistEpExams();
+        refreshExamSelect();
+        selectExam(epCurrentExamKey);
+        window.showToast('🔄 다시 진행 중으로 옮겼어요!');
+      } else {
+        if(!confirm(`"${epCurrentExamKey}" 시험을 완료 처리할까요? (기록은 계속 남아있어요, "지난 기록도 보기"에서 다시 볼 수 있어요)`)) return;
+        epExams[epCurrentExamKey].status = 'archived';
+        await persistEpExams();
+        const remaining = Object.keys(epExams).filter(k => epExams[k].status !== 'archived');
+        refreshExamSelect();
+        if(remaining.length) selectExam(remaining[0]);
+        else selectExam('__new__');
+        window.showToast('📦 완료 처리했어요!');
+      }
+    });
+
+    document.getElementById('epShowArchived').addEventListener('change', refreshExamSelect);
 
     document.getElementById('btnEpDownload').addEventListener('click', downloadExamProgressImage);
   }
@@ -1456,31 +1516,59 @@ async function loadExamProgressForClass(cls) {
   mainWrap.style.display = 'block';
   try {
     const snap = await getDoc(doc(db,'examProgress',cls));
-    if(snap.exists()) {
-      const d = snap.data();
-      document.getElementById('epTitle').value = d.title || '';
-      epTotal = d.total || 45;
-      epDone = new Set(d.done || []);
-    } else {
-      document.getElementById('epTitle').value = '';
-      epTotal = 45;
-      epDone = new Set();
-    }
-    document.getElementById('epTotal').value = epTotal;
-    renderExamProgressGrid();
+    epExams = snap.exists() ? (snap.data().exams || {}) : {};
+    refreshExamSelect();
+    const activeKeys = Object.keys(epExams).filter(k => epExams[k].status !== 'archived');
+    selectExam(activeKeys.length ? activeKeys[0] : '__new__');
   } catch(e) { window.showToast('불러오기 실패: '+e.message); }
 }
 
-async function saveExamProgress() {
+function refreshExamSelect() {
+  const sel = document.getElementById('epSelExam');
+  const showArchived = document.getElementById('epShowArchived')?.checked;
+  const keys = Object.keys(epExams).filter(k => showArchived || epExams[k].status !== 'archived');
+  sel.innerHTML = keys.map(k => {
+    const archived = epExams[k].status === 'archived';
+    return `<option value="${k.replace(/"/g,'&quot;')}">${archived?'📦 ':''}${k} (${(epExams[k].done||[]).length}/${epExams[k].total||0})${archived?' - 완료됨':''}</option>`;
+  }).join('') + '<option value="__new__">➕ 새 시험 추가</option>';
+  if(epCurrentExamKey && keys.includes(epCurrentExamKey)) sel.value = epCurrentExamKey;
+}
+
+function selectExam(key) {
+  const delBtn = document.getElementById('btnEpDeleteExam');
+  if(key === '__new__' || !epExams[key]) {
+    epCurrentExamKey = '';
+    document.getElementById('epTitle').value = '';
+    epTotal = 45;
+    document.getElementById('epTotal').value = 45;
+    epDone = new Set();
+    delBtn.style.display = 'none';
+  } else {
+    epCurrentExamKey = key;
+    document.getElementById('epTitle').value = key;
+    epTotal = epExams[key].total || 45;
+    document.getElementById('epTotal').value = epTotal;
+    epDone = new Set(epExams[key].done || []);
+    const archived = epExams[key].status === 'archived';
+    delBtn.textContent = archived ? '🔄 다시 진행하기' : '📦 이 시험 완료 처리';
+    delBtn.style.display = 'inline-block';
+  }
+  document.getElementById('epSelExam').value = key;
+  renderExamProgressGrid();
+}
+
+async function persistEpExams() {
   if(!epCurrentClass) return;
   try {
-    await setDoc(doc(db,'examProgress',epCurrentClass), {
-      title: document.getElementById('epTitle').value.trim(),
-      total: epTotal,
-      done: [...epDone],
-      updatedAt: new Date()
-    });
+    await setDoc(doc(db,'examProgress',epCurrentClass), { exams: epExams, updatedAt: new Date() });
   } catch(e) { window.showToast('저장 실패: '+e.message); }
+}
+
+async function saveExamProgress() {
+  if(!epCurrentClass || !epCurrentExamKey) return;
+  const prevStatus = epExams[epCurrentExamKey]?.status || 'active';
+  epExams[epCurrentExamKey] = { total: epTotal, done: [...epDone], status: prevStatus };
+  await persistEpExams();
 }
 
 function renderExamProgressGrid() {
@@ -1493,9 +1581,11 @@ function renderExamProgressGrid() {
     cell.dataset.n = i;
     cell.style.cssText = `aspect-ratio:1;border-radius:10px;border:2px solid ${done?'var(--gold)':'var(--border)'};background:${done?'var(--gold)':'var(--surface2)'};color:${done?'#3d2f06':'var(--muted)'};font-size:14px;font-weight:900;cursor:pointer;transition:all 0.15s;`;
     cell.addEventListener('click', async () => {
+      if(!epCurrentExamKey) { window.showToast('먼저 시험 제목을 입력하고 "적용"을 눌러주세요!'); return; }
       if(epDone.has(i)) epDone.delete(i); else epDone.add(i);
       renderExamProgressGrid();
       await saveExamProgress();
+      refreshExamSelect();
     });
     grid.appendChild(cell);
   }
@@ -1594,6 +1684,21 @@ let wbItems = [];
 let wbDone = new Map(); // index -> 체크한 날짜(YYYY-MM-DD)
 let wbInited = false;
 let wbCurrentClass = '';
+let wbBooks = {}; // { 문제집제목: {items:[...], status, currentRound, rounds:{"1":{done:{idx:date}}, "2":{...}}} }
+let wbCurrentBookKey = '';
+let wbCurrentRound = '1';
+
+// 예전 형식(items/done이 최상위)으로 저장된 문제집을 rounds 구조로 자동 변환
+function ensureBookRounds(book) {
+  if(!book.rounds) {
+    book.rounds = { '1': { done: book.done || {} } };
+    book.currentRound = '1';
+    delete book.done;
+  }
+  if(!book.currentRound || !book.rounds[book.currentRound]) book.currentRound = Object.keys(book.rounds)[0] || '1';
+  if(!book.status) book.status = 'active';
+  return book;
+}
 
 function initWbProgress() {
   if(!wbInited) {
@@ -1602,6 +1707,8 @@ function initWbProgress() {
     const selCls = document.getElementById('wbSelClass');
     classes.forEach(c => { const o=document.createElement('option'); o.value=c; o.textContent=c; selCls.appendChild(o); });
     selCls.addEventListener('change', () => loadWbProgressForClass(selCls.value));
+
+    document.getElementById('wbSelBook').addEventListener('change', (e) => selectBook(e.target.value));
 
     const KAKAO_KEY = 'KakaoAK e47f4fe1adaafe2c946d161b6f49d107';
     const titleInput = document.getElementById('wbTitle');
@@ -1650,13 +1757,22 @@ function initWbProgress() {
 
     document.getElementById('btnWbApply').addEventListener('click', async () => {
       if(!wbCurrentClass) { window.showToast('반을 먼저 선택해주세요!'); return; }
+      const titleVal = document.getElementById('wbTitle').value.trim();
+      if(!titleVal) { window.showToast('문제집 제목을 입력해주세요!'); return; }
       const lines = document.getElementById('wbTocInput').value.split('\n').map(l=>l.trim()).filter(Boolean);
       if(!lines.length) { window.showToast('목차를 먼저 입력해주세요!'); return; }
       wbItems = lines;
-      wbDone = new Map();
+      if(wbCurrentBookKey !== titleVal) {
+        // 새 문제집: 1회독부터 새로 시작
+        wbCurrentBookKey = titleVal;
+        wbCurrentRound = '1';
+        wbDone = new Map();
+      }
       document.getElementById('wbProgressWrap').style.display = 'block';
       renderWbList();
+      renderWbRoundTabs();
       await saveWbProgress();
+      refreshBookSelect();
       window.showToast('📓 목차 적용했어요! 이제 항목을 눌러 체크하세요');
     });
 
@@ -1738,12 +1854,51 @@ ${raw}`
     });
 
     document.getElementById('btnWbReset').addEventListener('click', async () => {
-      if(!confirm('체크한 항목을 전부 초기화할까요?')) return;
+      if(!confirm(`${wbCurrentRound}회독 체크를 전부 초기화할까요?`)) return;
       wbDone = new Map();
       renderWbList();
       await saveWbProgress();
       window.showToast('↺ 초기화했어요!');
     });
+
+    document.getElementById('btnWbAddRound').addEventListener('click', async () => {
+      if(!wbCurrentBookKey) return;
+      const book = wbBooks[wbCurrentBookKey];
+      const nums = Object.keys(book.rounds).map(n => parseInt(n));
+      const nextRound = String(Math.max(...nums) + 1);
+      book.rounds[nextRound] = { done: {} };
+      wbCurrentRound = nextRound;
+      book.currentRound = nextRound;
+      wbDone = new Map();
+      renderWbList();
+      renderWbRoundTabs();
+      await persistWbBooks();
+      refreshBookSelect();
+      window.showToast(`🔁 ${nextRound}회독 시작!`);
+    });
+
+    document.getElementById('btnWbDeleteBook').addEventListener('click', async () => {
+      if(!wbCurrentBookKey) return;
+      const isArchived = wbBooks[wbCurrentBookKey]?.status === 'archived';
+      if(isArchived) {
+        wbBooks[wbCurrentBookKey].status = 'active';
+        await persistWbBooks();
+        refreshBookSelect();
+        selectBook(wbCurrentBookKey);
+        window.showToast('🔄 다시 진행 중으로 옮겼어요!');
+      } else {
+        if(!confirm(`"${wbCurrentBookKey}" 문제집을 완료 처리할까요? (기록은 계속 남아있어요, "지난 기록도 보기"에서 다시 볼 수 있어요)`)) return;
+        wbBooks[wbCurrentBookKey].status = 'archived';
+        await persistWbBooks();
+        const remaining = Object.keys(wbBooks).filter(k => wbBooks[k].status !== 'archived');
+        refreshBookSelect();
+        if(remaining.length) selectBook(remaining[0]);
+        else selectBook('__new__');
+        window.showToast('📦 완료 처리했어요!');
+      }
+    });
+
+    document.getElementById('wbShowArchived').addEventListener('change', refreshBookSelect);
 
     document.getElementById('btnWbDownload').addEventListener('click', downloadWbProgressImage);
     document.getElementById('btnWbDownloadToday').addEventListener('click', downloadTodayWbProgressImage);
@@ -1760,34 +1915,98 @@ async function loadWbProgressForClass(cls) {
   mainWrap.style.display = 'block';
   try {
     const snap = await getDoc(doc(db,'wbProgress',cls));
-    if(snap.exists()) {
-      const d = snap.data();
-      document.getElementById('wbTitle').value = d.title || '';
-      document.getElementById('wbTocInput').value = (d.items||[]).join('\n');
-      wbItems = d.items || [];
-      wbDone = new Map(Object.entries(d.done || {}).map(([k,v]) => [parseInt(k), v]));
-      document.getElementById('wbProgressWrap').style.display = wbItems.length ? 'block' : 'none';
-      if(wbItems.length) renderWbList();
-    } else {
-      document.getElementById('wbTitle').value = '';
-      document.getElementById('wbTocInput').value = '';
-      wbItems = [];
-      wbDone = new Map();
-      document.getElementById('wbProgressWrap').style.display = 'none';
-    }
+    wbBooks = snap.exists() ? (snap.data().books || {}) : {};
+    Object.values(wbBooks).forEach(ensureBookRounds);
+    refreshBookSelect();
+    const activeKeys = Object.keys(wbBooks).filter(k => wbBooks[k].status !== 'archived');
+    selectBook(activeKeys.length ? activeKeys[0] : '__new__');
   } catch(e) { window.showToast('불러오기 실패: '+e.message); }
 }
 
-async function saveWbProgress() {
+function refreshBookSelect() {
+  const sel = document.getElementById('wbSelBook');
+  const showArchived = document.getElementById('wbShowArchived')?.checked;
+  const keys = Object.keys(wbBooks).filter(k => showArchived || wbBooks[k].status !== 'archived');
+  sel.innerHTML = keys.map(k => {
+    const b = wbBooks[k];
+    const round = b.rounds[b.currentRound];
+    const doneCount = Object.keys(round?.done || {}).length;
+    const archived = b.status === 'archived';
+    return `<option value="${k.replace(/"/g,'&quot;')}">${archived?'📦 ':''}${k} (${b.currentRound}회독 ${doneCount}/${(b.items||[]).length})${archived?' - 완료됨':''}</option>`;
+  }).join('') + '<option value="__new__">➕ 새 문제집 추가</option>';
+  if(wbCurrentBookKey && keys.includes(wbCurrentBookKey)) sel.value = wbCurrentBookKey;
+}
+
+function selectBook(key) {
+  const delBtn = document.getElementById('btnWbDeleteBook');
+  if(key === '__new__' || !wbBooks[key]) {
+    wbCurrentBookKey = '';
+    wbCurrentRound = '1';
+    document.getElementById('wbTitle').value = '';
+    document.getElementById('wbTocInput').value = '';
+    wbItems = [];
+    wbDone = new Map();
+    document.getElementById('wbProgressWrap').style.display = 'none';
+    document.getElementById('wbRoundRow').style.display = 'none';
+    delBtn.style.display = 'none';
+  } else {
+    ensureBookRounds(wbBooks[key]);
+    wbCurrentBookKey = key;
+    wbCurrentRound = wbBooks[key].currentRound;
+    document.getElementById('wbTitle').value = key;
+    document.getElementById('wbTocInput').value = (wbBooks[key].items||[]).join('\n');
+    wbItems = wbBooks[key].items || [];
+    wbDone = new Map(Object.entries(wbBooks[key].rounds[wbCurrentRound].done || {}).map(([k,v]) => [parseInt(k), v]));
+    document.getElementById('wbProgressWrap').style.display = wbItems.length ? 'block' : 'none';
+    document.getElementById('wbRoundRow').style.display = wbItems.length ? 'flex' : 'none';
+    if(wbItems.length) { renderWbList(); renderWbRoundTabs(); }
+    const archived = wbBooks[key].status === 'archived';
+    delBtn.textContent = archived ? '🔄 다시 진행하기' : '📦 이 문제집 완료 처리';
+    delBtn.style.display = 'inline-block';
+  }
+  document.getElementById('wbSelBook').value = key;
+}
+
+function renderWbRoundTabs() {
+  const wrap = document.getElementById('wbRoundTabs');
+  if(!wbCurrentBookKey || !wbBooks[wbCurrentBookKey]) { wrap.innerHTML = ''; return; }
+  const rounds = Object.keys(wbBooks[wbCurrentBookKey].rounds).sort((a,b)=>parseInt(a)-parseInt(b));
+  wrap.innerHTML = rounds.map(r => {
+    const active = r === wbCurrentRound;
+    const doneCount = Object.keys(wbBooks[wbCurrentBookKey].rounds[r].done || {}).length;
+    return `<button data-round="${r}" style="padding:6px 12px;border-radius:8px;border:1px solid ${active?'var(--gold)':'var(--border)'};background:${active?'var(--gold-light)':'var(--surface2)'};color:${active?'var(--gold)':'var(--muted)'};font-size:12px;font-weight:700;cursor:pointer;">${r}회독 (${doneCount}/${wbItems.length})</button>`;
+  }).join('');
+  wrap.querySelectorAll('button[data-round]').forEach(btn => {
+    btn.addEventListener('click', () => switchWbRound(btn.dataset.round));
+  });
+}
+
+function switchWbRound(round) {
+  if(round === wbCurrentRound) return;
+  wbCurrentRound = round;
+  wbBooks[wbCurrentBookKey].currentRound = round;
+  wbDone = new Map(Object.entries(wbBooks[wbCurrentBookKey].rounds[round].done || {}).map(([k,v]) => [parseInt(k), v]));
+  renderWbList();
+  renderWbRoundTabs();
+  persistWbBooks();
+}
+
+async function persistWbBooks() {
   if(!wbCurrentClass) return;
   try {
-    await setDoc(doc(db,'wbProgress',wbCurrentClass), {
-      title: document.getElementById('wbTitle').value.trim(),
-      items: wbItems,
-      done: Object.fromEntries(wbDone),
-      updatedAt: new Date()
-    });
+    await setDoc(doc(db,'wbProgress',wbCurrentClass), { books: wbBooks, updatedAt: new Date() });
   } catch(e) { window.showToast('저장 실패: '+e.message); }
+}
+
+async function saveWbProgress() {
+  if(!wbCurrentClass || !wbCurrentBookKey) return;
+  if(!wbBooks[wbCurrentBookKey]) wbBooks[wbCurrentBookKey] = { status:'active', rounds:{} };
+  const book = wbBooks[wbCurrentBookKey];
+  book.items = wbItems;
+  book.currentRound = wbCurrentRound;
+  if(!book.rounds) book.rounds = {};
+  book.rounds[wbCurrentRound] = { done: Object.fromEntries(wbDone) };
+  await persistWbBooks();
 }
 
 function formatDateBadge(iso) {
@@ -1813,6 +2032,8 @@ function renderWbList() {
       if(wbDone.has(i)) wbDone.delete(i); else wbDone.set(i, new Date().toISOString().slice(0,10));
       renderWbList();
       await saveWbProgress();
+      refreshBookSelect();
+      renderWbRoundTabs();
     });
   });
   updateWbSummary();
@@ -1821,14 +2042,14 @@ function renderWbList() {
 function updateWbSummary() {
   const total = wbItems.length;
   const pct = total ? Math.round((wbDone.size/total)*100) : 0;
-  document.getElementById('wbSummary').textContent = `${wbDone.size} / ${total} 완료 · ${pct}%`;
+  document.getElementById('wbSummary').textContent = `${wbCurrentRound}회독 · ${wbDone.size} / ${total} 완료 · ${pct}%`;
   document.getElementById('wbProgressBar').style.width = pct + '%';
 }
 
 async function downloadTodayWbProgressImage() {
   if(!window.html2canvas) { window.showToast('이미지 변환 준비가 안 됐어요, 잠시 후 다시 시도해주세요!'); return; }
   const todayIso = new Date().toISOString().slice(0,10);
-  const title = document.getElementById('wbTitle').value.trim() || '문제집 진도 체크';
+  const title = (document.getElementById('wbTitle').value.trim() || '문제집 진도 체크') + ` (${wbCurrentRound}회독)`;
   const total = wbItems.length;
   const pct = total ? Math.round((wbDone.size/total)*100) : 0;
   const today = new Date();
@@ -1887,7 +2108,7 @@ async function downloadTodayWbProgressImage() {
 
 async function downloadWbProgressImage() {
   if(!window.html2canvas) { window.showToast('이미지 변환 준비가 안 됐어요, 잠시 후 다시 시도해주세요!'); return; }
-  const title = document.getElementById('wbTitle').value.trim() || '문제집 진도 체크';
+  const title = (document.getElementById('wbTitle').value.trim() || '문제집 진도 체크') + ` (${wbCurrentRound}회독)`;
   const total = wbItems.length;
   const pct = total ? Math.round((wbDone.size/total)*100) : 0;
   const today = new Date();
