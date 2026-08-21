@@ -1833,7 +1833,7 @@ async function downloadTodayExamProgressImage() {
 
   const cellsHtml = todayNums.map(n => {
     const rColor = rangeColorFor(n);
-    return `<div style="aspect-ratio:1;border-radius:9px;border:1px solid #b8942c;background:#dfb84a;color:#3d2f06;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:13px;font-weight:900;box-shadow:0 3px 0 #a9782f, inset 0 1px 1px rgba(255,255,255,0.5);position:relative;">
+    return `<div style="aspect-ratio:1;border-radius:9px;border:1px solid #b8942c;border-bottom:4px solid #a9782f;background:#dfb84a;color:#3d2f06;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:13px;font-weight:900;position:relative;box-sizing:border-box;">
       ${rColor?`<span style="position:absolute;top:2px;left:50%;transform:translateX(-50%);width:12px;height:3px;border-radius:2px;background:${rColor};"></span>`:''}
       <span style="margin-top:${rColor?'4px':'0'};">${n}</span>
     </div>`;
@@ -1897,7 +1897,7 @@ async function downloadExamProgressImage() {
     const kBg = done ? '#dfb84a' : '#f7f4ec';
     const kBorder = done ? '#b8942c' : '#d8d0ba';
     const kShadow = done ? '#a9782f' : '#c9bfa0';
-    return `<div style="aspect-ratio:1;border-radius:9px;border:1px solid ${kBorder};background:${kBg};color:${done?'#3d2f06':'#a89f8a'};display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.15;position:relative;box-shadow:0 3px 0 ${kShadow}, inset 0 1px 1px rgba(255,255,255,0.7);">
+    return `<div style="aspect-ratio:1;border-radius:9px;border:1px solid ${kBorder};border-bottom:4px solid ${kShadow};background:${kBg};color:${done?'#3d2f06':'#a89f8a'};display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.15;position:relative;box-sizing:border-box;">
       ${rColor?`<span style="position:absolute;top:2px;left:50%;transform:translateX(-50%);width:10px;height:2.5px;border-radius:2px;background:${rColor};"></span>`:''}
       <span style="font-size:13px;font-weight:900;margin-top:${rColor?'3px':'0'};">${n}</span>
       ${dBadge?`<span style="font-size:7px;font-weight:700;opacity:0.8;">${dBadge}</span>`:''}
