@@ -1209,7 +1209,6 @@ function renderTable() {
             <tr>
               <th style="min-width:120px">학생</th>
               ${hwItems.map(item => `<th style="min-width:64px">${item}</th>`).join('')}
-              <th style="min-width:120px">📓 문제집 (월~금)</th>
               <th style="min-width:100px">✅ 숙제 승인</th>
               <th style="min-width:140px">💬 코멘트</th>
             </tr>
@@ -1247,23 +1246,6 @@ function renderTable() {
         const tip = val==='rejected' && due ? `title="반려 · ${due}까지 다시 제출"` : '';
         return `<td><button class="hw-check ${cls}" data-sid="${stu.id}" data-item="${item}" ${tip}>${icon}</button>${val==='rejected'&&due?`<div style="font-size:8.5px;color:#b45309;text-align:center;margin-top:2px;white-space:nowrap;">~${due}</div>`:''}</td>`;
       }).join('')}
-      <td>
-        ${(() => {
-          const days = ['월','화','수','목','금'];
-          const dayData = studentSelfChecks[stu.id]?.dayChecks?.['문제집'] || [];
-          if(!dayData.length) {
-            return `<div style="font-size:10px;color:var(--muted);line-height:1.5;">아직 없음<br><span style="font-size:9px;">(반 관리에서 '문제집' 항목 추가 필요)</span></div>`;
-          }
-          const checkedCount = dayData.filter(Boolean).length;
-          return `<div style="display:flex;align-items:center;gap:3px;">
-            ${days.map((d,i) => `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
-              <span style="font-size:8px;color:var(--muted);">${d}</span>
-              <span style="width:20px;height:20px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;background:${dayData[i]?'var(--green-light)':'rgba(0,0,0,0.04)'};color:${dayData[i]?'var(--green)':'var(--muted)'};">${dayData[i]?'✓':''}</span>
-            </div>`).join('')}
-            <span style="font-size:10px;color:${checkedCount>=4?'var(--green)':checkedCount>=2?'#f59e0b':'var(--muted)'};font-weight:700;margin-left:4px;">${checkedCount}/5</span>
-          </div>`;
-        })()}
-      </td>
       <td style="text-align:center;">
         <div style="display:flex;flex-direction:column;gap:4px;align-items:center;">
           ${rec.hwApproved ? 
@@ -2643,10 +2625,64 @@ function initStatsTabInto(wrap) {
   wrap.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);">반을 선택하면 통계가 표시돼요</div>';
 }
 
-function initClassStuViewInto(wrap) {
-  const sec = document.getElementById('sec-classstuView');
-  if(sec) { wrap.innerHTML = sec.innerHTML; return; }
+async function initClassStuViewInto(wrap) {
   wrap.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);">반별 학생 현황을 불러오는 중...</div>';
+  try {
+    const snap = await getDocs(collection(db,'users'));
+    const allStudents = snap.docs
+      .map(d=>({id:d.id,...d.data()}))
+      .filter(u => !u.role || u.role !== 'teacher');
+
+    const groups = {};
+    allStudents.forEach(u => {
+      const cls = u.className || '(반 미배정)';
+      if(!groups[cls]) groups[cls] = [];
+      groups[cls].push(u);
+    });
+
+    const orderedClassNames = [...classes, ...Object.keys(groups).filter(c => !classes.includes(c))];
+
+    if(!allStudents.length) {
+      wrap.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);">학생이 없어요</div>';
+      return;
+    }
+
+    wrap.innerHTML = `<div style="font-size:11px;color:var(--muted);margin-bottom:12px;">💡 이름 옆 드롭다운으로 반을 바로 옮길 수 있어요 (teacher.html이랑 똑같이 실시간으로 반영돼요)</div>` +
+      orderedClassNames.filter(c => groups[c]?.length).map(cls => {
+      const students = groups[cls].sort((a,b) => (a.name||'').localeCompare(b.name||''));
+      const unassigned = cls === '(반 미배정)';
+      return `<div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:12px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+          <div style="font-size:14px;font-weight:900;color:${unassigned?'var(--red)':'var(--purple)'};">${unassigned?'⚠️ ':'🏫 '}${cls}</div>
+          <div style="font-size:12px;color:var(--muted);">${students.length}명</div>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;">
+          ${students.map(s => `<div style="display:flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:5px 6px 5px 12px;">
+            <span style="font-size:13px;font-weight:700;">${s.name||s.email||'이름없음'}</span>
+            <span style="font-size:11px;color:var(--muted);">${(s.points||0).toLocaleString()}pt</span>
+            <select class="classstu-reassign" data-uid="${s.id}" style="padding:2px 6px;border:1px solid var(--border);border-radius:10px;font-size:10.5px;background:var(--surface2);color:var(--purple);cursor:pointer;outline:none;">
+              <option value="">미배정</option>
+              ${classes.map(c => `<option value="${c}" ${s.className===c?'selected':''}>${c}</option>`).join('')}
+            </select>
+          </div>`).join('')}
+        </div>
+      </div>`;
+    }).join('');
+
+    wrap.querySelectorAll('.classstu-reassign').forEach(sel => {
+      sel.addEventListener('change', async () => {
+        const uid = sel.dataset.uid;
+        const newCls = sel.value;
+        try {
+          await updateDoc(doc(db,'users',uid), { className: newCls });
+          showToast(newCls ? `✅ ${newCls}(으)로 옮겼어요!` : '반 배정 해제했어요');
+          initClassStuViewInto(wrap); // 목록 다시 그리기 (반 이동했으니 그룹도 갱신)
+        } catch(e) { showToast('오류: '+e.message); }
+      });
+    });
+  } catch(e) {
+    wrap.innerHTML = `<div style="padding:20px;text-align:center;color:#f87171;">불러오기 실패: ${e.message}</div>`;
+  }
 }
 
 // ===== 📖 진도 통합 =====
