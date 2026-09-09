@@ -1309,7 +1309,15 @@ function renderTable() {
             </select>
             <button class="btn-absent-toggle" data-sid="${stu.id}" style="font-size:10px;padding:4px 6px;background:${rec.absent?'#fee2e2':'var(--surface2)'};color:${rec.absent?'#dc2626':'var(--muted)'};border:1px solid ${rec.absent?'#fca5a5':'var(--border)'};border-radius:6px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:700;white-space:nowrap;">${rec.absent?'🏃 결석 취소':'🏃 결석 처리'}</button>
           </div>
-          <button class="btn-student-card" data-sid="${stu.id}" title="이 학생 결과 이미지로 저장" style="font-size:10px;padding:4px 8px;background:#e0f2fe;color:#0369a1;border:1px solid #7dd3fc;border-radius:6px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:700;white-space:nowrap;flex-shrink:0;">📸</button>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:3px;flex-shrink:0;">
+            <button class="btn-student-card" data-sid="${stu.id}" title="이 학생 결과 이미지로 저장" style="font-size:10px;padding:4px 8px;background:#e0f2fe;color:#0369a1;border:1px solid #7dd3fc;border-radius:6px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:700;white-space:nowrap;">📸</button>
+            <div style="display:flex;gap:1px;">
+              ${['월','화','수','목','금'].map((d,di) => {
+                const weekDays = rec['_weekDays'] || [false,false,false,false,false];
+                return `<button class="hw-week-day-check" data-sid="${stu.id}" data-day="${di}" title="${d}요일" style="width:15px;height:15px;font-size:7.5px;padding:0;border-radius:3px;border:1px solid ${weekDays[di]?'var(--green)':'var(--border)'};background:${weekDays[di]?'var(--green-light)':'var(--surface2)'};color:${weekDays[di]?'var(--green)':'var(--muted)'};cursor:pointer;line-height:1;font-weight:700;">${d}</button>`;
+              }).join('')}
+            </div>
+          </div>
         </div>
       </td>
       ${hwItems.map(item => {
@@ -1318,14 +1326,7 @@ function renderTable() {
         const cls = val===true?'done':val==='rejected'?'rejected':val==='na'?'na':val===false?'undone':'none';
         const icon = val===true?'✅':val==='rejected'?'🔄':val==='na'?'➖':val===false?'❌':'－';
         const tip = val==='rejected' && due ? `title="반려 · ${due}까지 다시 제출"` : val==='na' ? `title="이번 주 해당 항목 숙제 없음"` : '';
-        const dayLabels = ['월','화','수','목','금'];
-        const dayVals = rec[item+'_days'] || [false,false,false,false,false];
-        const dayHtml = dayLabels.map((d,di) => `<button class="hw-day-check" data-sid="${stu.id}" data-item="${item}" data-day="${di}" title="${item} ${d}요일" style="width:15px;height:15px;font-size:7.5px;padding:0;border-radius:3px;border:1px solid ${dayVals[di]?'var(--green)':'var(--border)'};background:${dayVals[di]?'var(--green-light)':'var(--surface2)'};color:${dayVals[di]?'var(--green)':'var(--muted)'};cursor:pointer;line-height:1;font-weight:700;">${d}</button>`).join('');
-        return `<td>
-          <button class="hw-check ${cls}" data-sid="${stu.id}" data-item="${item}" ${tip}>${icon}</button>
-          ${val==='rejected'&&due?`<div style="font-size:8.5px;color:#b45309;text-align:center;margin-top:2px;white-space:nowrap;">~${due}</div>`:''}
-          <div style="display:flex;gap:1px;justify-content:center;margin-top:3px;">${dayHtml}</div>
-        </td>`;
+        return `<td><button class="hw-check ${cls}" data-sid="${stu.id}" data-item="${item}" ${tip}>${icon}</button>${val==='rejected'&&due?`<div style="font-size:8.5px;color:#b45309;text-align:center;margin-top:2px;white-space:nowrap;">~${due}</div>`:''}</td>`;
       }).join('')}
       <td style="text-align:center;">
         <div style="display:flex;flex-direction:column;gap:4px;align-items:center;">
@@ -1411,13 +1412,13 @@ function renderTable() {
     });
   });
 
-  tbody.querySelectorAll('.hw-day-check').forEach(btn => {
+  tbody.querySelectorAll('.hw-week-day-check').forEach(btn => {
     btn.addEventListener('click', () => {
-      const {sid, item, day} = btn.dataset;
+      const {sid, day} = btn.dataset;
       const di = parseInt(day);
       if(!currentData[sid]) currentData[sid] = {};
-      if(!currentData[sid][item+'_days']) currentData[sid][item+'_days'] = [false,false,false,false,false];
-      currentData[sid][item+'_days'][di] = !currentData[sid][item+'_days'][di];
+      if(!currentData[sid]['_weekDays']) currentData[sid]['_weekDays'] = [false,false,false,false,false];
+      currentData[sid]['_weekDays'][di] = !currentData[sid]['_weekDays'][di];
       renderTable();
     });
   });
